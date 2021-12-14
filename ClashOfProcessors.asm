@@ -26,10 +26,6 @@ Rectangel MACRO x,y
      ;-----------
 ENDM
 DrawRegisters MACRO
-    mov ah,0
-    mov al,13h
-    int 10h
-
     mov Rectanglexpos,10
     mov Rectangleypos,20
     
@@ -63,7 +59,7 @@ MAIN PROC FAR
     mov ah,0   ;graphics mode
     mov al,13h
     int 10h
-    
+    DrawRegisters
     call MoveGun
 
 HLT
