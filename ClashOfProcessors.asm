@@ -30,22 +30,26 @@ DrawRegisters MACRO
     mov al,13h
     int 10h
 
-    mov xpos,10
-    mov ypos,20
+    mov Rectanglexpos,10
+    mov Rectangleypos,20
     
 
     Rectangel8:
-        Rectangel xpos,ypos
-        add xpos,60
-        Rectangel xpos,ypos
-        add ypos,20
-        mov xpos,10
+        Rectangel Rectanglexpos,Rectangleypos
+        add Rectanglexpos,60
+        Rectangel Rectanglexpos,Rectangleypos
+        add Rectangleypos,20
+        mov Rectanglexpos,10
         dec counterDrawRegisters
         cmp counterDrawRegisters,0
     jnz Rectangel8
 ENDM
 
 .DATA
+;------------------Variables for registers drawing----------------------
+Rectanglexpos dw 10
+Rectangleypos dw 10
+counterDrawRegisters db 4
 ;------------------Previous and New position of Gun---------------------
 gunPrevX dw 50
 gunPrevY dw 50
