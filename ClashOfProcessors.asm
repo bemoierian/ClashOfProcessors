@@ -140,15 +140,15 @@ DrawGun proc
         mov cx, gunNewX ;X position of new gun
         mov bl, 0 ;inner counter
         inc dx    ;increment row
-        inc bh    ;outer counter
         cmp bh,3  ;if draw 3 rows then then the gun is completed
         jz exit2
+        inc bh    ;outer counter
         ;same as inner1
         inner2:  
-        int 10h 
-        inc cx
-        inc bl
-        cmp bl,3
+        int 10h  ;draw pixel
+        inc cx   ;inc column
+        inc bl   ;inc counter
+        cmp bl,3 ;if you draw 3 columns jump to outer
         jnz inner2
         jz outer2
     exit2:
