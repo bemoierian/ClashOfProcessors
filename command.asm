@@ -124,7 +124,6 @@ execute PROC far
     ;         if src = bx
     ;             mov ax, BxVar
     ;             mov AxVar, ax
-    hlt
-
+    ret
 execute ENDP
 end
