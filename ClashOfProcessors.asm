@@ -1,27 +1,45 @@
-Rectangel MACRO x,y
+Rectangel MACRO x,y,value
     local outer,inner
     ;DRAW ONE YELLOW RECTANGEL
-     
-     mov dx,y
-     mov al,0eh;COLOR
-     mov ah,0ch;DRAW PIXEL
-     mov bx,x
-     add bx,40
-     mov di,y
-     add di,10
-     outer:
+    
+    mov dx,y
+    mov al,0eh ;COLOR
+    mov ah,0ch ;DRAW PIXEL
+    mov bx,x
+    add bx,40  ;Width
+    mov di,y
+    add di,10  ;Height
+        outer:
         mov cx,x 
-        inner:
-        int 10h
-        inc cx
-        cmp cx,bx
-        jnz inner
-     inc dx
-     cmp dx,di
-     jnz outer
-     ;-----------
+            inner:
+            int 10h
+            inc cx
+            cmp cx,bx
+            jnz inner
+        inc dx
+        cmp dx,di
+        jnz outer
+    ;WRITE THE VALUE INSIDE THE REGISTER
+    ;WriteRegValue x,y,'1'
+    ;WriteRegValue x,y,'2'
+    ;WriteRegValue x,y,'4'
+    ;WriteRegValue x,y,'5'
+    ;-----------
 ENDM Rectangel
+
+WriteRegValue macro x,y,val
+
+    mov dx,y   ;Y pos
+    mov cl,8
+    shl dx,cl
+    add dx,x   ;X pos
+    displayletter dx,val,09h
+    getcursor
+    add dl,1
+endm WriteRegValue
+
 DrawRegisters MACRO
+    local back
     mov Rectanglexpos,10
     mov Rectangleypos,20
     
@@ -84,14 +102,14 @@ DrawGun MACRO
 ENDM DrawGun     
 
 
-packground macro 
+Background macro 
     ; Scroll up function
     mov ax, 0700h    
     mov bh, 0fh    ; white background
     mov cx, 0     
     mov dx, 184FH   
     int 10H
-endm packground 
+endm Background
 
 verticalline macro y,x,max
     LOCAL back
@@ -150,7 +168,8 @@ drawrectangle  macro   x,y,color,horizontallen,verticallen
     jle g1
 
 endm drawrectangle
-    setcursor macro p
+
+setcursor macro p
     mov ah,2
     mov dx,p ;move cursorposition to dx
     int 10h
@@ -184,6 +203,7 @@ endm getcursor
 Rectanglexpos dw 10
 Rectangleypos dw 10
 counterDrawRegisters db 4
+counterNumbers db 4
 ;------------------Previous and New position of Gun---------------------
 gunPrevX dw 50
 gunPrevY dw 50
@@ -208,9 +228,9 @@ MAIN PROC FAR
     int 10h
     ;Main Game Loop
     Game:
-        packground ;background color
+        Background ;background color
 
-            horizontalline 170,0,320 ;horizontal line
+        horizontalline 170,0,320 ;horizontal line
         drawrectangle  120,0,0dh,10,120
         verticalline 0,160,170   ;vertical line
         horizontalline 145,162,319 ;horizontal line
@@ -218,9 +238,10 @@ MAIN PROC FAR
 
         DrawGun
         DrawRegisters
+        
         ; draw squares
-       
 
+        
         displayletter 63497d,'1',0ah
         setcursor 0000
 
