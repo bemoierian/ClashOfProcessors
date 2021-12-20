@@ -1,5 +1,5 @@
 PUBLIC startScreen
-PUBLIC BUFFNAME,BufferData
+PUBLIC BUFFNAME,BufferSize
 
 .MODEL SMALL
 .DATA
@@ -17,6 +17,7 @@ BufferSize db 3
 ActualSize db ?
 BufferData db 3 dup('$') 
 
+PRESSENTER DB 10,13,'Press Enter Key To Continue',10,13,'$'
 .CODE
 startScreen PROC FAR
     MOV AX, @DATA
@@ -29,15 +30,12 @@ startScreen PROC FAR
     mov cx,0
     mov dx,184FH
     int 10h
-
-
+    ;set the cursor at the top of the screen
     mov bh,0h 
-    ;Move cursor
     mov ah,2
     mov dh,0
     mov dl,0
     int 10h
-
 
     ;ask for name
     lea dx,ASK_NAME
@@ -51,7 +49,6 @@ startScreen PROC FAR
     
     
     loopname:  
-    
     mov ah,1 ;read one char from the user and put it in al
     int 21h
 
@@ -59,6 +56,9 @@ startScreen PROC FAR
     
     cmp bl,13
     jz points
+
+    cmp cx,15
+    jnz here
          
     CMP BL, 61H   ;check on a
     JGE DALPHABET_SMALL 
@@ -109,16 +109,84 @@ startScreen PROC FAR
     JMP here 
     
     POINTS:
-    LEA DX,initPoints ;print message
+    LEA DX,initPoints ;ask for points
     MOV AH,9
     INT 21H
     
-    lea dx,BUFFPOINT ;take points from user
-    mov ah,0AH
-    int 21H
-    exit:
-    ;MOV AH, 04CH    ;TO RETURN TO THE OPERATING SYSTEM
-    ;INT 21H 
+    LEA DI,BufferData
+    
+    mov cx,2 
+    
+    loopPoints:
+        
+    mov ah,1 ;read one char from the user and put it in al
+    int 21h
+
+    MOV BL, AL
+    CMP BL, 61H   ;check on a
+    JGE DALPHABET_SMALL2 
+         
+    CMP BL, 41H   ;check on A
+    JGE DALPHABET2 
+         
+    CMP BL, 30H  ;COMPARE WITH 0
+    JGE DDIGIT2 
+         
+    CMP BL, 30H 
+    JL DSPECIAL2     
+    
+    HERE2:   
+    loop loopPoints 
+    
+    JMP PROCEED
+    
+    DSPECIAL2: 
+    mov dl,07h
+    mov ah,2
+    int 21h
+    lea dx,backSpace
+    mov ah,9
+    int 21h
+    jmp loopPoints
+    
+    DDIGIT2:  
+    CMP BL, 39H    ;COMPARE WITH THE '9; WHICH IS THE LOWER BOUND OF DIGITS
+    JG DSPECIAL    ;if it's not number jump to special char
+    STOSB
+    JMP HERE2  ;jump to loop whithout decreasing the counter
+    
+    DALPHABET2:   ;capital letters
+    CMP BL, 5AH  ;check on Z
+    JG DSPECIAL  ;if it's not jump to special char  
+    mov dl,07h     ;bell    
+    mov ah,2
+    int 21h
+    lea dx,backSpace;backspace
+    mov ah,9
+    int 21h
+    JMP loopPoints 
+    
+    DALPHABET_SMALL2: ;small letters
+    CMP BL, 7AH 
+    JG DSPECIAL 
+    mov dl,07h     ;bell    
+    mov ah,2
+    int 21h
+    lea dx,backSpace;backspace
+    mov ah,9
+    int 21h
+    JMP loopPoints 
+    
+    PROCEED:;wait for enter
+    lea dx,PRESSENTER
+    mov ah,9
+    int 21h
+    
+    WAITENTER:
+    MOV AH,0
+    INT 16h  
+    CMP AL,0DH   ;check on the pressed key
+    JNZ WAITENTER 
     ret
 startScreen  ENDP
 END
