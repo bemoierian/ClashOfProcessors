@@ -1,13 +1,14 @@
-Rectangel MACRO x,y,value
+Rectangel MACRO x,y,x_Regvalue,y_Regvalue,value,Regcolor   
+    
     local outer,inner
-    ;DRAW ONE YELLOW RECTANGEL
+    ;DRAW ONE RECTANGEL
     mov dx,y
-    mov al,0eh ;COLOR
+    mov al,Regcolor ;COLOR
     mov ah,0ch ;DRAW PIXEL
     mov bx,x
-    add bx,40  ;Width
+    add bx,60  ;Width
     mov di,y
-    add di,10  ;Height
+    add di,12  ;Height
         outer:
         mov cx,x 
             inner:
@@ -19,42 +20,79 @@ Rectangel MACRO x,y,value
         cmp dx,di
         jnz outer
     ;WRITE THE VALUE INSIDE THE REGISTER
-    ;WriteRegValue x,y,'1'
-    ;WriteRegValue x,y,'2'
-    ;WriteRegValue x,y,'4'
-    ;WriteRegValue x,y,'5'
+    ;WriteRegValue x_Regvalue,y_Regvalue,'2'
+    mov dh,y_Regvalue   ;Y pos
+    mov dl,x_Regvalue   ;X pos
+    
+
+    
+    OneDigit '1'
+    OneDigit '2'
+    OneDigit '3'
+    OneDigit '4'
     ;-----------
 ENDM Rectangel
 
-WriteRegValue macro x,y,val
+OneDigit macro val
+    mov ah,2
+    int 10h
+    mov ah,9
+    mov bh,0
+    mov al,val ;letter
+    mov cx,1   ;count
+    mov bl,036h ;color
+    int 10h
+    inc dl 
+    inc dl
+endm OneDigit
 
-    mov dx,y   ;Y pos
-    mov cl,8
-    shl dx,cl
-    add dx,x   ;X pos
-    displayletter dx,val,09h
-    getcursor
-    add dl,1
+WriteRegValue macro xpos,ypos,val
+    
+    mov dh,ypos   ;Y pos
+    mov dl,xpos   ;X pos
+    
+    OneDigit val
+    OneDigit val
+    OneDigit val
+    OneDigit val
 endm WriteRegValue
 
-DrawRegisters MACRO
-    mov Rectanglexpos,10
-    mov Rectangleypos,20
+DrawOneRegister MACRO RecXpos,RecYpos,RegInitialPos_X,RegInitialPos_Y,colorregister
+local Rectangel8
+    mov Rectanglexpos, RecXpos
+    mov Rectangleypos, RecYpos
     
-
+    mov Regvalue_XPOS, RegInitialPos_X
+    mov Regvalue_YPOS, RegInitialPos_Y
+    
+    
     Rectangel8:
-        Rectangel Rectanglexpos,Rectangleypos
-        add Rectanglexpos,60
-        Rectangel Rectanglexpos,Rectangleypos
-        add Rectangleypos,20
-        mov Rectanglexpos,10
+        mov Rectanglexpos, RecXpos
+        mov Regvalue_XPOS, RegInitialPos_X
+
+        Rectangel Rectanglexpos,Rectangleypos,Regvalue_XPOS,Regvalue_YPOS,1234,colorregister ;yellow rectangel
+        add Rectanglexpos,71d
+        add Regvalue_XPOS,9d
+        
+        Rectangel Rectanglexpos,Rectangleypos,Regvalue_XPOS,Regvalue_YPOS,1234,colorregister ;green rectangel
+        add Rectangleypos,24d
+        add Regvalue_YPOS, 3
+        
         dec counterDrawRegisters
         cmp counterDrawRegisters,0
     jnz Rectangel8
+    ;reset all variables
     mov Rectanglexpos, 10
     mov Rectangleypos, 10
     mov counterDrawRegisters, 4
-ENDM DrawRegisters
+
+ENDM DrawOneRegister
+
+DrawRegisters macro
+    DrawOneRegister 14d,22d,2,3,0eh
+    DrawOneRegister 166d,22d,21d,3,0ah
+endm DrawRegisters
+  
 
 
 Background macro 

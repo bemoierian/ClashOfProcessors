@@ -5,7 +5,6 @@ PUBLIC commandStr,commandCode,isExternal,Instruction,Destination,Source
 EXTRN startScreen:far 
 EXTRN BUFFNAME:BYTE
 EXTRN BufferData:BYTE
-EXTRN startScreen:far 
 
 include UI.inc
 include gun_obj.inc
@@ -17,9 +16,9 @@ include gun_obj.inc
 ;------------------Variables for registers drawing----------------------
 Rectanglexpos dw 10
 Rectangleypos dw 10
+Regvalue_YPOS db 2
+Regvalue_XPOS db 3
 counterDrawRegisters db 4
-xp dw 10
-yp dw 20
 ;------------------Previous and New position of Gun---------------------
 gunPrevX dw 50
 gunPrevY dw 50
