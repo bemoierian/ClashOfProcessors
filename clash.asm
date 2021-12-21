@@ -19,6 +19,35 @@ Rectangleypos dw 10
 Regvalue_YPOS db 2
 Regvalue_XPOS db 3
 counterDrawRegisters db 4
+
+;---------Variables for player 1
+AxVar1 dw 0h
+BxVar1 dw 0h
+CxVar1 dw 0bbffh
+DxVar1 dw 0h
+
+SiVar1 dw 0f2ah
+DiVar1 dw 0h
+SpVar1 dw 0h 
+BpVar1 dw 0c4bh
+
+;---------Variables for player 2
+AxVar2 dw 1ah
+BxVar2 dw 12h
+CxVar2 dw 154h
+DxVar2 dw 4h
+
+SiVar2 dw 0ffffh
+DiVar2 dw 9Fh
+SpVar2 dw 0h 
+BpVar2 dw 0h
+
+temp dw ?
+
+d0 db '0'
+d1 db '0'
+d2 db '0'
+d3 db '0'
 ;------------------Previous and New position of Gun---------------------
 gunPrevX dw 50
 gunPrevY dw 50
