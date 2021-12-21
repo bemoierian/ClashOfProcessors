@@ -1,5 +1,5 @@
 PUBLIC startScreen
-PUBLIC BUFFNAME,BufferSize
+PUBLIC BUFFNAME,BufferData
 
 .MODEL SMALL
 .DATA

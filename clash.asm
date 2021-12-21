@@ -13,6 +13,46 @@ include gun_obj.inc
 .MODEL SMALL
 .STACK 64
 .DATA
+;----------------------------MEMORY-------------------------------------
+;------------------Variables for registers drawing----------------------
+MemXpos db 15
+MemYpos db 1
+MemNumber db 1
+MemTemp db ?
+temp2 db ?
+;These variables are not in an array just to simplifie to vision
+;---------Memory for player 1
+m1_1 DB 24
+m2_1 DB 0
+m3_1 DB 0ah
+m4_1 DB 0
+m5_1 DB 0
+m6_1 DB 03h
+m7_1 DB 0
+m8_1 DB 0ffh
+m9_1 DB 0
+mA_1 DB 0
+mB_1 DB 0
+mC_1 DB 0
+mD_1 DB 0
+mE_1 DB 0
+mF_1 DB 0c1h
+;---------Memory for player 2
+m1_2 DB 01bh
+m2_2 DB 0
+m3_2 DB 0
+m4_2 DB 0
+m5_2 DB 0c1h
+m6_2 DB 0
+m7_2 DB 0
+m8_2 DB 0
+m9_2 DB 0
+mA_2 DB 0
+mB_2 DB 0e9h
+mC_2 DB 0
+mD_2 DB 0
+mE_2 DB 0
+mF_2 DB 0
 ;------------------Variables for registers drawing----------------------
 Rectanglexpos dw 10
 Rectangleypos dw 10
@@ -87,6 +127,9 @@ MAIN PROC FAR
 
         DrawGun       ;gun_obj.inc
         DrawRegisters ;UI.inc 
+        MemoryForPlayer1 16 ;UI.inc 
+        MemoryForPlayer2 36 ;UI.inc 
+
         
        
         ;draw squares UI.inc 

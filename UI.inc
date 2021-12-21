@@ -116,6 +116,45 @@ ConvertTo4Digit macro value
 endm ConvertTo4Digit
 
 
+ConvertTo2Digit macro v2
+local NotNumber0,NotNumber1,next0,next1
+    mov al,v2
+    mov temp2,al
+    
+    mov dx,0
+    mov ah,0
+    mov al,temp2
+    mov di,10h
+    div di
+    
+    mov temp2,al
+    lea bx,d0
+    mov [bx],dx
+    cmp [bx],10d 
+    jnc NotNumber0
+        add [bx],30h  ;if it is just a digit
+        jmp next0
+    NotNumber0:
+        add [bx],55d  ;if it is just a char (a,b,c,d,e,f)
+    next0:
+    mov ah,0
+    mov dx,0
+    mov di,10h
+    div di
+    mov ah,0
+    mov temp2,al
+    lea bx,d1
+    mov [bx],dx
+    cmp [bx],10d 
+    jnc NotNumber1
+        add [bx],30h  ;if it is just a digit
+        jmp next1
+    NotNumber1:
+        add [bx],55d  ;if it is just a char (a,b,c,d,e,f)
+    next1:
+    
+endm ConvertTo2Digit
+
 writeRegisterNameLeft macro l1,l2,col
     mov dl, Regvalue_XPOS
     mov dh, Regvalue_YPOS
@@ -159,8 +198,8 @@ local Rectangel8
         Rectangel Rectanglexpos,Rectangleypos,Regvalue_XPOS,Regvalue_YPOS,AxVar,colorregister
         
 
-        add Rectanglexpos,48d
-        add Regvalue_XPOS,6d
+        add Rectanglexpos,40d
+        add Regvalue_XPOS,5d
         
         ;SI
         writeRegisterNameRight 'S','i',NameColor
@@ -182,8 +221,8 @@ local Rectangel8
         Rectangel Rectanglexpos,Rectangleypos,Regvalue_XPOS,Regvalue_YPOS,BxVar,colorregister 
         
 
-        add Rectanglexpos,48d
-        add Regvalue_XPOS,6d
+        add Rectanglexpos,40d
+        add Regvalue_XPOS,5d
         
         ;DI
         writeRegisterNameRight 'D','i',NameColor
@@ -204,8 +243,8 @@ local Rectangel8
         Rectangel Rectanglexpos,Rectangleypos,Regvalue_XPOS,Regvalue_YPOS,CxVar,colorregister 
         
 
-        add Rectanglexpos,48d
-        add Regvalue_XPOS,6d
+        add Rectanglexpos,40d
+        add Regvalue_XPOS,5d
         
         ;SP
         writeRegisterNameRight 'S','P',NameColor
@@ -224,16 +263,16 @@ local Rectangel8
         writeRegisterNameLeft 'D','x',NameColor
         Rectangel Rectanglexpos,Rectangleypos,Regvalue_XPOS,Regvalue_YPOS,DxVar,colorregister 
         
-        add Rectanglexpos,48d
-        add Regvalue_XPOS,6d
+        add Rectanglexpos,40d
+        add Regvalue_XPOS,5d
         
         ;BP
         writeRegisterNameRight 'B','P',NameColor
         Rectangel Rectanglexpos,Rectangleypos,Regvalue_XPOS,Regvalue_YPOS,BpVar,colorregister 
         
 
-        add Rectanglexpos,48d
-        add Regvalue_XPOS,6d
+        add Rectanglexpos,40d
+        add Regvalue_XPOS,5d
 ENDM DrawOneRegister
 
 ;This macro is responsible for drawing the 8 registers of each player
@@ -243,6 +282,235 @@ DrawRegisters macro
     DrawOneRegister 182d,22d,23d,3,0ah,AxVar2,BxVar2,CxVar2,DxVar2,SiVar2,DiVar2,SpVar2,BpVar2,03h
 
 endm DrawRegisters
+
+
+DrawMemory macro x,y,val
+local NotNumber,next
+    ConvertTo2Digit val
+
+    mov ah,2
+    mov dh,y
+    mov dl,x
+    int 10h
+    
+    displayletter dx,d1,0fh
+    mov dh,y
+    mov dl,x
+    inc dl 
+    displayletter dx,d0,0fh
+    mov dh,y
+    mov dl,x
+    inc dl 
+    inc dl
+    inc dl
+    mov ah,MemNumber
+    mov MemTemp,ah
+    cmp MemTemp,10d 
+    jnc NotNumber
+        add MemTemp,30h  ;if it is just a digit
+        jmp next
+    NotNumber:
+        add MemTemp,55d  ;if it is just a char (a,b,c,d,e,f)
+    next:
+
+    displayletter dx,MemTemp,0fh
+
+endm DrawMemory
+
+
+MemoryForPlayer1 macro Px
+
+    mov MemNumber,1
+    mov MemXpos,Px
+        ;-------Memory Loc 1-----
+        DrawMemory MemXpos,MemYpos,m1_1
+        inc MemYpos
+        mov MemXpos,Px
+        inc dh
+        inc MemNumber
+        ;-------Memory Loc 2-----
+        DrawMemory MemXpos,MemYpos,m2_1
+        inc MemYpos
+        mov MemXpos,Px
+        inc dh
+        inc MemNumber
+        ;-------Memory Loc 3-----
+        DrawMemory MemXpos,MemYpos,m3_1
+        inc MemYpos
+        mov MemXpos,Px
+        inc dh
+        inc MemNumber
+        ;-------Memory Loc 4-----
+        DrawMemory MemXpos,MemYpos,m4_1
+        inc MemYpos
+        mov MemXpos,Px
+        inc dh
+        inc MemNumber
+        ;-------Memory Loc 5-----
+        DrawMemory MemXpos,MemYpos,m5_1
+        inc MemYpos
+        mov MemXpos,Px
+        inc dh
+        inc MemNumber
+        ;-------Memory Loc 6-----
+        DrawMemory MemXpos,MemYpos,m6_1
+        inc MemYpos
+        mov MemXpos,Px
+        inc dh
+        inc MemNumber
+        ;-------Memory Loc 7-----
+        DrawMemory MemXpos,MemYpos,m7_1
+        inc MemYpos
+        mov MemXpos,Px
+        inc dh
+        inc MemNumber
+        ;-------Memory Loc 8-----
+        DrawMemory MemXpos,MemYpos,m8_1
+        inc MemYpos
+        mov MemXpos,Px
+        inc dh
+        inc MemNumber
+        ;-------Memory Loc 9-----
+        DrawMemory MemXpos,MemYpos,m9_1
+        inc MemYpos
+        mov MemXpos,Px
+        inc dh
+        inc MemNumber
+        ;-------Memory Loc A-----
+        DrawMemory MemXpos,MemYpos,mA_1
+        inc MemYpos
+        mov MemXpos,Px
+        inc dh
+        inc MemNumber
+        ;-------Memory Loc B-----
+        DrawMemory MemXpos,MemYpos,mB_1
+        inc MemYpos
+        mov MemXpos,Px
+        inc dh
+        inc MemNumber
+        ;-------Memory Loc C-----
+        DrawMemory MemXpos,MemYpos,mC_1
+        inc MemYpos
+        mov MemXpos,Px
+        inc dh
+        inc MemNumber
+        ;-------Memory Loc D-----
+        DrawMemory MemXpos,MemYpos,mD_1
+        inc MemYpos
+        mov MemXpos,Px
+        inc dh
+        inc MemNumber
+        ;-------Memory Loc E-----
+        DrawMemory MemXpos,MemYpos,mE_1
+        inc MemYpos
+        mov MemXpos,Px
+        inc dh
+        inc MemNumber
+        ;-------Memory Loc F-----
+        DrawMemory MemXpos,MemYpos,mF_1
+        inc MemYpos
+        mov MemXpos,Px
+        inc dh
+        inc MemNumber
+    mov MemYpos,1
+endm MemoryForPlayer1
+
+MemoryForPlayer2 macro Px
+
+    mov MemNumber,1
+    mov MemXpos,Px
+        ;-------Memory Loc 1-----
+        DrawMemory MemXpos,MemYpos,m1_2
+        inc MemYpos
+        mov MemXpos,Px
+        inc dh
+        inc MemNumber
+        ;-------Memory Loc 2-----
+        DrawMemory MemXpos,MemYpos,m2_2
+        inc MemYpos
+        mov MemXpos,Px
+        inc dh
+        inc MemNumber
+        ;-------Memory Loc 3-----
+        DrawMemory MemXpos,MemYpos,m3_2
+        inc MemYpos
+        mov MemXpos,Px
+        inc dh
+        inc MemNumber
+        ;-------Memory Loc 4-----
+        DrawMemory MemXpos,MemYpos,m4_2
+        inc MemYpos
+        mov MemXpos,Px
+        inc dh
+        inc MemNumber
+        ;-------Memory Loc 5-----
+        DrawMemory MemXpos,MemYpos,m5_2
+        inc MemYpos
+        mov MemXpos,Px
+        inc dh
+        inc MemNumber
+        ;-------Memory Loc 6-----
+        DrawMemory MemXpos,MemYpos,m6_2
+        inc MemYpos
+        mov MemXpos,Px
+        inc dh
+        inc MemNumber
+        ;-------Memory Loc 7-----
+        DrawMemory MemXpos,MemYpos,m7_2
+        inc MemYpos
+        mov MemXpos,Px
+        inc dh
+        inc MemNumber
+        ;-------Memory Loc 8-----
+        DrawMemory MemXpos,MemYpos,m8_2
+        inc MemYpos
+        mov MemXpos,Px
+        inc dh
+        inc MemNumber
+        ;-------Memory Loc 9-----
+        DrawMemory MemXpos,MemYpos,m9_2
+        inc MemYpos
+        mov MemXpos,Px
+        inc dh
+        inc MemNumber
+        ;-------Memory Loc A-----
+        DrawMemory MemXpos,MemYpos,mA_2
+        inc MemYpos
+        mov MemXpos,Px
+        inc dh
+        inc MemNumber
+        ;-------Memory Loc B-----
+        DrawMemory MemXpos,MemYpos,mB_2
+        inc MemYpos
+        mov MemXpos,Px
+        inc dh
+        inc MemNumber
+        ;-------Memory Loc C-----
+        DrawMemory MemXpos,MemYpos,mC_2
+        inc MemYpos
+        mov MemXpos,Px
+        inc dh
+        inc MemNumber
+        ;-------Memory Loc D-----
+        DrawMemory MemXpos,MemYpos,mD_2
+        inc MemYpos
+        mov MemXpos,Px
+        inc dh
+        inc MemNumber
+        ;-------Memory Loc E-----
+        DrawMemory MemXpos,MemYpos,mE_2
+        inc MemYpos
+        mov MemXpos,Px
+        inc dh
+        inc MemNumber
+        ;-------Memory Loc F-----
+        DrawMemory MemXpos,MemYpos,mF_2
+        inc MemYpos
+        mov MemXpos,Px
+        inc dh
+        inc MemNumber
+    mov MemYpos,1
+endm MemoryForPlayer2
   
 
 
