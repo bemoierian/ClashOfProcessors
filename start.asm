@@ -186,7 +186,9 @@ startScreen PROC FAR
     MOV AH,0
     INT 16h  
     CMP AL,0DH   ;check on the pressed key
-    JNZ WAITENTER 
+    JNZ WAITENTER
+    MOV AH,1
+    INT 16h 
     ret
 startScreen  ENDP
 END

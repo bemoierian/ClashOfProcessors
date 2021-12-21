@@ -1,3 +1,48 @@
+;-------------------------------------Main Screen--------------------------------------
+display_string_main MACRO mes,x,y
+    MOV  DL, x  ;COLUMN
+    MOV  DH, y   ;ROW
+    MOV  BH, 0    ;DISPLAY PAGE
+    MOV  AH, 02H  ;SETCURSORPOSITION
+    INT  10H
+    MOV AH, 9
+    MOV DX, OFFSET mes
+    INT 21H
+ENDM display_string_main 
+
+draw_mainscreen MACRO str1, str2, str3
+    LOCAL BACK,INC_LOOP,EXIT
+    ;display the 3 sentences
+    display_string_main str1,5h,5h    
+    display_string_main str2,5h,7h    
+    display_string_main str3,5h,9h    
+    
+;     ;display dashed line (chat section)
+;     mov cx,0 ;Column
+;     MOV dx,175D ;Row 
+    
+;     BACK:
+;         MOV al,0fh ;Pixel color
+;         MOV ah,0ch ;Draw Pixel Command
+;         int 10h 
+;         MOV BL,2H
+;         MOV AX,CX
+;         DIV BL
+;         CMP AH,1H
+;         JZ INC_LOOP   
+;         inc cx
+;         cmp cx,319Dh
+;         jAE EXIT
+
+;     INC_LOOP:
+;         INC CX
+;         JMP BACK
+; EXIT:  
+
+ENDM draw_mainscreen 
+;--------------------------------------------------------------------------------------
+
+
 Rectangel MACRO x,y,x_Regvalue,y_Regvalue,value,Regcolor   
     
     local outer,inner

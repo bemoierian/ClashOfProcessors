@@ -13,6 +13,10 @@ include gun_obj.inc
 .MODEL SMALL
 .STACK 64
 .DATA
+;-------------------------Main Screen-----------------------------------
+main_str1 DB 'To start chatting press F1','$'
+main_str2 DB 'To start the game press F2','$'
+main_str3 DB 'To end the program press ESC','$'
 ;----------------------------MEMORY-------------------------------------
 ;------------------Variables for registers drawing----------------------
 MemXpos db 15
@@ -94,7 +98,13 @@ gunPrevY dw 50
 gunNewX dw 50
 gunNewY dw 50
 ;----------------------------------------------------------------------
-commandStr db "mov ax,bx"
+;-------------------------Command String-------------------------------
+commandStr LABEL BYTE
+cmdMaxSize db 15 ;maximum size of command
+cmdCurrSize db 0 ; current size of command
+commandS db 22 dup('$') ;22 3shan bytb3 3lehom m3rfsh leh :)
+cursor dw ?          ;holds the address of the upcomming letter
+
 commandCode LABEL BYTE
 isExternal db 0
 Instruction dw 0000
@@ -104,27 +114,62 @@ Source dw 0000
 MAIN PROC FAR
     MOV AX, @DATA
     MOV DS, AX
-
     UserNames:
-            call startScreen  ;start.asm 
+        ; call startScreen  ;start.asm 
     EndUserNames:
-    
+    ;Clear Screen
+    mov ax,0600h
+    mov bh,07
+    mov cx,0
+    mov dx,184FH
+    int 10h
     MainScreen:
+        ; draw_mainscreen main_str1, main_str2, main_str3 ;UI.inc
+        ; MainInput:
+        ;     mov ah,1
+        ;     int 16h
+        ;     jz MainInput
+        ;     mov ah, 0
+        ;     int 16h
+        ;     keyF1:
+        ;         cmp ah, 3Bh ;compare key code with f1 code
+        ;         jnz keyF2    ;if the key is not F1, jump to next check
+        ;         ; jmp chat
+        ;     keyF2:
+        ;         cmp ah, 3Ch ;compare key code with f1 code
+        ;         jnz keyESC    ;if the key is not F1, jump to next check
+        ;         jmp EndMainScreen
+        ;     keyESC:
+        ;         cmp ah, 1h ;compare key code with f1 code
+        ;         jnz MainInput    ;if the key is not F1, jump to next check
+        ;         jmp EndGame
+        ;     EndMainInput:
 
     EndMainScreen:
     mov ah,0   ;enter graphics mode
     mov al,13h
     int 10h
     ;Main Game Loop
+    Background                          ;background color
+    horizontalline 170,0,320            ;horizontal line
+    drawrectangle  120,0,0dh,10,120
+    verticalline 0,160,170              ;vertical line
+    horizontalline 145,162,319          ;horizontal line
+    drawrectangle  120,161,0Eh,10,120
+    mov di, offset commandS
+    mov cursor, di
     Game:
         ;UI.inc 
-        Background                          ;background color
-        horizontalline 170,0,320            ;horizontal line
-        drawrectangle  120,0,0dh,10,120
-        verticalline 0,160,170              ;vertical line
-        horizontalline 145,162,319          ;horizontal line
-        drawrectangle  120,161,0Eh,10,120
-
+       ;----------------------Test Command input----------------
+        MOV  DL, 0        ;column
+        MOV  DH, 15      ;row
+        MOV  BH, 0        ;page
+        MOV  AH, 02H      ;set cursor 
+        INT  10H
+        mov ah, 9h
+        mov dx, offset commandS
+        int 21h        
+        ;--------------------------------------------------------
         DrawGun       ;gun_obj.inc
         DrawRegisters ;UI.inc 
         MemoryForPlayer1 16 ;UI.inc 
@@ -132,7 +177,7 @@ MAIN PROC FAR
 
         
        
-        ;draw squares UI.inc 
+        ;draw score squares UI.inc 
         displayletter 63497d,'1',0ah
         setcursor 0000
 
@@ -157,7 +202,7 @@ MAIN PROC FAR
         ;Read Keyboard input
         mov ah, 1
         int 16h
-        jz EndGun   ;if no key is pressed, go to other functions like flying objects, etc. -----------to be changed--------------
+        jz Game   ;if no key is pressed, go to other functions like flying objects, etc. -----------to be changed--------------
         mov ah, 0
         int 16h
         ;AL contains ascii of key pressed
@@ -170,30 +215,93 @@ MAIN PROC FAR
                 cmp ah, 4Dh ;compare key code with right key code
                 jnz left    ;if the key is not right, jump to next check
                 add gunNewX, 3  ;if the key is right, move the gun 3 pixels to the right
-                jmp EndGun
+                jmp Game
             ;left arrow    
             left:
                 cmp ah, 4Bh
                 jnz up
                 sub gunNewX, 3
-                jmp EndGun
+                jmp Game
             ;up arrow
             up:
                 cmp ah, 48h
                 jnz down
                 sub gunNewY, 3
-                jmp EndGun
+                jmp Game
             ;down arrow
             down:
                 cmp ah, 50h
-                jnz EndGun
+                jnz commandIn
                 add gunNewY, 3
-        EndGun:     
+            ; space:
+            ;     cmp ah, 39h
+            ;     jnz EndGun
+            ;     ; 
+            
+        EndGun:
+        commandIn:
+           backSpace:
+                cmp ah, 0Eh
+                jnz InsertChar
+                cmp cmdCurrSize, 0 ;if the string is empty, do nothing and continue the main loop
+                jz Game
+                mov di, cursor ;get cursor
+                dec di
+                mov [di], '$$' ;to delete a character, put $. we add 2 $ because it's a word
+                dec cmdCurrSize ;decrement cursor
+                mov cursor, di
+                horizontalline 170,0,320            ;horizontal line
+                drawrectangle  120,0,0dh,10,120     ;draw the background of the command after deleting to override the old command
+                jmp Game
+            InsertChar:
+                ;Validation
+                ; ; there is no supported characters under 30h
+                ; ; range of number 30h->39h
+                ; cmp al, 30h
+                ; jl Game
+                ; cmp al, 39h
+                ; jg isChar
+                ; jmp concat
+                ; ;range of small letters 61h->7Ah
+                ; isChar:
+                ;     cmp al, 61h
+                ;     jl isObracket
+                ;     cmp al, 7Ah
+                ;     jg Game
+                ;     jmp concat
+                ; ;next 2 for addressing modes
+                ; isObracket:
+                ;     cmp al, 5Bh
+                ;     jnz isCbracket
+                ;     jmp concat
+                ; isCbracket:
+                ;     cmp al, 5Dh
+                ;     jnz isComma
+                ;     jmp concat
+                ; isComma:
+                ;     cmp al, 2Ch
+                ;     jnz Game
+                ;     jmp concat
+                ; ; concatinate the character after validation
+                concat:
+                    mov dl, cmdCurrSize
+                    cmp dl, cmdMaxSize
+                    jz endInsertChar
+                    mov di, cursor 
+                    mov [di], al
+                    inc cmdCurrSize
+                    inc di
+                    mov cursor, di
+            endInsertChar:
+        endcommandIn:
+
+
 
         ;Exit game if key if F3
         cmp al, 13h
         jz MainScreen
         jmp Game
+EndGame:
 HLT
 MAIN ENDP
 
