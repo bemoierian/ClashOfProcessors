@@ -31,7 +31,7 @@ draw_mainscreen MACRO str1, str2, str3
 ;         CMP AH,1H
 ;         JZ INC_LOOP   
 ;         inc cx
-;         cmp cx,319Dh
+;         cmp cx,13Fh ;319d
 ;         jAE EXIT
 
 ;     INC_LOOP:
