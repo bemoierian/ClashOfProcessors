@@ -144,10 +144,7 @@ MAIN PROC FAR
     mov al,13h
     int 10h
 
-    ;display name
-    ; push dx
-    ; DisplayName
-    ; pop dx
+    
 
     ;Main Game Loop
     Background                          ;background color
@@ -157,8 +154,14 @@ MAIN PROC FAR
     horizontalline 145,162,319          ;horizontal line
     drawrectangle  120,161,0Eh,10,120
 
+    ;display name
+    push dx
+    DisplayName
+    pop dx
+
     mov di, offset commandS
     mov cursor, di
+    
     Game:
         ;UI.inc 
         ;----------------------Test Command input----------------
@@ -173,13 +176,11 @@ MAIN PROC FAR
         ;--------------------------------------------------------
         DrawGun       ;gun_obj.inc
         call RegMemo
-
         
-       
+        
         ;draw score squares UI.inc 
         displayletter 63497d,'1',0ah
         setcursor 0000
-
         displayletter 63500d,'2',09h
         setcursor 0000
         
@@ -239,7 +240,7 @@ MAIN PROC FAR
             
         EndGun:
         commandIn:
-           backSpace:
+            backSpace:
                 cmp ah, 0Eh
                 jnz InsertChar
                 cmp cmdCurrSize, 0 ;if the string is empty, do nothing and continue the main loop

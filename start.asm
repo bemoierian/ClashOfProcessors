@@ -60,24 +60,30 @@ startScreen PROC FAR
 
     cmp cx,15
     jnz here
-         
+        
     CMP BL, 61H   ;check on a
     JGE DALPHABET_SMALL 
-         
+        
     CMP BL, 41H   ;check on A
     JGE DALPHABET 
-         
+        
     CMP BL, 30H  ;COMPARE WITH 0
     JGE DDIGIT 
-         
+        
     CMP BL, 30H 
     JL DSPECIAL
     
-    here:dec cx   
+
+    ; mov [di],al
+    ; inc di
+
+    here:
+    STOSB ;TO PUT THE RIGHT CHAR WHICH IS IN AL IN THE STRIG POINTED BY DI
+    dec cx   
     jnz loopname
     
     jmp POINTS ;JUMP TO EXIT AFTER THIS LOOP
-      
+    
     DSPECIAL: 
     mov dl,07h
     mov ah,2
@@ -106,7 +112,7 @@ startScreen PROC FAR
     DALPHABET_SMALL: ;small letters
     CMP BL, 7AH 
     JG DSPECIAL 
-    STOSB ;TO PUT THE RIGHT CHAR WHICH IS IN AL IN THE STRIG POINTED BY DI
+    ;STOSB ;TO PUT THE RIGHT CHAR WHICH IS IN AL IN THE STRIG POINTED BY DI
     JMP here 
     
     POINTS:
