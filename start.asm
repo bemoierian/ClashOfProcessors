@@ -15,6 +15,7 @@ initPoints db 10,13,'Initial Points:',10,13,'$'
 BUFFPOINT LABEL BYTE
 BufferSize db 3
 ActualSize db ?
+
 BufferData db 3 dup('$') 
 
 PRESSENTER DB 10,13,'Press Enter Key To Continue',10,13,'$'

@@ -1,13 +1,19 @@
-
 EXTRN execute:far 
 PUBLIC commandStr,commandCode,isExternal,Instruction,Destination,Source
 
 EXTRN startScreen:far 
-EXTRN BUFFNAME:BYTE
-EXTRN BufferData:BYTE
+EXTRN BUFFNAME:BYTE, BufferData:BYTE
+
+EXTRN RegMemo:far
+PUBLIC m0_1,m1_1,m2_1,m3_1,m4_1,m5_1,m6_1 ,m7_1,m8_1,m9_1,mA_1,mB_1 ,mC_1,mD_1,mE_1,mF_1 
+PUBLIC m0_2,m1_2,m2_2,m3_2,m4_2,m5_2,m6_2 ,m7_2,m8_2,m9_2,mA_2,mB_2 ,mC_2,mD_2,mE_2,mF_2 
+PUBLIC AxVar1,BxVar1,CxVar1,DxVar1,SiVar1,DiVar1,SpVar1 ,BpVar1
+PUBLIC AxVar2,BxVar2,CxVar2,DxVar2,SiVar2,DiVar2,SpVar2 ,BpVar2 
 
 include UI.inc
 include gun_obj.inc
+
+
 
 .286
 .MODEL SMALL
@@ -18,14 +24,9 @@ main_str1 DB 'To start chatting press F1','$'
 main_str2 DB 'To start the game press F2','$'
 main_str3 DB 'To end the program press ESC','$'
 ;----------------------------MEMORY-------------------------------------
-;------------------Variables for registers drawing----------------------
-MemXpos db 15
-MemYpos db 1
-MemNumber db 1
-MemTemp db ?
-temp2 db ?
 ;These variables are not in an array just to simplifie to vision
 ;---------Memory for player 1
+m0_1 db 2fh
 m1_1 DB 24
 m2_1 DB 0
 m3_1 DB 0ah
@@ -42,6 +43,7 @@ mD_1 DB 0
 mE_1 DB 0
 mF_1 DB 0c1h
 ;---------Memory for player 2
+m0_2 db 2dh
 m1_2 DB 01bh
 m2_2 DB 0
 m3_2 DB 0
@@ -57,12 +59,7 @@ mC_2 DB 0
 mD_2 DB 0
 mE_2 DB 0
 mF_2 DB 0
-;------------------Variables for registers drawing----------------------
-Rectanglexpos dw 10
-Rectangleypos dw 10
-Regvalue_YPOS db 2
-Regvalue_XPOS db 3
-counterDrawRegisters db 4
+
 
 ;---------Variables for player 1
 AxVar1 dw 0h
@@ -86,12 +83,7 @@ DiVar2 dw 9Fh
 SpVar2 dw 0h 
 BpVar2 dw 0h
 
-temp dw ?
 
-d0 db '0'
-d1 db '0'
-d2 db '0'
-d3 db '0'
 ;------------------Previous and New position of Gun---------------------
 gunPrevX dw 50
 gunPrevY dw 50
@@ -110,12 +102,14 @@ isExternal db 0
 Instruction dw 0000
 Destination dw 0000
 Source dw 0000
+
+
 .CODE
 MAIN PROC FAR
     MOV AX, @DATA
     MOV DS, AX
     UserNames:
-        ; call startScreen  ;start.asm 
+        call startScreen  ;start.asm 
     EndUserNames:
     ;Clear Screen
     mov ax,0600h
@@ -149,6 +143,12 @@ MAIN PROC FAR
     mov ah,0   ;enter graphics mode
     mov al,13h
     int 10h
+
+    ;display name
+    ; push dx
+    ; DisplayName
+    ; pop dx
+
     ;Main Game Loop
     Background                          ;background color
     horizontalline 170,0,320            ;horizontal line
@@ -156,11 +156,12 @@ MAIN PROC FAR
     verticalline 0,160,170              ;vertical line
     horizontalline 145,162,319          ;horizontal line
     drawrectangle  120,161,0Eh,10,120
+
     mov di, offset commandS
     mov cursor, di
     Game:
         ;UI.inc 
-       ;----------------------Test Command input----------------
+        ;----------------------Test Command input----------------
         MOV  DL, 0        ;column
         MOV  DH, 15      ;row
         MOV  BH, 0        ;page
@@ -171,9 +172,7 @@ MAIN PROC FAR
         int 21h        
         ;--------------------------------------------------------
         DrawGun       ;gun_obj.inc
-        DrawRegisters ;UI.inc 
-        MemoryForPlayer1 16 ;UI.inc 
-        MemoryForPlayer2 36 ;UI.inc 
+        call RegMemo
 
         
        
