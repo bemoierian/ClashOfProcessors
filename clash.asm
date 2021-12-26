@@ -150,9 +150,11 @@ MAIN PROC FAR
     Background                          ;background color
     horizontalline 170,0,320            ;horizontal line
     drawrectangle  120,0,0dh,10,120
+    drawrectangle   5,2,0ah,5,5 ;draw shape
     verticalline 0,160,170              ;vertical line
     horizontalline 145,162,319          ;horizontal line
     drawrectangle  120,161,0Eh,10,120
+    drawrectangle   5,162,0ah,5,5 ;draw shape
 
     ;display name
     push dx
@@ -179,25 +181,17 @@ MAIN PROC FAR
         
         
         ;draw score squares UI.inc 
-        displayletter 63497d,'1',0ah
-        setcursor 0000
-        displayletter 63500d,'2',09h
-        setcursor 0000
-        
-        displayletter 63503d,'3',0ch
-        setcursor 0000
-
-        displayletter 63506d,'4',0dh
-        setcursor 0000
-        
-        displayletter 63509d,'5',0eh
-        setcursor 0000
-
-        drawrectangle  140,7,0ah,10,10
-        drawrectangle  140,30,9h,10,10
-        drawrectangle  140,53,0ch,10,10
-        drawrectangle  140,77,0dh,10,10
-        drawrectangle  140,101,0Eh,10,10
+         setcursor 0000
+        drawrectanglewithletter  140,7,0ah,10,10,63497d,'1',0ah
+    setcursor 0000
+   drawrectanglewithletter  140,30,9h,10,10,63500d,'2',09h
+   setcursor 0000
+   drawrectanglewithletter  140,53,0ch,10,10,63503d,'3',0ch
+    setcursor 0000
+   drawrectanglewithletter  140,77,0dh,10,10,63506d,'4',0dh
+    setcursor 0000
+   drawrectanglewithletter  140,101,0Eh,10,10, 63509d,'5',0eh
+    setcursor 0000
 
         ;Read Keyboard input
         mov ah, 1

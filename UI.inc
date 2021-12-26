@@ -120,6 +120,19 @@ drawrectangle  macro   x,y,color,horizontallen,verticallen
 
 endm drawrectangle
 
+drawrectanglewithletter  macro   x,y,color,horizontallen,verticallen,p,l,c
+  
+drawrectangle x,y,color,horizontallen,verticallen
+
+
+displayletter p,l,c
+
+
+endm drawrectanglewithletter
+
+
+
+
 setcursor macro p
     mov ah,2
     mov dx,p ;move cursorposition to dx
