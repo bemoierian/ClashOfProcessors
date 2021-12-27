@@ -240,20 +240,19 @@ execute PROC far
     IsDec:
     GenerateInstructionCode 'd','e','c',decCode
 
-     
-     ;IsMul:
-   ; GenerateInstructionCode 'm','u','l',mulCode
+
+    ;IsMul:
+    ; GenerateInstructionCode 'm','u','l',mulCode
 
     ;IsDiv:
     ;GenerateInstructionCode 'd','i','v',divCode
 
-      
     Dest: ;is destination
     IsAxd:
         GenerateDestCode 'a','x', AxCode
 
-     IsBxd:
-         GenerateDestCode 'b','x', BxCode
+    IsBxd:
+        GenerateDestCode 'b','x', BxCode
 
     IsCxd:
         GenerateDestCode 'c','x', CxCode
@@ -262,32 +261,32 @@ execute PROC far
         GenerateDestCode 'd','x', DxCode
 
 
-     IsAld:
+    IsAld:
         GenerateDestCode 'a','l', alCode
     
-     IsAhd:
+    IsAhd:
         GenerateDestCode 'a','h', ahCode
 
 
     IsBld:
         GenerateDestCode 'b','l', blCode
     
-     IsBhd:
+    IsBhd:
         GenerateDestCode 'b','h', bhCode
 
     
     IsCld:
         GenerateDestCode 'c','l', clCode
     
-     IsChd:
+    IsChd:
         GenerateDestCode 'c','h', chCode
-      
 
 
-      IsDld:
+
+    IsDld:
         GenerateDestCode 'd','l', dlCode
     
-     IsDhd:
+    IsDhd:
         GenerateDestCode 'd','h', dhCode
 
 
@@ -297,8 +296,8 @@ execute PROC far
     IsAxs:
         GenerateSrcCode 'a','x', AxCode
 
-     IsBxs:
-         GenerateSrcCode 'b','x', BxCode
+    IsBxs:
+        GenerateSrcCode 'b','x', BxCode
 
     IsCxs:
         GenerateSrcCode 'c','x', CxCode
@@ -307,32 +306,32 @@ execute PROC far
         GenerateSrcCode 'd','x', DxCode
 
 
-     IsAls:
+    IsAls:
         GenerateSrcCode 'a','l', alCode
     
-     IsAhs:
+    IsAhs:
         GenerateSrcCode 'a','h', ahCode
 
 
     IsBls:
         GenerateSrcCode 'b','l', blCode
     
-     IsBhs:
+    IsBhs:
         GenerateSrcCode 'b','h', bhCode
 
     
     IsCls:
         GenerateSrcCode 'c','l', clCode
     
-     IsChs:
+    IsChs:
         GenerateSrcCode 'c','h', chCode
-      
 
 
-      IsDls:
+
+    IsDls:
         GenerateSrcCode 'd','l', dlCode
     
-     IsDhs:
+    IsDhs:
         GenerateSrcCode 'd','h', dhCode
 
 
