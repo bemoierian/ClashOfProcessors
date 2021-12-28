@@ -38,4 +38,3 @@ DrawGun MACRO
     ; popa    ;restore the registers
     ;ret
 ENDM DrawGun     
-
