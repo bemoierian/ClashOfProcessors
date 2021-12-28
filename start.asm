@@ -3,18 +3,15 @@ PUBLIC BUFFNAME,BufferData
 
 .MODEL SMALL
 .DATA
-
-BUFFNAME DB 15 DUP('$')
+BUFFNAME DB 16 DUP('$')
 
 ASK_NAME DB 'Please Enter Your Name: ',10,13,'$' 
 
-backSpace db 8,32,8,'$'  
+backSpace db 8,32,8,'$' 
+halfBackSpace db 32,8,'$' 
 
-initPoints db 10,13,'Initial Points:',10,13,'$'
+AskPoints db 10,13,'Please Enter Initial Points of 2 digits:',10,13,'$'
 ;TO READ THE POINTS
-BUFFPOINT LABEL BYTE
-BufferSize db 3
-ActualSize db ?
 
 BufferData db 3 dup('$') 
 
@@ -24,14 +21,14 @@ startScreen PROC FAR
     MOV AX, @DATA
     MOV DS, AX
     mov ES,ax
-    
-    ;Clear screen
+   
+   ;Clear screen
     mov ax,0600h
     mov bh,07
     mov cx,0
     mov dx,184FH
     int 10h
-    ;set the cursor at the top of the screen
+
     mov bh,0h 
     mov ah,2
     mov dh,0
@@ -52,43 +49,43 @@ startScreen PROC FAR
     loopname:  
     mov ah,1 ;read one char from the user and put it in al
     int 21h
-
-    MOV BL, AL 
+ 
+    MOV BL, AL ;bl = ascii code
     
-    cmp bl,13
+    cmp bl,13 ;compare with enter if enter pressed jump to points
     jz points
-
-    cmp cx,15
-    jnz here
-        
+         
     CMP BL, 61H   ;check on a
     JGE DALPHABET_SMALL 
-        
+         
     CMP BL, 41H   ;check on A
     JGE DALPHABET 
-        
+         
     CMP BL, 30H  ;COMPARE WITH 0
     JGE DDIGIT 
-        
-    CMP BL, 30H 
+         
+    CMP BL, 30H ;if it's less than zero jump to special char
     JL DSPECIAL
     
-
-    ; mov [di],al
-    ; inc di
-
-    here:
-    STOSB ;TO PUT THE RIGHT CHAR WHICH IS IN AL IN THE STRIG POINTED BY DI
-    dec cx   
+    here:dec cx  
     jnz loopname
+   
+    jmp POINTS ;JUMP TO points AFTER THIS LOOP 
     
-    jmp POINTS ;JUMP TO EXIT AFTER THIS LOOP
+    BKspace:
+    mov dx,offset halfbackSpace
+    mov ah,9
+    int 21h   
+    inc cx   
+    jmp loopname
     
     DSPECIAL: 
+    cmp bl,8 ;if the pressed key is a backspace return to the loop 
+    jz BKspace
     mov dl,07h
     mov ah,2
     int 21h
-    lea dx,backSpace
+    mov dx,offset backSpace
     mov ah,9
     int 21h
     jmp LOOPNAME
@@ -99,7 +96,7 @@ startScreen PROC FAR
     mov dl,07h     ;bell    
     mov ah,2
     int 21h
-    lea dx,backSpace;backspace
+    mov dx,offset backSpace;backspace
     mov ah,9
     int 21h
     JMP LOOPNAME  ;jump to loop whithout decreasing the counter
@@ -112,11 +109,16 @@ startScreen PROC FAR
     DALPHABET_SMALL: ;small letters
     CMP BL, 7AH 
     JG DSPECIAL 
-    ;STOSB ;TO PUT THE RIGHT CHAR WHICH IS IN AL IN THE STRIG POINTED BY DI
-    JMP here 
+    STOSB ;TO PUT THE RIGHT CHAR WHICH IS IN AL IN THE STRIG POINTED BY DI
+    JMP here                                        
     
-    POINTS:
-    LEA DX,initPoints ;ask for points
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    
+    POINTS:    
+    cmp cx,15   ;to force the user to enter his name
+    jz loopname
+    
+    mov dx,offset AskPoints ;ask for points
     MOV AH,9
     INT 21H
     
@@ -128,8 +130,12 @@ startScreen PROC FAR
         
     mov ah,1 ;read one char from the user and put it in al
     int 21h
-
-    MOV BL, AL
+    
+    MOV BL, AL    
+    
+    cmp bl,13 ;compare with enter if enter pressed jump to looppoints
+    jz loopPoints ;to force the user to enter 2 digits
+    
     CMP BL, 61H   ;check on a
     JGE DALPHABET_SMALL2 
          
@@ -147,7 +153,17 @@ startScreen PROC FAR
     
     JMP PROCEED
     
+    
+    BKspace2:
+    mov dx,offset halfbackSpace
+    mov ah,9
+    int 21h  
+    inc cx    
+    jmp loopPoints
+    
     DSPECIAL2: 
+    cmp bl,8 ;if the pressed key is a backspace return to the loop 
+    jz BKspace2
     mov dl,07h
     mov ah,2
     int 21h
@@ -184,7 +200,7 @@ startScreen PROC FAR
     int 21h
     JMP loopPoints 
     
-    PROCEED:;wait for enter
+PROCEED:;wait for enter
     lea dx,PRESSENTER
     mov ah,9
     int 21h

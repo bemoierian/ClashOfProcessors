@@ -1,63 +1,3 @@
-GenerateInstructionCode MACRO l1,l2,l3,code
-    LOCAL notValid
-    lea si, commandStr
-    cmp [si], l1
-    jnz notValid
-    inc si
-    cmp [si], l2
-    jnz notValid
-    inc si
-    cmp [si], l3
-    jnz notValid
-    inc si
-    cmp [si], ' '
-    jnz notValid
-    inc si 
-    mov Instruction, code
-    jmp dest
-    notValid:
-ENDM GenerateInstructionCode
-GenerateInstructionCode2 MACRO l1,l2,code
-    LOCAL notValid2
-    lea si, commandStr
-    cmp [si], l1
-    jnz notValid2
-    inc si
-    cmp [si], l2
-    jnz notValid2
-    inc si
-    cmp [si], ' '
-    jnz notValid2
-    inc si
-    mov Instruction, code
-    jmp dest
-    notValid2:
-ENDM GenerateInstructionCode2
-
-
-GenerateInstructionCode4 MACRO l1,l2,l3,l4,code
-    LOCAL notValid4
-    lea si, commandStr
-    cmp [si], l1
-    jnz notValid4
-    inc si
-    cmp [si], l2
-    jnz notValid4
-    inc si
-    cmp [si], l3
-    jnz notValid4
-    inc si
-    cmp [si], l4
-    jnz notValid4
-    inc si
-    cmp [si], ' '
-    jnz notValid4
-    inc si
-    mov Instruction, code
-    jmp dest
-    notValid4:
-ENDM GenerateInstructionCode4
-
 GenerateDestCode MACRO l1,l2,code
     LOCAL notValid
     cmp [si], l1
@@ -90,9 +30,12 @@ ENDM GenerateSrcCode
 EXTRN commandStr:BYTE
 EXTRN commandCode:BYTE
 EXTRN isExternal:BYTE
-EXTRN Instruction:WORD
-EXTRN Destination:WORD
-EXTRN Source:WORD
+EXTRN Instruction:BYTE
+EXTRN Destination:BYTE
+EXTRN Source:BYTE
+EXTRN External:WORD
+EXTRN commandS:BYTE
+
 PUBLIC execute
 .model small
 .data
@@ -175,71 +118,149 @@ dhCode equ 51h
 
 spCode equ 52h
 
+
+
+;---------------------------Memory Opcodes----------------------------
+
+MemoOpcode DB 70h,71h,72h,73h,74h,75h,76h,77h,78h,79h,7Ah,7Bh,7Ch,7Dh,7Eh,7Fh
+;-------------------------Variables to discover command string-------------
+L1 db ?
+L2 db ?
+L3 db ?
+L4 db ?
+CodeToCheck db ?
+
+InstrusctionValid db 0
+MemoLocation db ?
 .code
 execute PROC far
     mov ax, @data
     mov ds, ax
-    lea si, commandStr
-
+    ; lea si, commandStr
+    mov InstrusctionValid, 0
     IsMov:
-        GenerateInstructionCode 'm','o','v',movCode
+        mov L1, 'm'
+        mov L2, 'o'
+        mov L3, 'v'
+        mov CodeToCheck, movCode
+        CALL GenerateInstructionCode
+        cmp InstrusctionValid, 1
+        jz Dest
 
     IsAdd:
-        GenerateInstructionCode 'a','d','d',addCode
-
+        mov L1, 'a'
+        mov L2, 'd'
+        mov L3, 'd'
+        mov CodeToCheck, addCode
+        CALL GenerateInstructionCode
+        cmp InstrusctionValid, 1
+        jz Dest
     IsAdc:
-        GenerateInstructionCode 'a','d','c',adcCode
+        mov L1, 'a'
+        mov L2, 'd'
+        mov L3, 'c'
+        mov CodeToCheck, adcCode
+        CALL GenerateInstructionCode
+        cmp InstrusctionValid, 1
+        jz Dest
 
     IsSub:
-        GenerateInstructionCode 's','u','b',subCode
+        mov L1, 's'
+        mov L2, 'u'
+        mov L3, 'b'
+        mov CodeToCheck, subCode
+        CALL GenerateInstructionCode
+        cmp InstrusctionValid, 1
+        jz Dest
 
     IsSbb:
-        GenerateInstructionCode 's','b','b',sbbCode
+        mov L1, 's'
+        mov L2, 'b'
+        mov L3, 'b'
+        mov CodeToCheck, sbbCode
+        CALL GenerateInstructionCode
+        cmp InstrusctionValid, 1
+        jz Dest
 
     IsXor:
-        GenerateInstructionCode 'x','o','r',xorCode
-
+        mov L1, 'x'
+        mov L2, 'o'
+        mov L3, 'r'
+        mov CodeToCheck, xorCode
+        CALL GenerateInstructionCode
+        cmp InstrusctionValid, 1
+        jz Dest
     IsAnd:
-        GenerateInstructionCode 'a','n','d',andCode
-
+        mov L1, 'a'
+        mov L2, 'n'
+        mov L3, 'd'
+        mov CodeToCheck, andCode
+        CALL GenerateInstructionCode
+        cmp InstrusctionValid, 1
+        jz Dest
     IsOr: 
-        GenerateInstructionCode2 'o','r',orCode
-
+        mov L1, 'o'
+        mov L2, 'r'
+        mov CodeToCheck, orCode
+        CALL GenerateInstructionCode2
+        cmp InstrusctionValid, 1
+        jz Dest
     IsNop:
-        GenerateInstructionCode 'n','o','p',nopCode
-
+        mov L1, 'n'
+        mov L2, 'o'
+        mov L3, 'p'
+        mov CodeToCheck, nopCode
+        CALL GenerateInstructionCode
+        cmp InstrusctionValid, 1
+        jz Dest
     IsShr:
-        GenerateInstructionCode 's','h','r',shrCode
-
+        mov L1, 's'
+        mov L2, 'h'
+        mov L3, 'r'
+        mov CodeToCheck, shrCode
+        CALL GenerateInstructionCode
+        cmp InstrusctionValid, 1
+        jz Dest
     IsShl:
-        GenerateInstructionCode 's','h','l',shlCode
-
+        mov L1, 's'
+        mov L2, 'h'
+        mov L3, 'l'
+        mov CodeToCheck, shlCode
+        CALL GenerateInstructionCode
+        cmp InstrusctionValid, 1
+        jz Dest
     IsClc:
-        GenerateInstructionCode 'c','l','c',clcCode
+        mov L1, 'c'
+        mov L2, 'l'
+        mov L3, 'c'
+        mov CodeToCheck, clcCode
+        CALL GenerateInstructionCode
+        cmp InstrusctionValid, 1
+        jz Dest
 
-    IsRor:
-        GenerateInstructionCode 'r','o','r',rorCode
+    ; IsRor:
+    ; GenerateInstructionCode 'r','o','r',rorCode
 
-    IsRcl:
-        GenerateInstructionCode 'r','c','l',rclCode
+    ; IsRcl:
+    ; GenerateInstructionCode 'r','c','l',rclCode
 
-    IsRcr:
-        GenerateInstructionCode 'r','c','r',rcrCode
+    ; IsRcr:
+    ; GenerateInstructionCode 'r','c','r',rcrCode
 
-    IsRol:
-        GenerateInstructionCode 'r','o','l',rolCode
+    ; IsRol:
+    ; GenerateInstructionCode 'r','o','l',rolCode
 
-    IsPush:
-        GenerateInstructionCode4 'p','u','s','h',pushCode 
+    ; IsPush:
+    ; GenerateInstructionCode4 'p','u','s','h',pushCode 
 
-    IsPop:
-        GenerateInstructionCode 'p','o','p',popCode 
+    ;  IsPop:
+    ; GenerateInstructionCode 'p','o','p',popCode 
 
-    IsInc:
-        GenerateInstructionCode 'i','n','c',incCode
+    ; IsInc:
+    ; GenerateInstructionCode 'i','n','c',incCode
 
-    IsDec:
-        GenerateInstructionCode 'd','e','c',decCode
+    ; IsDec:
+    ; GenerateInstructionCode 'd','e','c',decCode
 
 
     ;IsMul:
@@ -249,139 +270,251 @@ execute PROC far
     ;GenerateInstructionCode 'd','i','v',divCode
 
     Dest: ;is destination
-    IsAxd:
-        GenerateDestCode 'a','x', AxCode
+    push si
+    CALL GenerateDestCodeiFNotreg
 
-    IsBxd:
-        GenerateDestCode 'b','x', BxCode
+    pop si
+    ; IsAxd:
+    ;     GenerateDestCode 'a','x', AxCode
 
-    IsCxd:
-        GenerateDestCode 'c','x', CxCode
+    ; IsBxd:
+    ;     GenerateDestCode 'b','x', BxCode
 
-    IsDxd:
-        GenerateDestCode 'd','x', DxCode
+    ; IsCxd:
+    ;     GenerateDestCode 'c','x', CxCode
+
+    ; IsDxd:
+    ;     GenerateDestCode 'd','x', DxCode
 
 
-    IsAld:
-        GenerateDestCode 'a','l', alCode
+    ; IsAld:
+    ;     GenerateDestCode 'a','l', alCode
     
-    IsAhd:
-        GenerateDestCode 'a','h', ahCode
+    ; IsAhd:
+    ;     GenerateDestCode 'a','h', ahCode
 
 
-    IsBld:
-        GenerateDestCode 'b','l', blCode
+    ; IsBld:
+    ;     GenerateDestCode 'b','l', blCode
     
-    IsBhd:
-        GenerateDestCode 'b','h', bhCode
-
-    
-    IsCld:
-        GenerateDestCode 'c','l', clCode
-    
-    IsChd:
-        GenerateDestCode 'c','h', chCode
-
-
-
-    IsDld:
-        GenerateDestCode 'd','l', dlCode
-    
-    IsDhd:
-        GenerateDestCode 'd','h', dhCode
-
-
-
-    Src:  ;is sorce
-    IsAxs:
-        GenerateSrcCode 'a','x', AxCode
-
-    IsBxs:
-        GenerateSrcCode 'b','x', BxCode
-
-    IsCxs:
-        GenerateSrcCode 'c','x', CxCode
-
-    IsDxs:
-        GenerateSrcCode 'd','x', DxCode
-
-
-    IsAls:
-        GenerateSrcCode 'a','l', alCode
-    
-    IsAhs:
-        GenerateSrcCode 'a','h', ahCode
-
-
-    IsBls:
-        GenerateSrcCode 'b','l', blCode
-    
-    IsBhs:
-        GenerateSrcCode 'b','h', bhCode
+    ; IsBhd:
+    ;     GenerateDestCode 'b','h', bhCode
 
     
-    IsCls:
-        GenerateSrcCode 'c','l', clCode
+    ; IsCld:
+    ;     GenerateDestCode 'c','l', clCode
     
-    IsChs:
-        GenerateSrcCode 'c','h', chCode
+    ; IsChd:
+    ;     GenerateDestCode 'c','h', chCode
 
-    IsDls:
-        GenerateSrcCode 'd','l', dlCode
+
+
+    ; IsDld:
+    ;     GenerateDestCode 'd','l', dlCode
     
-    IsDhs:
-        GenerateSrcCode 'd','h', dhCode
+    ; IsDhd:
+    ;     GenerateDestCode 'd','h', dhCode
 
 
 
+    ; Src:  ;is sorce
+
+    ; IsAxs:
+    ;     GenerateSrcCode 'a','x', AxCode
+
+    ; IsBxs:
+    ;     GenerateSrcCode 'b','x', BxCode
+
+    ; IsCxs:
+    ;     GenerateSrcCode 'c','x', CxCode
+
+    ; IsDxs:
+    ;     GenerateSrcCode 'd','x', DxCode
+
+
+    ; IsAls:
+    ;     GenerateSrcCode 'a','l', alCode
+    
+    ; IsAhs:
+    ;     GenerateSrcCode 'a','h', ahCode
+
+
+    ; IsBls:
+    ;     GenerateSrcCode 'b','l', blCode
+    
+    ; IsBhs:
+    ;     GenerateSrcCode 'b','h', bhCode
+
+    
+    ; IsCls:
+    ;     GenerateSrcCode 'c','l', clCode
+    
+    ; IsChs:
+    ;     GenerateSrcCode 'c','h', chCode
 
 
 
+    ; IsDls:
+    ;     GenerateSrcCode 'd','l', dlCode
+    
+    ; IsDhs:
+    ;     GenerateSrcCode 'd','h', dhCode
 
+    ; Exe:
+    ; lea si, commandCode
+    ; isExt:
 
-   
+    ; inc si
+    ; instruction_E:
+    ;     isMov_E:
+    ;         cmp [si], movCode
+    ;         jnz Exit_isMov_E
+    ;         add si, 2
+    ;         dest_Mov:
+    ;             isAx_Dest_Mov:
+    ;                 cmp [si], AxCode
+    ;                 jnz Exit_isAx_dest_Mov
+    ;                 add si, 2
+    ;                 jmp src_Mov
+    ;             Exit_isAx_dest_Mov:
+    ;         Exit_Dest_Mov:
 
-   
-
-
-
-
-
-
-
-
-
-
-
-    Exe:
-    lea si, commandCode
-    isExt:
-
-    inc si
-    instruction_E:
-        isMov_E:
-            cmp [si], movCode
-            jnz Exit_isMov_E
-            add si, 2
-            dest_Mov:
-                isAx_Dest_Mov:
-                    cmp [si], AxCode
-                    jnz Exit_isAx_dest_Mov
-                    add si, 2
-                    jmp src_Mov
-                Exit_isAx_dest_Mov:
-            Exit_Dest_Mov:
-
-            src_Mov:
-                isBx_src_Mov:
-                    cmp [si], BxCode
-                    jnz Exit_isBx_Src_Mov
-                    add si, 2
-                    mov ax, BxVar
-                    mov AxVar, ax
-                Exit_isBx_Src_Mov:
-            Exit_src_Mov:
-        Exit_isMov_E:
+    ;         src_Mov:
+    ;             isBx_src_Mov:
+    ;                 cmp [si], BxCode
+    ;                 jnz Exit_isBx_Src_Mov
+    ;                 add si, 2
+    ;                 mov ax, BxVar
+    ;                 mov AxVar, ax
+    ;             Exit_isBx_Src_Mov:
+    ;         Exit_src_Mov:
+    ;     Exit_isMov_E:
+    ; If instruction = mov
+    ;     if dest = Ax
+    ;         if src = bx
+    ;             mov ax, BxVar
+    ;             mov AxVar, ax
     ret
 execute ENDP
+
+GenerateInstructionCode PROC
+    lea si, commandS
+    MOV AL, L1
+    cmp [si], AL
+    jnz notValid
+    inc si
+
+    MOV AL, L2
+    cmp [si], AL
+    jnz notValid
+    inc si
+
+    MOV AL, L3
+    cmp [si], AL
+    jnz notValid
+    inc si
+
+    MOV InstrusctionValid, 1
+    MOV AL, CodeToCheck
+    mov Instruction, AL
+    notValid:
+    RET
+GenerateInstructionCode ENDP
+
+
+GenerateInstructionCode2 PROC
+    lea si, commandS
+    MOV AL, L1
+    cmp [si], AL
+    jnz notValid2
+    inc si
+
+    MOV AL, L2
+    cmp [si], AL
+    jnz notValid2
+    inc si
+
+    MOV AL, CodeToCheck
+    mov Instruction, AL
+    MOV InstrusctionValid, 1
+    notValid2:
+    RET
+GenerateInstructionCode2   ENDP
+
+
+GenerateInstructionCode4 PROC
+    lea si, commandS
+    MOV AL, L1
+    cmp [si], AL
+    jnz notValid4
+    inc si
+
+    MOV AL, L2
+    cmp [si], AL
+    jnz notValid4
+    inc si
+    
+    MOV AL, L3
+    cmp [si], AL
+    jnz notValid4
+    inc si
+
+    MOV AL, L4
+    cmp [si], AL
+    jnz notValid4
+    inc si
+
+    MOV AL, CodeToCheck
+    mov Instruction, AL
+    MOV InstrusctionValid, 1
+    notValid4:
+    RET
+GenerateInstructionCode4 ENDP
+
+GenerateDestCodeiFNotreg PROC
+    MOV AL, '['
+    cmp [si], AL
+    JNZ NOTMEMO
+    INC SI
+
+    MOV AL, 30H
+    cmp [si], AL
+    JL ERROR1
+    MOV AL, 39H
+    cmp [si], AL
+    jg NOTDIGIT
+
+
+    MOV AL, '0'
+    cmp [si], AL
+    JNZ TAKECURRNUM
+    takeNumTillClosed:
+        mov al, [si]
+        mov MemoLocation, al
+        INC SI
+        MOV AL, ']'
+        cmp [si], AL
+        JZ ISMEMO
+        INC SI
+        mov al, [si]
+        mov MemoLocation, al
+        jmp ISMEMO
+
+    TAKECURRNUM:
+    mov al, [si]
+    Mov MemoLocation, al
+    JMP ISMEMO
+
+    NOTDIGIT:
+    ERROR1:
+
+    ISMEMO:
+    
+    sub MemoLocation, 30h
+    mov al, MemoLocation
+    XLAT
+    mov Destination, 70h
+    NOTMEMO:
+    RET
+GenerateDestCodeiFNotreg ENDP
 end
