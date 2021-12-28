@@ -82,18 +82,17 @@ DhVar db 28h
 
 
 ;16 bit registers variables
-AxVar dw 29h
-BxVar dw 30h
-CxVar dw 31h
-DxVar dw 32h
+AxVar dw 0fh
+BxVar dw 1h
+CxVar dw 0ch
+DxVar dw 4h
 
 
 
-
-
-
-;stack variable
-spVar dw 33h
+SiVar dw 1h
+DiVar dw 1h
+SpVar dw 0ch
+BpVar dw 4h
 
 ;16 bit registers codes 
 AxCode equ 40h
@@ -114,16 +113,14 @@ chCode equ 49h
 dlCode equ 50h
 dhCode equ 51h
 
-; stack memory code
-
-spCode equ 52h
 
 
 
 ;---------------------------Memory Opcodes----------------------------
 
 MemoOpcode DB 70h,71h,72h,73h,74h,75h,76h,77h,78h,79h,7Ah,7Bh,7Ch,7Dh,7Eh,7Fh
-;-------------------------Variables to discover command string-------------
+
+;-------------------Variables to discover command string---------------
 L1 db ?
 L2 db ?
 L3 db ?
@@ -132,6 +129,10 @@ CodeToCheck db ?
 
 InstrusctionValid db 0
 MemoLocation db ?
+
+
+tempSI dw ?
+
 .code
 execute PROC far
     mov ax, @data
@@ -272,7 +273,6 @@ execute PROC far
     Dest: ;is destination
     push si
     CALL GenerateDestCodeiFNotreg
-
     pop si
     ; IsAxd:
     ;     GenerateDestCode 'a','x', AxCode
@@ -517,4 +517,392 @@ GenerateDestCodeiFNotreg PROC
     NOTMEMO:
     RET
 GenerateDestCodeiFNotreg ENDP
+
+GenerateDestCodeiFNotreg PROC
+    mov tempSI,si
+    
+    MOV AL, '['
+    cmp [si], AL
+    JNZ NOTMEMO
+    INC SI
+
+    MOV AL, 30H
+    cmp [si], AL
+    JL ERROR1
+    MOV AL, 39H
+    cmp [si], AL
+    jg NOTDIGIT
+
+
+    MOV AL, '0'
+    cmp [si], AL
+    JNZ TAKECURRNUM
+    takeNumTillClosed:
+        mov al, [si]
+        mov MemoLocation, al
+        INC SI
+        MOV AL, ']'
+        cmp [si], AL 
+        JZ ISMEMO
+        mov al, [si]
+        mov MemoLocation, al
+        jmp ISMEMO
+
+    TAKECURRNUM:
+    mov al, [si]
+    Mov MemoLocation, al
+    ;JMP ENDMEMO
+
+    
+
+    ISMEMO:
+    cmp MemoLocation,39h
+    jg charNum
+    sub MemoLocation, 30h
+    jmp ctn
+    
+    charNum:
+    sub MemoLocation, 57h
+    
+    ctn:
+    mov al, MemoLocation
+    
+    mov BX,offset MemoOpcode 
+    XLAT
+    mov Destination, al
+    cmp [si], ']'
+    jnz ENDMEMO
+      dec si
+    jmp ENDMEMO
+    NOTDIGIT:
+    cmp [si],'b'
+    jnz isSi
+        inc si
+        cmp [si],'x'
+        jnz ERROR1            
+            mov ax,BxVar
+            mov ah,0
+            mov MemoLocation,al
+            
+            inc si
+            cmp [si],']'
+            jnz RegIndirect1
+            
+            
+            mov BX,offset MemoOpcode 
+            XLAT
+            mov Destination, al
+            cmp [si], ']'
+            jnz ENDMEMO
+              dec si
+            jmp ENDMEMO
+            
+            RegIndirect1:
+            cmp [si],'+'
+            jnz ERROR1
+            inc si
+            
+            cmp [si],39h
+            jg AF1
+            sub [si], 30h
+            jmp cont1
+            AF1:
+            sub [si], 57h
+            cont1:
+            mov al, [si]
+            
+            add MemoLocation,al
+            mov al,MemoLocation
+            
+            
+            mov BX,offset MemoOpcode 
+            XLAT
+            mov Destination, al
+            JMP ENDMEMO
+    isSi:
+    cmp [si],'s'
+    jnz isDi
+        inc si
+        cmp [si],'i'
+        jnz ERROR1
+            mov ax,SiVar
+            mov ah,0
+            mov MemoLocation,al
+            
+            inc si
+            cmp [si],']'
+            jnz RegIndirect2
+            
+            
+            mov BX,offset MemoOpcode 
+            XLAT
+            mov Destination, al
+            jnz ENDMEMO
+              dec si
+            jmp ENDMEMO
+            
+            RegIndirect2:
+            cmp [si],'+'
+            jnz ERROR1
+            inc si
+            
+            cmp [si],39h
+            jg AF2
+            sub [si], 30h
+            jmp cont2
+            AF2:
+            sub [si], 57h
+            cont2:
+            mov al, [si]
+            
+            add MemoLocation,al
+            mov al,MemoLocation
+            
+            
+            mov BX,offset MemoOpcode 
+            XLAT
+            mov Destination, al
+            JMP ENDMEMO  
+    isDi:
+    cmp [si],'d'
+    jnz ERROR1
+        inc si
+        cmp [si],'i'
+        jnz ERROR1
+            mov ax,DiVar
+            mov ah,0
+            mov MemoLocation,al
+            
+            inc si
+            cmp [si],']'
+            jnz RegIndirect3
+            
+            mov BX,offset MemoOpcode 
+            XLAT
+            mov Destination, al
+            jnz ENDMEMO
+              dec si
+            jmp ENDMEMO
+            
+            RegIndirect3:
+            cmp [si],'+'
+            jnz ERROR1
+            inc si
+            
+            cmp [si],39h
+            jg AF3
+            sub [si], 30h
+            jmp cont3
+            AF3:
+            sub [si], 57h
+            cont3:
+            mov al, [si]
+            
+            add MemoLocation,al
+            mov al,MemoLocation
+            
+            
+            mov BX,offset MemoOpcode 
+            XLAT
+            mov Destination, al
+            JMP ENDMEMO
+            
+    NOTMEMO:         
+    ERROR1:
+    mov si,tempSI ; to save si location if the operation failed        
+   
+    ENDMEMO:
+    RET
+GenerateDestCodeiFNotreg ENDP
+
+
+
+
+
+
+GenerateSrcCodeiFNotreg PROC
+    MOV AL, '['
+    cmp [si], AL
+    JNZ NOTMEMO2
+    INC SI
+
+    MOV AL, 30H
+    cmp [si], AL
+    JL ERROR2
+    MOV AL, 39H
+    cmp [si], AL
+    jg NOTDIGIT2
+
+
+    MOV AL, '0'
+    cmp [si], AL
+    JNZ TAKECURRNUM2
+    takeNumTillClosed2:
+        mov al, [si]
+        mov MemoLocation, al
+        INC SI
+        MOV AL, ']'
+        cmp [si], AL
+        JZ ISMEMO2 
+        mov al, [si]
+        mov MemoLocation, al
+        jmp ISMEMO2
+
+    TAKECURRNUM2:
+    mov al, [si]
+    Mov MemoLocation, al
+    ;JMP ENDMEMO2
+
+    
+
+    ISMEMO2:
+    cmp MemoLocation,39h
+    jg charNum2
+    sub MemoLocation, 30h
+    jmp ctn2
+    
+    charNum2:
+    sub MemoLocation, 57h
+    
+    ctn2:
+    mov al, MemoLocation
+    
+    mov BX,offset MemoOpcode 
+    XLAT
+    mov Source, al
+    jmp ENDMEMO2
+    
+    NOTDIGIT2:
+    cmp [si],'b'
+    jnz isSi2
+        inc si
+        cmp [si],'x'
+        jnz ERROR2            
+            mov ax,BxVar
+            mov ah,0
+            mov MemoLocation,al
+            
+            inc si
+            cmp [si],']'
+            jnz RegIndirect1
+            
+            
+            mov BX,offset MemoOpcode 
+            XLAT
+            mov Source, al
+            JMP ENDMEMO2
+            
+            RegIndirect12:
+            cmp [si],'+'
+            jnz ERROR2
+            inc si
+            
+            cmp [si],39h
+            jg AF12
+            sub [si], 30h
+            jmp cont12
+            AF12:
+            sub [si], 57h
+            cont12:
+            mov al, [si]
+            
+            add MemoLocation,al
+            mov al,MemoLocation
+            
+            
+            mov BX,offset MemoOpcode 
+            XLAT
+            mov Source, al
+            JMP ENDMEMO2
+    isSi2:
+    cmp [si],'s'
+    jnz isDi2
+        inc si
+        cmp [si],'i'
+        jnz ERROR2
+            mov ax,SiVar
+            mov ah,0
+            mov MemoLocation,al
+            
+            inc si
+            cmp [si],']'
+            jnz RegIndirect22
+            
+            
+            mov BX,offset MemoOpcode 
+            XLAT
+            mov Source, al
+            JMP ENDMEMO2
+            
+            RegIndirect22:
+            cmp [si],'+'
+            jnz ERROR2
+            inc si
+            
+            cmp [si],39h
+            jg AF22
+            sub [si], 30h
+            jmp cont22
+            AF22:
+            sub [si], 57h
+            cont22:
+            mov al, [si]
+            
+            add MemoLocation,al
+            mov al,MemoLocation
+            
+            
+            mov BX,offset MemoOpcode 
+            XLAT
+            mov Source, al
+            JMP ENDMEMO2  
+    isDi2:
+    cmp [si],'d'
+    jnz ERROR2
+        inc si
+        cmp [si],'i'
+        jnz ERROR2
+            mov ax,DiVar
+            mov ah,0
+            mov MemoLocation,al
+            
+            inc si
+            cmp [si],']'
+            jnz RegIndirect32
+            
+            mov BX,offset MemoOpcode 
+            XLAT
+            mov Source, al
+            JMP ENDMEMO2
+            
+            RegIndirect32:
+            cmp [si],'+'
+            jnz ERROR2
+            inc si
+            
+            cmp [si],39h
+            jg AF32
+            sub [si], 30h
+            jmp cont32
+            AF32:
+            sub [si], 57h
+            cont32:
+            mov al, [si]
+            
+            add MemoLocation,al
+            mov al,MemoLocation
+            
+            
+            mov BX,offset MemoOpcode 
+            XLAT
+            mov Source, al
+            JMP ENDMEMO2
+            
+    NOTMEMO2:         
+    ERROR2:
+    mov si,tempSI ; to save si location if the operation failed        
+    ENDMEMO2:
+    RET
+GenerateSrcCodeiFNotreg ENDP
+
 end
