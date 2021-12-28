@@ -1,7 +1,7 @@
 EXTRN Chat:far 
 
 EXTRN execute:far 
-PUBLIC commandStr,commandCode,isExternal,Instruction,Destination,Source
+PUBLIC commandStr,commandCode,isExternal,Instruction,Destination,Source,External
 
 EXTRN startScreen:far 
 EXTRN BUFFNAME:BYTE, BufferData:BYTE
@@ -11,6 +11,8 @@ PUBLIC m0_1,m1_1,m2_1,m3_1,m4_1,m5_1,m6_1 ,m7_1,m8_1,m9_1,mA_1,mB_1 ,mC_1,mD_1,m
 PUBLIC m0_2,m1_2,m2_2,m3_2,m4_2,m5_2,m6_2 ,m7_2,m8_2,m9_2,mA_2,mB_2 ,mC_2,mD_2,mE_2,mF_2 
 PUBLIC AxVar1,BxVar1,CxVar1,DxVar1,SiVar1,DiVar1,SpVar1 ,BpVar1
 PUBLIC AxVar2,BxVar2,CxVar2,DxVar2,SiVar2,DiVar2,SpVar2 ,BpVar2 
+
+PUBLIC commandS
 
 include UI.inc
 include gun_obj.inc
@@ -101,9 +103,10 @@ cursor dw ?          ;holds the address of the upcomming letter
 
 commandCode LABEL BYTE
 isExternal db 0
-Instruction dw 0000
-Destination dw 0000
-Source dw 0000
+Instruction db 00
+Destination db 00
+Source db 00
+External dw 0000
 
 
 .CODE
@@ -167,6 +170,7 @@ MAIN PROC FAR
     mov cursor, di
     
     Game:
+    
         ;UI.inc 
         ;----------------------Test Command input----------------
         MOV  DL, 0        ;column
@@ -194,6 +198,28 @@ MAIN PROC FAR
         setcursor 0000
         drawrectanglewithletter  140,101,0Eh,10,10, 63509d,'5',0eh
         setcursor 0000
+
+
+
+
+             ;------------------------Print, peter-----------------------------
+                    MOV AL,Destination ;PUT THE REAMINDER IN THE AL TO DIVIDE IT AGAIN
+                    MOV AH,0  ;MAKE AH=0 TO HAVE THE RIGHT NUMBER IN AX
+                    MOV BL,10 ;THE DIVISION THIS TIME IS OVER 10
+                    DIV BL
+                    
+                    MOV DL,AL ;TO DISPLAY THE TENS 
+                    MOV CH,AH ;TO SAVE THE REMAINDER THE UNITS
+                    
+                    ADD DL,30H
+                    MOV AH,02
+                    INT 21H  
+                    
+                    MOV DL,CH ;NO DIVISION
+                    ADD DL,30H
+                    MOV AH,02H
+                    INT 21H
+        ;------------------------Print, peter-----------------------------
 
         ;Read Keyboard input
         mov ah, 1
@@ -229,6 +255,8 @@ MAIN PROC FAR
                 cmp ah, 50h
                 jnz commandIn
                 add gunNewY, 3
+                jmp Game
+
             ; space:
             ;     cmp ah, 39h
             ;     jnz EndGun
@@ -279,6 +307,18 @@ MAIN PROC FAR
                 ;     jnz Game
                 ;     jmp concat
                 ; ; concatinate the character after validation
+                IsEnter:
+                    cmp al, 13d
+                    jnz concat
+                    call execute
+                    jmp game
+                    
+               
+                    
+                   
+
+
+
                 concat:
                     mov dl, cmdCurrSize
                     cmp dl, cmdMaxSize
