@@ -1,32 +1,3 @@
-GenerateDestCode MACRO l1,l2,code
-    LOCAL notValid
-    cmp [si], l1
-    jnz notValid
-    inc si
-    cmp [si], l2
-    jnz notValid
-    inc si
-    cmp [si], ','
-    jnz notValid
-    inc si
-    mov Destination, code
-    jmp Src
-    notValid:
-ENDM GenerateDestCode
-
-GenerateSrcCode MACRO l1,l2,code
-    LOCAL notValid
-    cmp [si], l1
-    jnz notValid
-    inc si
-    cmp [si], l2
-    jnz notValid
-    inc si
-    mov Source, code
-    jmp Src
-    notValid:
-ENDM GenerateSrcCode
-
 EXTRN commandStr:BYTE
 EXTRN commandCode:BYTE
 EXTRN isExternal:BYTE
@@ -94,7 +65,7 @@ DiVar dw 1h
 SpVar dw 0ch
 BpVar dw 4h
 
-;16 bit registers codes 
+;16 bit registers codes general
 AxCode equ 40h
 BxCode equ 41h
 CxCode equ 42h
@@ -110,9 +81,14 @@ bhCode equ 47h
 clCode equ 48h
 chCode equ 49h
 
-dlCode equ 50h
-dhCode equ 51h
+dlCode equ 4Ah
+dhCode equ 4Bh
 
+;16 bit pointer-index
+SiCode equ 4Ch
+DiCode equ 4Dh
+SpCode equ 4Eh
+BpCode equ 4Fh
 
 
 
@@ -125,9 +101,17 @@ L1 db ?
 L2 db ?
 L3 db ?
 L4 db ?
-CodeToCheck db ?
 
+CodeToCheck db ?
+DestToCheck DB ?
+SourceToCheck DB ?
+
+Memo_Dest_Valid db 1
+Memo_Source_Valid db 1
+REG_Dest_VALID DB 0
+REG_Source_VALID DB 0
 InstrusctionValid db 0
+
 MemoLocation db ?
 
 
@@ -239,161 +223,398 @@ execute PROC far
         cmp InstrusctionValid, 1
         jz Dest
 
-    ; IsRor:
-    ; GenerateInstructionCode 'r','o','r',rorCode
+    IsRor:
+        mov L1, 'r'
+        mov L2, 'o'
+        mov L3, 'r'
+        mov CodeToCheck, rorCode
+        CALL GenerateInstructionCode
+        cmp InstrusctionValid, 1
+        jz Dest
 
-    ; IsRcl:
-    ; GenerateInstructionCode 'r','c','l',rclCode
-
-    ; IsRcr:
-    ; GenerateInstructionCode 'r','c','r',rcrCode
-
-    ; IsRol:
-    ; GenerateInstructionCode 'r','o','l',rolCode
-
-    ; IsPush:
-    ; GenerateInstructionCode4 'p','u','s','h',pushCode 
-
-    ;  IsPop:
-    ; GenerateInstructionCode 'p','o','p',popCode 
-
-    ; IsInc:
-    ; GenerateInstructionCode 'i','n','c',incCode
-
-    ; IsDec:
-    ; GenerateInstructionCode 'd','e','c',decCode
+    IsRcl:
+        mov L1, 'r'
+        mov L2, 'c'
+        mov L3, 'l'
+        mov CodeToCheck, rclCode
+        CALL GenerateInstructionCode
+        cmp InstrusctionValid, 1
+        jz Dest
 
 
-    ;IsMul:
-    ; GenerateInstructionCode 'm','u','l',mulCode
+    IsRcr:
+        mov L1, 'r'
+        mov L2, 'c'
+        mov L3, 'r'
+        mov CodeToCheck, rcrCode
+        CALL GenerateInstructionCode
+        cmp InstrusctionValid, 1
+        jz Dest
 
-    ;IsDiv:
-    ;GenerateInstructionCode 'd','i','v',divCode
+
+    IsRol:
+        mov L1, 'r'
+        mov L2, 'o'
+        mov L3, 'l'
+        mov CodeToCheck, rolCode
+        CALL GenerateInstructionCode
+        cmp InstrusctionValid, 1
+        jz Dest
+
+
+    IsPush:
+        mov L1, 'p'
+        mov L2, 'u'
+        mov L3, 's'
+        mov L4 ,'h'
+        mov CodeToCheck, pushCode
+        CALL GenerateInstructionCode4
+        cmp InstrusctionValid, 1
+        jz Dest
+
+
+     IsPop:
+        mov L1, 'p'
+        mov L2, 'o'
+        mov L3, 'p'
+        mov CodeToCheck, popCode
+        CALL GenerateInstructionCode
+        cmp InstrusctionValid, 1
+        jz Dest
+ 
+
+    IsInc:
+        mov L1, 'i'
+        mov L2, 'n'
+        mov L3, 'c'
+        mov CodeToCheck, incCode
+        CALL GenerateInstructionCode
+        cmp InstrusctionValid, 1
+        jz Dest
+
+
+    IsDec:
+        mov L1, 'd'
+        mov L2, 'e'
+        mov L3, 'c'
+        mov CodeToCheck, decCode
+        CALL GenerateInstructionCode
+        cmp InstrusctionValid, 1
+        jz Dest
+
+
+    ; IsMul:
+    ;     mov L1, 'm'
+    ;     mov L2, 'u'
+    ;     mov L3, 'l'
+    ;     mov CodeToCheck, mulCode
+    ;     CALL GenerateInstructionCode
+    ;     cmp InstrusctionValid, 1
+    ;     jz Dest
+
+    ; IsDiv:
+    ;     mov L1, 'd'
+    ;     mov L2, 'i'
+    ;     mov L3, 'v'
+    ;     mov CodeToCheck, div
+    ;     CALL GenerateInstructionCode
+    ;     cmp InstrusctionValid, 1
+    ;     jz Dest
 
     Dest: ;is destination
     push si
     CALL GenerateDestCodeiFNotreg
+    cmp Memo_Dest_Valid,1
+    jz Exe
     pop si
-    ; IsAxd:
-    ;     GenerateDestCode 'a','x', AxCode
+    IsAxd:
+        mov L1,'a'
+        mov L2,'x'
+        mov DestToCheck,AxCode
+        call GenerateDestCode
+        cmp REG_Dest_VALID,1
+        jz Src
 
-    ; IsBxd:
-    ;     GenerateDestCode 'b','x', BxCode
+    IsBxd:
+        mov L1,'b'
+        mov L2,'x'
+        mov DestToCheck,BxCode
+        call GenerateDestCode
+        cmp REG_Dest_VALID,1
+        jz Src
 
-    ; IsCxd:
-    ;     GenerateDestCode 'c','x', CxCode
+    IsCxd:
+        mov L1,'c'
+        mov L2,'x'
+        mov DestToCheck,CxCode
+        call GenerateDestCode
+        cmp REG_Dest_VALID,1
+        jz Src
 
-    ; IsDxd:
-    ;     GenerateDestCode 'd','x', DxCode
-
-
-    ; IsAld:
-    ;     GenerateDestCode 'a','l', alCode
+    IsDxd:
+        mov L1,'d'
+        mov L2,'x'
+        mov DestToCheck,DxCode
+        call GenerateDestCode
+        cmp REG_Dest_VALID,1
+        jz Src
+        
+     IsSid:
+        mov L1,'s'
+        mov L2,'i'
+        mov DestToCheck,SiCode
+        call GenerateDestCode
+        cmp REG_Dest_VALID,1
+        jz Src
+    IsDid:
+        mov L1,'d'
+        mov L2,'i'
+        mov DestToCheck,DiCode
+        call GenerateDestCode
+        cmp REG_Dest_VALID,1
+        jz Src
+    IsSpd:
+        mov L1,'s'
+        mov L2,'p'
+        mov DestToCheck,SpCode
+        call GenerateDestCode
+        cmp REG_Dest_VALID,1
+        jz Src
+    IsBpd:
+        mov L1,'b'
+        mov L2,'p'
+        mov DestToCheck,BpCode
+        call GenerateDestCode
+        cmp REG_Dest_VALID,1
+        jz Src
+    IsAld:
+        mov L1,'a'
+        mov L2,'l'
+        mov DestToCheck,alCode
+        call GenerateDestCode
+        cmp REG_Dest_VALID,1
+        jz Src
     
-    ; IsAhd:
-    ;     GenerateDestCode 'a','h', ahCode
+    IsAhd:
+        mov L1,'a'
+        mov L2,'h'
+        mov DestToCheck,ahCode
+        call GenerateDestCode
+        cmp REG_Dest_VALID,1
+        jz Src
 
 
-    ; IsBld:
-    ;     GenerateDestCode 'b','l', blCode
+    IsBld:
+        mov L1,'b'
+        mov L2,'l'
+        mov DestToCheck,blCode
+        call GenerateDestCode
+        cmp REG_Dest_VALID,1
+        jz Src
     
-    ; IsBhd:
-    ;     GenerateDestCode 'b','h', bhCode
-
+    IsBhd:
+        mov L1,'b'
+        mov L2,'h'
+        mov DestToCheck,bhCode
+        call GenerateDestCode
+        cmp REG_Dest_VALID,1
+        jz Src
+    IsCld:
+        mov L1,'c'
+        mov L2,'l'
+        mov DestToCheck,clCode
+        call GenerateDestCode
+        cmp REG_Dest_VALID,1
+        jz Src
     
-    ; IsCld:
-    ;     GenerateDestCode 'c','l', clCode
+    IsChd:
+        mov L1,'c'
+        mov L2,'h'
+        mov DestToCheck,chCode
+        call GenerateDestCode
+        cmp REG_Dest_VALID,1
+        jz Src
+
+
+
+    IsDld:
+        mov L1,'d'
+        mov L2,'l'
+        mov DestToCheck,dlCode
+        call GenerateDestCode
+        cmp REG_Dest_VALID,1
+        jz Src
     
-    ; IsChd:
-    ;     GenerateDestCode 'c','h', chCode
-
-
-
-    ; IsDld:
-    ;     GenerateDestCode 'd','l', dlCode
-    
-    ; IsDhd:
-    ;     GenerateDestCode 'd','h', dhCode
-
-
+    IsDhd:
+        mov L1,'d'
+        mov L2,'h'
+        mov DestToCheck,dhCode
+        call GenerateDestCode
+        cmp REG_Dest_VALID,1
+        jz Src
 
     Src:  ;is sorce
+     push si
     CALL GenerateSrcCodeiFNotreg
-    ; IsAxs:
-    ;     GenerateSrcCode 'a','x', AxCode
+    cmp Memo_Source_Valid,1
+    jz Exe
+    pop si
+    IsAxs:
+        mov L1,'a'
+        mov L2,'x'
+        mov SourceToCheck,AxCode
+        call GenerateSrcCode
+        cmp REG_Source_VALID,1
+        jz Exe
+    IsBxs:
+        mov L1,'b'
+        mov L2,'x'
+        mov SourceToCheck,BxCode
+        call GenerateSrcCode
+        cmp REG_Source_VALID,1
+        jz Exe
 
-    ; IsBxs:
-    ;     GenerateSrcCode 'b','x', BxCode
+    IsCxs:
+        mov L1,'c'
+        mov L2,'x'
+        mov SourceToCheck,CxCode
+        call GenerateSrcCode
+        cmp REG_Source_VALID,1
+        jz Exe
 
-    ; IsCxs:
-    ;     GenerateSrcCode 'c','x', CxCode
-
-    ; IsDxs:
-    ;     GenerateSrcCode 'd','x', DxCode
-
-
-    ; IsAls:
-    ;     GenerateSrcCode 'a','l', alCode
+    IsDxs:
+        mov L1,'d'
+        mov L2,'x'
+        mov SourceToCheck,DxCode
+        call GenerateSrcCode
+        cmp REG_Source_VALID,1
+        jz Exe
+     IsSis:
+        mov L1,'s'
+        mov L2,'i'
+        mov SourceToCheck,SiCode
+        call GenerateSrcCode
+        cmp REG_Source_VALID,1
+        jz Exe
+    IsDis:
+        mov L1,'d'
+        mov L2,'i'
+        mov SourceToCheck,DiCode
+        call GenerateSrcCode
+        cmp REG_Source_VALID,1
+        jz Exe
+     IsSps:
+        mov L1,'s'
+        mov L2,'p'
+        mov SourceToCheck,SpCode
+        call GenerateSrcCode
+        cmp REG_Source_VALID,1
+        jz Exe
+    IsBps:
+        mov L1,'b'
+        mov L2,'p'
+        mov SourceToCheck,BpCode
+        call GenerateSrcCode
+        cmp REG_Source_VALID,1
+        jz Exe
+    IsAls:
+        mov L1,'a'
+        mov L2,'l'
+        mov SourceToCheck,alCode
+        call GenerateSrcCode
+        cmp REG_Source_VALID,1
+        jz Exe
     
-    ; IsAhs:
-    ;     GenerateSrcCode 'a','h', ahCode
-
-
-    ; IsBls:
-    ;     GenerateSrcCode 'b','l', blCode
+    IsAhs:
+        mov L1,'a'
+        mov L2,'h'
+        mov SourceToCheck,ahCode
+        call GenerateSrcCode
+        cmp REG_Source_VALID,1
+        jz Exe
+    IsBls:
+        mov L1,'b'
+        mov L2,'l'
+        mov SourceToCheck,blCode
+        call GenerateSrcCode
+        cmp REG_Source_VALID,1
+        jz Exe
     
-    ; IsBhs:
-    ;     GenerateSrcCode 'b','h', bhCode
+    IsBhs:
+        mov L1,'b'
+        mov L2,'h'
+        mov SourceToCheck,bhCode
+        call GenerateSrcCode
+        cmp REG_Source_VALID,1
+        jz Exe
 
     
-    ; IsCls:
-    ;     GenerateSrcCode 'c','l', clCode
+    IsCls:
+        mov L1,'c'
+        mov L2,'l'
+        mov SourceToCheck,clCode
+        call GenerateSrcCode
+        cmp REG_Source_VALID,1
+        jz Exe
+    IsChs:
+        mov L1,'c'
+        mov L2,'h'
+        mov SourceToCheck,chCode
+        call GenerateSrcCode
+        cmp REG_Source_VALID,1
+        jz Exe
+
+    IsDls:
+        mov L1,'d'
+        mov L2,'l'
+        mov SourceToCheck,dlCode
+        call GenerateSrcCode
+        cmp REG_Source_VALID,1
+        jz Exe
     
-    ; IsChs:
-    ;     GenerateSrcCode 'c','h', chCode
-
-
-
-    ; IsDls:
-    ;     GenerateSrcCode 'd','l', dlCode
-    
-    ; IsDhs:
-    ;     GenerateSrcCode 'd','h', dhCode
+    IsDhs:
+        mov L1,'d'
+        mov L2,'h'
+        mov SourceToCheck,dhCode
+        call GenerateSrcCode
+        cmp REG_Source_VALID,1
+        jz Exe
 
     Exe:
-    lea si, commandCode
-    isExt:
+    ; lea si, commandCode
 
-    inc si
-    instruction_E:
-        isMov_E:
-            cmp [si], movCode
-            jnz Exit_isMov_E
-            inc si
-            dest_Mov:
-                isAx_Dest_Mov:
-                    cmp [si], AxCode
-                    jnz Exit_isAx_dest_Mov
-                    inc si
-                    jmp src_Mov
-                Exit_isAx_dest_Mov:
-            Exit_Dest_Mov:
+    ; isExt:
 
-            src_Mov:
-                isBx_src_Mov:
-                    cmp [si], BxCode
-                    jnz Exit_isBx_Src_Mov
-                    add si, 2
-                    mov ax, BxVar
-                    mov AxVar, ax
-                Exit_isBx_Src_Mov:
-            Exit_src_Mov:
-        Exit_isMov_E:
-    If instruction = mov
-        if dest = Ax
-            if src = bx
-                mov ax, BxVar
-                mov AxVar, ax
+    ; inc si
+    ; instruction_E:
+    ;     isMov_E:
+    ;         cmp [si], movCode
+    ;         jnz Exit_isMov_E
+    ;         inc si
+    ;         dest_Mov:
+    ;             isAx_Dest_Mov:
+    ;                 cmp [si], AxCode
+    ;                 jnz Exit_isAx_dest_Mov
+    ;                 inc si
+    ;                 jmp src_Mov
+    ;             Exit_isAx_dest_Mov:
+    ;         Exit_Dest_Mov:
+
+    ;         src_Mov:
+    ;             isBx_src_Mov:
+    ;                 cmp [si], BxCode
+    ;                 jnz Exit_isBx_Src_Mov
+    ;                 add si, 2
+    ;                 mov ax, BxVar
+    ;                 mov AxVar, ax
+    ;             Exit_isBx_Src_Mov:
+    ;         Exit_src_Mov:
+    ;     Exit_isMov_E:
+    ; If instruction = mov
+    ;     if dest = Ax
+    ;         if src = bx
+    ;             mov ax, BxVar
+    ;             mov AxVar, ax
     ret
 execute ENDP
 
@@ -654,22 +875,20 @@ GenerateDestCodeiFNotreg PROC
             add MemoLocation,al
             mov al,MemoLocation
             
-            
             mov BX,offset MemoOpcode 
             XLAT
             mov Destination, al
             JMP ENDMEMO
             
-    NOTMEMO:         
+    NOTMEMO: 
+    mov Memo_Dest_Valid,0
+    JMP ENDMEMO 
     ERROR1:
     mov si,tempSI ; to save si location if the operation failed        
    
     ENDMEMO:
     RET
 GenerateDestCodeiFNotreg ENDP
-
-
-
 
 
 
@@ -851,11 +1070,47 @@ GenerateSrcCodeiFNotreg PROC
             mov Source, al
             JMP ENDMEMO2
             
-    NOTMEMO2:         
+    NOTMEMO2:
+    mov Memo_Source_Valid,0   
+    JMP ENDMEMO2      
     ERROR2:
     mov si,tempSI ; to save si location if the operation failed        
     ENDMEMO2:
     RET
 GenerateSrcCodeiFNotreg ENDP
 
+GenerateDestCode PROC
+    MOV AL,L1
+    cmp [si],AL
+    jnz notValidD
+    inc si
+    MOV AL,L2
+    cmp [si], AL
+    jnz notValidD
+    inc si
+    MOV AL,DestToCheck
+    mov Destination,AL
+    MOV REG_Dest_VALID,1 
+    notValidD:
+    RET
+GenerateDestCode ENDP 
+
+GenerateSrcCode PROC
+    cmp [si], ','
+    jnz notValidS
+    inc si
+    MOV AL,L1
+    cmp [si],AL
+    jnz notValidS
+    inc si
+    MOV AL,L2
+    cmp [si], AL
+    jnz notValidS
+    inc si
+    MOV AL,SourceToCheck
+    mov Source,AL
+    MOV REG_Source_VALID,1 
+    notValidS:
+    RET
+GenerateSrcCode ENDP
 end
