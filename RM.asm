@@ -295,7 +295,7 @@ DrawRegisterPlayer1 proc
     mov Rectanglexpos, 22d
     mov Rectangleypos, 22d
     
-    mov Regvalue_XPOS, 3d
+    mov Regvalue_XPOS, 5d
     mov Regvalue_YPOS, 3d
     
     
@@ -304,7 +304,7 @@ DrawRegisterPlayer1 proc
     mov Regcolor,0eh
     ;---------------------------------------------------------------------------------------------------------------------------1   
     mov Rectanglexpos, 22d
-    mov Regvalue_XPOS, 3
+    mov Regvalue_XPOS, 3d
 
     ;AX
     writeRegisterNameLeft 'A','x',04h
@@ -324,14 +324,14 @@ DrawRegisterPlayer1 proc
     
     
     add Rectangleypos,24d
-    add Regvalue_YPOS, 3
+    add Regvalue_YPOS, 3d
 
 
     dec counterDrawRegisters
     ;cmp counterDrawRegisters,0
 ;---------------------------------------------------------------------------------------------------------------------------2
     mov Rectanglexpos, 22d
-    mov Regvalue_XPOS, 3
+    mov Regvalue_XPOS, 3d
 
     ;BX
     writeRegisterNameLeft 'B','x',04h
@@ -350,13 +350,13 @@ DrawRegisterPlayer1 proc
     Rectangel 
 
     add Rectangleypos,24d
-    add Regvalue_YPOS, 3
+    add Regvalue_YPOS, 3d
 
 
     dec counterDrawRegisters
     ;-----------------------------------------------------------------------------------------------------------------------3
     mov Rectanglexpos, 22d
-    mov Regvalue_XPOS, 3
+    mov Regvalue_XPOS, 3d
 
     ;CX
     writeRegisterNameLeft 'C','x',04h
@@ -376,13 +376,13 @@ DrawRegisterPlayer1 proc
     
     
     add Rectangleypos,24d
-    add Regvalue_YPOS, 3
+    add Regvalue_YPOS, 3d
 
 
     dec counterDrawRegisters
     ;-----------------------------------------------------------------------------------------------------------------------4
     mov Rectanglexpos, 22d
-    mov Regvalue_XPOS, 3
+    mov Regvalue_XPOS, 3d
     ;DX
     writeRegisterNameLeft 'D','x',04h
     mov si,DxVar1
