@@ -317,8 +317,8 @@ execute PROC far
 
 
 
-    ; Src:  ;is sorce
-
+    Src:  ;is sorce
+    CALL GenerateSrcCodeiFNotreg
     ; IsAxs:
     ;     GenerateSrcCode 'a','x', AxCode
 
@@ -360,40 +360,40 @@ execute PROC far
     ; IsDhs:
     ;     GenerateSrcCode 'd','h', dhCode
 
-    ; Exe:
-    ; lea si, commandCode
-    ; isExt:
+    Exe:
+    lea si, commandCode
+    isExt:
 
-    ; inc si
-    ; instruction_E:
-    ;     isMov_E:
-    ;         cmp [si], movCode
-    ;         jnz Exit_isMov_E
-    ;         add si, 2
-    ;         dest_Mov:
-    ;             isAx_Dest_Mov:
-    ;                 cmp [si], AxCode
-    ;                 jnz Exit_isAx_dest_Mov
-    ;                 add si, 2
-    ;                 jmp src_Mov
-    ;             Exit_isAx_dest_Mov:
-    ;         Exit_Dest_Mov:
+    inc si
+    instruction_E:
+        isMov_E:
+            cmp [si], movCode
+            jnz Exit_isMov_E
+            inc si
+            dest_Mov:
+                isAx_Dest_Mov:
+                    cmp [si], AxCode
+                    jnz Exit_isAx_dest_Mov
+                    inc si
+                    jmp src_Mov
+                Exit_isAx_dest_Mov:
+            Exit_Dest_Mov:
 
-    ;         src_Mov:
-    ;             isBx_src_Mov:
-    ;                 cmp [si], BxCode
-    ;                 jnz Exit_isBx_Src_Mov
-    ;                 add si, 2
-    ;                 mov ax, BxVar
-    ;                 mov AxVar, ax
-    ;             Exit_isBx_Src_Mov:
-    ;         Exit_src_Mov:
-    ;     Exit_isMov_E:
-    ; If instruction = mov
-    ;     if dest = Ax
-    ;         if src = bx
-    ;             mov ax, BxVar
-    ;             mov AxVar, ax
+            src_Mov:
+                isBx_src_Mov:
+                    cmp [si], BxCode
+                    jnz Exit_isBx_Src_Mov
+                    add si, 2
+                    mov ax, BxVar
+                    mov AxVar, ax
+                Exit_isBx_Src_Mov:
+            Exit_src_Mov:
+        Exit_isMov_E:
+    If instruction = mov
+        if dest = Ax
+            if src = bx
+                mov ax, BxVar
+                mov AxVar, ax
     ret
 execute ENDP
 
@@ -470,53 +470,6 @@ GenerateInstructionCode4 PROC
     notValid4:
     RET
 GenerateInstructionCode4 ENDP
-
-GenerateDestCodeiFNotreg PROC
-    MOV AL, '['
-    cmp [si], AL
-    JNZ NOTMEMO
-    INC SI
-
-    MOV AL, 30H
-    cmp [si], AL
-    JL ERROR1
-    MOV AL, 39H
-    cmp [si], AL
-    jg NOTDIGIT
-
-
-    MOV AL, '0'
-    cmp [si], AL
-    JNZ TAKECURRNUM
-    takeNumTillClosed:
-        mov al, [si]
-        mov MemoLocation, al
-        INC SI
-        MOV AL, ']'
-        cmp [si], AL
-        JZ ISMEMO
-        INC SI
-        mov al, [si]
-        mov MemoLocation, al
-        jmp ISMEMO
-
-    TAKECURRNUM:
-    mov al, [si]
-    Mov MemoLocation, al
-    JMP ISMEMO
-
-    NOTDIGIT:
-    ERROR1:
-
-    ISMEMO:
-    
-    sub MemoLocation, 30h
-    mov al, MemoLocation
-    XLAT
-    mov Destination, 70h
-    NOTMEMO:
-    RET
-GenerateDestCodeiFNotreg ENDP
 
 GenerateDestCodeiFNotreg PROC
     mov tempSI,si
