@@ -1,3 +1,5 @@
+EXTRN Chat:far 
+
 EXTRN execute:far 
 PUBLIC commandStr,commandCode,isExternal,Instruction,Destination,Source
 
@@ -181,17 +183,17 @@ MAIN PROC FAR
         
         
         ;draw score squares UI.inc 
-         setcursor 0000
+        setcursor 0000
         drawrectanglewithletter  140,7,0ah,10,10,63497d,'1',0ah
-    setcursor 0000
-   drawrectanglewithletter  140,30,9h,10,10,63500d,'2',09h
-   setcursor 0000
-   drawrectanglewithletter  140,53,0ch,10,10,63503d,'3',0ch
-    setcursor 0000
-   drawrectanglewithletter  140,77,0dh,10,10,63506d,'4',0dh
-    setcursor 0000
-   drawrectanglewithletter  140,101,0Eh,10,10, 63509d,'5',0eh
-    setcursor 0000
+        setcursor 0000
+        drawrectanglewithletter  140,30,9h,10,10,63500d,'2',09h
+        setcursor 0000
+        drawrectanglewithletter  140,53,0ch,10,10,63503d,'3',0ch
+        setcursor 0000
+        drawrectanglewithletter  140,77,0dh,10,10,63506d,'4',0dh
+        setcursor 0000
+        drawrectanglewithletter  140,101,0Eh,10,10, 63509d,'5',0eh
+        setcursor 0000
 
         ;Read Keyboard input
         mov ah, 1

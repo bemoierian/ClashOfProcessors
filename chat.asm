@@ -10,6 +10,10 @@ valueS db ?
 valueR db ?
 cursorS dw ?
 cursorR dw ?
+<<<<<<< HEAD
+
+=======
+>>>>>>> 9ae9670ecdd5900b14fe68cf7e11654b0940da74
 .code
 
 chat proc far
