@@ -130,7 +130,7 @@ MAIN PROC FAR
             keyF1:
                 cmp ah, 3Bh ;compare key code with f1 code
                 jnz keyF2    ;if the key is not F1, jump to next check
-                call chat
+                ; jmp chat
             keyF2:
                 cmp ah, 3Ch ;compare key code with f1 code
                 jnz keyESC    ;if the key is not F1, jump to next check
