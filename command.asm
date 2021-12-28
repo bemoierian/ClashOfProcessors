@@ -35,7 +35,6 @@ GenerateInstructionCode2 MACRO l1,l2,code
 ENDM GenerateInstructionCode2
 
 
-
 GenerateInstructionCode4 MACRO l1,l2,l3,l4,code
     LOCAL notValid4
     lea si, commandStr
@@ -148,6 +147,8 @@ DxVar dw 32h
 
 
 
+
+
 ;stack variable
 spVar dw 33h
 
@@ -190,55 +191,55 @@ execute PROC far
         GenerateInstructionCode 'a','d','c',adcCode
 
     IsSub:
-    GenerateInstructionCode 's','u','b',subCode
+        GenerateInstructionCode 's','u','b',subCode
 
     IsSbb:
-    GenerateInstructionCode 's','b','b',sbbCode
+        GenerateInstructionCode 's','b','b',sbbCode
 
     IsXor:
-    GenerateInstructionCode 'x','o','r',xorCode
+        GenerateInstructionCode 'x','o','r',xorCode
 
     IsAnd:
-    GenerateInstructionCode 'a','n','d',andCode
+        GenerateInstructionCode 'a','n','d',andCode
 
     IsOr: 
-    GenerateInstructionCode2 'o','r',orCode
+        GenerateInstructionCode2 'o','r',orCode
 
     IsNop:
-    GenerateInstructionCode 'n','o','p',nopCode
+        GenerateInstructionCode 'n','o','p',nopCode
 
     IsShr:
-    GenerateInstructionCode 's','h','r',shrCode
+        GenerateInstructionCode 's','h','r',shrCode
 
     IsShl:
-    GenerateInstructionCode 's','h','l',shlCode
+        GenerateInstructionCode 's','h','l',shlCode
 
     IsClc:
-    GenerateInstructionCode 'c','l','c',clcCode
+        GenerateInstructionCode 'c','l','c',clcCode
 
     IsRor:
-    GenerateInstructionCode 'r','o','r',rorCode
+        GenerateInstructionCode 'r','o','r',rorCode
 
     IsRcl:
-    GenerateInstructionCode 'r','c','l',rclCode
+        GenerateInstructionCode 'r','c','l',rclCode
 
     IsRcr:
-    GenerateInstructionCode 'r','c','r',rcrCode
+        GenerateInstructionCode 'r','c','r',rcrCode
 
     IsRol:
-    GenerateInstructionCode 'r','o','l',rolCode
+        GenerateInstructionCode 'r','o','l',rolCode
 
     IsPush:
-    GenerateInstructionCode4 'p','u','s','h',pushCode 
+        GenerateInstructionCode4 'p','u','s','h',pushCode 
 
-     IsPop:
-    GenerateInstructionCode 'p','o','p',popCode 
+    IsPop:
+        GenerateInstructionCode 'p','o','p',popCode 
 
     IsInc:
-    GenerateInstructionCode 'i','n','c',incCode
+        GenerateInstructionCode 'i','n','c',incCode
 
     IsDec:
-    GenerateInstructionCode 'd','e','c',decCode
+        GenerateInstructionCode 'd','e','c',decCode
 
 
     ;IsMul:
@@ -292,7 +293,6 @@ execute PROC far
 
 
     Src:  ;is sorce
-
     IsAxs:
         GenerateSrcCode 'a','x', AxCode
 
@@ -325,8 +325,6 @@ execute PROC far
     
     IsChs:
         GenerateSrcCode 'c','h', chCode
-
-
 
     IsDls:
         GenerateSrcCode 'd','l', dlCode
@@ -384,11 +382,6 @@ execute PROC far
                 Exit_isBx_Src_Mov:
             Exit_src_Mov:
         Exit_isMov_E:
-    ; If instruction = mov
-    ;     if dest = Ax
-    ;         if src = bx
-    ;             mov ax, BxVar
-    ;             mov AxVar, ax
     ret
 execute ENDP
 end
