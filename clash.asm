@@ -1,3 +1,5 @@
+EXTRN Chat:far 
+
 EXTRN execute:far 
 PUBLIC commandStr,commandCode,isExternal,Instruction,Destination,Source
 
@@ -118,26 +120,26 @@ MAIN PROC FAR
     mov dx,184FH
     int 10h
     MainScreen:
-        ; draw_mainscreen main_str1, main_str2, main_str3 ;UI.inc
-        ; MainInput:
-        ;     mov ah,1
-        ;     int 16h
-        ;     jz MainInput
-        ;     mov ah, 0
-        ;     int 16h
-        ;     keyF1:
-        ;         cmp ah, 3Bh ;compare key code with f1 code
-        ;         jnz keyF2    ;if the key is not F1, jump to next check
-        ;         ; jmp chat
-        ;     keyF2:
-        ;         cmp ah, 3Ch ;compare key code with f1 code
-        ;         jnz keyESC    ;if the key is not F1, jump to next check
-        ;         jmp EndMainScreen
-        ;     keyESC:
-        ;         cmp ah, 1h ;compare key code with f1 code
-        ;         jnz MainInput    ;if the key is not F1, jump to next check
-        ;         jmp EndGame
-        ;     EndMainInput:
+        draw_mainscreen main_str1, main_str2, main_str3 ;UI.inc
+        MainInput:
+            mov ah,1
+            int 16h
+            jz MainInput
+            mov ah, 0
+            int 16h
+            keyF1:
+                cmp ah, 3Bh ;compare key code with f1 code
+                jnz keyF2    ;if the key is not F1, jump to next check
+                call chat
+            keyF2:
+                cmp ah, 3Ch ;compare key code with f1 code
+                jnz keyESC    ;if the key is not F1, jump to next check
+                jmp EndMainScreen
+            keyESC:
+                cmp ah, 1h ;compare key code with f1 code
+                jnz MainInput    ;if the key is not F1, jump to next check
+                jmp EndGame
+            EndMainInput:
 
     EndMainScreen:
     mov ah,0   ;enter graphics mode
@@ -181,17 +183,17 @@ MAIN PROC FAR
         
         
         ;draw score squares UI.inc 
-         setcursor 0000
+        setcursor 0000
         drawrectanglewithletter  140,7,0ah,10,10,63497d,'1',0ah
-    setcursor 0000
-   drawrectanglewithletter  140,30,9h,10,10,63500d,'2',09h
-   setcursor 0000
-   drawrectanglewithletter  140,53,0ch,10,10,63503d,'3',0ch
-    setcursor 0000
-   drawrectanglewithletter  140,77,0dh,10,10,63506d,'4',0dh
-    setcursor 0000
-   drawrectanglewithletter  140,101,0Eh,10,10, 63509d,'5',0eh
-    setcursor 0000
+        setcursor 0000
+        drawrectanglewithletter  140,30,9h,10,10,63500d,'2',09h
+        setcursor 0000
+        drawrectanglewithletter  140,53,0ch,10,10,63503d,'3',0ch
+        setcursor 0000
+        drawrectanglewithletter  140,77,0dh,10,10,63506d,'4',0dh
+        setcursor 0000
+        drawrectanglewithletter  140,101,0Eh,10,10, 63509d,'5',0eh
+        setcursor 0000
 
         ;Read Keyboard input
         mov ah, 1

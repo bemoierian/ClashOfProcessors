@@ -12,7 +12,6 @@ valueR db ?
 cursorS dw ?
 cursorR dw ?
 
-keyPressed db ?
 .code
 
 CHAT proc far
@@ -88,12 +87,14 @@ CHAT proc far
             ;sending
             mov ah, 0
             int 16h
+            cmp ah, 85h ;compare with F11 to exit the chatting mode
+              jz exit
             mov valueS, al
             mov dx , 3FDH
-            AGAIN:
+
                 In al , dx 			;Read Line Status
                 AND al , 00100000b
-                JZ AGAIN
+
             ;If empty put the VALUE in Transmit data register
             mov dx , 3F8H		; Transmit data register
             mov  al,valueS
@@ -145,7 +146,6 @@ CHAT proc far
             jmp myLoop
            
     exit:
-    popf
     ret
 CHAT endp
 end 
