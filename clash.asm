@@ -118,26 +118,26 @@ MAIN PROC FAR
     mov dx,184FH
     int 10h
     MainScreen:
-        ; draw_mainscreen main_str1, main_str2, main_str3 ;UI.inc
-        ; MainInput:
-        ;     mov ah,1
-        ;     int 16h
-        ;     jz MainInput
-        ;     mov ah, 0
-        ;     int 16h
-        ;     keyF1:
-        ;         cmp ah, 3Bh ;compare key code with f1 code
-        ;         jnz keyF2    ;if the key is not F1, jump to next check
-        ;         ; jmp chat
-        ;     keyF2:
-        ;         cmp ah, 3Ch ;compare key code with f1 code
-        ;         jnz keyESC    ;if the key is not F1, jump to next check
-        ;         jmp EndMainScreen
-        ;     keyESC:
-        ;         cmp ah, 1h ;compare key code with f1 code
-        ;         jnz MainInput    ;if the key is not F1, jump to next check
-        ;         jmp EndGame
-        ;     EndMainInput:
+        draw_mainscreen main_str1, main_str2, main_str3 ;UI.inc
+        MainInput:
+            mov ah,1
+            int 16h
+            jz MainInput
+            mov ah, 0
+            int 16h
+            keyF1:
+                cmp ah, 3Bh ;compare key code with f1 code
+                jnz keyF2    ;if the key is not F1, jump to next check
+                ; jmp chat
+            keyF2:
+                cmp ah, 3Ch ;compare key code with f1 code
+                jnz keyESC    ;if the key is not F1, jump to next check
+                jmp EndMainScreen
+            keyESC:
+                cmp ah, 1h ;compare key code with f1 code
+                jnz MainInput    ;if the key is not F1, jump to next check
+                jmp EndGame
+            EndMainInput:
 
     EndMainScreen:
     mov ah,0   ;enter graphics mode
