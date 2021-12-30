@@ -1,21 +1,26 @@
+;-------------------------chat.asm---------------------------
 EXTRN Chat:far 
-
+;-------------------------command.asm---------------------------
 EXTRN execute:far 
 PUBLIC commandStr,commandCode,isExternal,Instruction,Destination,Source,External
-
+PUBLIC commandS
+;-------------------------start.asm---------------------------
 EXTRN startScreen:far 
 EXTRN BUFFNAME:BYTE, BufferData:BYTE
-
+;-------------------------RM.asm---------------------------
 EXTRN RegMemo:far
 PUBLIC m0_1,m1_1,m2_1,m3_1,m4_1,m5_1,m6_1 ,m7_1,m8_1,m9_1,mA_1,mB_1 ,mC_1,mD_1,mE_1,mF_1 
 PUBLIC m0_2,m1_2,m2_2,m3_2,m4_2,m5_2,m6_2 ,m7_2,m8_2,m9_2,mA_2,mB_2 ,mC_2,mD_2,mE_2,mF_2 
 PUBLIC AxVar1,BxVar1,CxVar1,DxVar1,SiVar1,DiVar1,SpVar1 ,BpVar1
 PUBLIC AxVar2,BxVar2,CxVar2,DxVar2,SiVar2,DiVar2,SpVar2 ,BpVar2 
-
-PUBLIC commandS
-
+;-------------------------Gun.asm---------------------------
+EXTRN DrawGun:far
+EXTRN FireGun_initial:far
+EXTRN FireGun_Continue:far
+EXTRN gunPrevX:WORD,gunPrevY:WORD,gunNewX:WORD,gunNewY:WORD
+;-------------------------UI.inc
 include UI.inc
-include gun_obj.inc
+
 
 
 
@@ -92,10 +97,7 @@ BpVar2 dw 0h
 
 
 ;------------------Previous and New position of Gun---------------------
-gunPrevX dw 50
-gunPrevY dw 50
-gunNewX dw 50
-gunNewY dw 50
+
 ;----------------------------------------------------------------------
 ;-------------------------Command String-------------------------------
 commandStr LABEL BYTE
@@ -173,7 +175,6 @@ MAIN PROC FAR
     mov cursor, di
     
     Game:
-    
         ;UI.inc 
         ;----------------------Test Command input----------------
         MOV  DL, 0        ;column
@@ -185,10 +186,9 @@ MAIN PROC FAR
         mov dx, offset commandS
         int 21h        
         ;--------------------------------------------------------
-        DrawGun       ;gun_obj.inc
+        CALL DrawGun       ;gun_obj.inc
+        CALL FireGun_Continue
         call RegMemo
-        
-        
         ;draw score squares UI.inc 
         setcursor 0000
         drawrectanglewithletter  140,7,0ah,10,10,63497d,'1',0ah
@@ -201,10 +201,6 @@ MAIN PROC FAR
         setcursor 0000
         drawrectanglewithletter  140,101,0Eh,10,10, 63509d,'5',0eh
         setcursor 0000
-
-
-
-
              ;------------------------Print, peter-----------------------------
                     MOV AL,Destination ;PUT THE REAMINDER IN THE AL TO DIVIDE IT AGAIN
                     MOV AH,0  ;MAKE AH=0 TO HAVE THE RIGHT NUMBER IN AX
@@ -256,15 +252,15 @@ MAIN PROC FAR
             ;down arrow
             down:
                 cmp ah, 50h
-                jnz commandIn
+                jnz space
                 add gunNewY, 3
                 jmp Game
 
-            ; space:
-            ;     cmp ah, 39h
-            ;     jnz EndGun
-            ;     ; 
-            
+            space:
+                cmp ah, 39h
+                jnz commandIn
+                CALL FireGun_initial
+                jmp Game
         EndGun:
         commandIn:
             backSpace:
@@ -315,7 +311,6 @@ MAIN PROC FAR
                     jnz concat
                     call execute
                     jmp game
-                    
                
                     
                    
