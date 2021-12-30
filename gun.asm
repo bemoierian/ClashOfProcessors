@@ -14,10 +14,10 @@ FireY dw 0
 isFiring db 0
 .CODE
 ;Draws gun at the new position at gunNewX, gunNewY and stores the previous position in gunPrevX, gunPrevY
-DrawGun PROC
+DrawGun PROC FAR
     mov ax, @data
     mov ds, ax
-    ;size of gun = 3x6
+    ;size of gun = 3x9
     ;Draw pixel
     mov bx, 0
     mov ah,0ch       ;Draw Pixel Command
@@ -69,7 +69,7 @@ DrawGun PROC
     ret
 DrawGun ENDP     
 
-FireGun_initial PROC
+FireGun_initial PROC FAR
     mov ax, @data
     mov ds, ax
     cmp isFiring, 0
@@ -86,7 +86,7 @@ FireGun_initial PROC
 FireGun_initial ENDP
 
 
-FireGun_Continue PROC
+FireGun_Continue PROC FAR
     mov ax, @data
     mov ds, ax
     cmp isFiring, 1
@@ -113,6 +113,11 @@ FireGun_Continue PROC
         jnz inner3
         jz outer3
     exit3:
+    cmp FireY, 0
+    jnz stillFiring
+    mov isFiring, 0
+    jmp notFiring
+    stillFiring:
     sub FireY, 1
     mov bx, 0
     mov al,04h       ;Pixel color
@@ -134,10 +139,6 @@ FireGun_Continue PROC
         jnz inner4
         jz outer4
     exit4:
-    cmp FireY, 0
-    jl stillFiring
-    mov isFiring, 0
-    stillFiring:
     notFiring:
     RET
 FireGun_Continue ENDP
