@@ -71,7 +71,7 @@ mF_2 DB 0
 
 
 ;---------Variables for player 1
-P1_score db 15
+P1_score db '50$'
 AxVar1 dw 0h
 BxVar1 dw 0h
 CxVar1 dw 0bbffh
@@ -83,8 +83,8 @@ SpVar1 dw 0h
 BpVar1 dw 0c4bh
 
 ;---------Variables for player 2
-P2_name db 'mark'
-P2_score db 10
+P2_name db 'mark','$'
+P2_score db '10$'
 AxVar2 dw 1ah
 BxVar2 dw 12h
 CxVar2 dw 154h
@@ -167,12 +167,31 @@ MAIN PROC FAR
     drawrectangle   5,162,0ah,5,5 ;draw shape
 
     ;display name
-    push dx
-    DisplayName P2_name
-    pop dx
+       push dx
+    
+        mov dl,5
+        mov dh,20
+        mov ah,2
+        int 10h
+        mov ah,09
+        mov dx,offset BUFFNAME
+        int 21h
+        mov dx,offset P1_score
+        int 21h
+        mov dl,70
+        mov dh,20
+        mov ah,2
+        int 10h
+        mov ah,09
+        mov dx,offset P2_name
+        int 21h
+        mov dx,offset P2_score
+        int 21h
+        mov di, offset commandS
+        pop dx
 
-    mov di, offset commandS
-    mov cursor, di
+        mov di, offset commandS
+        mov cursor, di
     
     Game:
         ;UI.inc 
