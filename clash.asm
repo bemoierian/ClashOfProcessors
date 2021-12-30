@@ -66,6 +66,7 @@ mF_2 DB 0
 
 
 ;---------Variables for player 1
+P1_score db 15
 AxVar1 dw 0h
 BxVar1 dw 0h
 CxVar1 dw 0bbffh
@@ -77,6 +78,8 @@ SpVar1 dw 0h
 BpVar1 dw 0c4bh
 
 ;---------Variables for player 2
+P2_name db 'mark'
+P2_score db 10
 AxVar2 dw 1ah
 BxVar2 dw 12h
 CxVar2 dw 154h
@@ -163,7 +166,7 @@ MAIN PROC FAR
 
     ;display name
     push dx
-    DisplayName
+    DisplayName P2_name
     pop dx
 
     mov di, offset commandS

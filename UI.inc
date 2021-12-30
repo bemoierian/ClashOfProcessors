@@ -43,12 +43,17 @@ ENDM draw_mainscreen
 ;--------------------------------------------------------------------------------------
 
 
-DisplayName macro
+DisplayName macro P2_name
     mov dl,5
-    mov dh,1 
+    mov dh,20
     setcursor dx
     mov ah,09
     mov dx,offset BUFFNAME
+    int 21h
+    mov dl,50
+    mov dh,20
+    setcursor dx
+    mov dx,offset P2_name
     int 21h
 endm DisplayName  
 

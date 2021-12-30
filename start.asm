@@ -210,7 +210,7 @@ PROCEED:;wait for enter
     INT 16h  
     CMP AL,0DH   ;check on the pressed key
     JNZ WAITENTER
-    MOV AH,1
+    MOV AH,1;read enter
     INT 16h 
     ret
 startScreen  ENDP
