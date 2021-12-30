@@ -1,21 +1,24 @@
+;-------------------------chat.asm---------------------------
 EXTRN Chat:far 
-
+;-------------------------command.asm---------------------------
 EXTRN execute:far 
 PUBLIC commandStr,commandCode,isExternal,Instruction,Destination,Source,External
-
+PUBLIC commandS
+;-------------------------start.asm---------------------------
 EXTRN startScreen:far 
 EXTRN BUFFNAME:BYTE, BufferData:BYTE
-
+;-------------------------RM.asm---------------------------
 EXTRN RegMemo:far
 PUBLIC m0_1,m1_1,m2_1,m3_1,m4_1,m5_1,m6_1 ,m7_1,m8_1,m9_1,mA_1,mB_1 ,mC_1,mD_1,mE_1,mF_1 
 PUBLIC m0_2,m1_2,m2_2,m3_2,m4_2,m5_2,m6_2 ,m7_2,m8_2,m9_2,mA_2,mB_2 ,mC_2,mD_2,mE_2,mF_2 
 PUBLIC AxVar1,BxVar1,CxVar1,DxVar1,SiVar1,DiVar1,SpVar1 ,BpVar1
 PUBLIC AxVar2,BxVar2,CxVar2,DxVar2,SiVar2,DiVar2,SpVar2 ,BpVar2 
-
-PUBLIC commandS
-
+;-------------------------Gun.asm---------------------------
+EXTRN DrawGun:far
+EXTRN gunPrevX:WORD,gunPrevY:WORD,gunNewX:WORD,gunNewY:WORD
+;-------------------------UI.inc
 include UI.inc
-include gun_obj.inc
+
 
 
 
@@ -182,7 +185,7 @@ MAIN PROC FAR
         mov dx, offset commandS
         int 21h        
         ;--------------------------------------------------------
-        DrawGun       ;gun_obj.inc
+        CALL DrawGun       ;gun_obj.inc
         call RegMemo
         
         
