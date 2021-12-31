@@ -1,17 +1,26 @@
-;-----------------------Called in clash.asm--------------------
+;-----------------Called in clash.asm------------------
 PUBLIC DrawGun, FireGun_initial, FireGun_Continue
 PUBLIC gunPrevX,gunPrevY,gunNewX,gunNewY
+;------------------------------------------------------
 .286
 .MODEL SMALL
 .STACK 64
 .DATA
+;--------------------------Gun--------------------------
 gunPrevX dw 50
 gunPrevY dw 100
 gunNewX dw 50
 gunNewY dw 100
+;------------------------Gun fire-----------------------
 FireX dw 0
 FireY dw 0
 isFiring db 0
+;----------------------Flying objects-------------------
+FlyPosX db 0
+FlyPosY db 0
+FlyColor db 0
+isFlying db 0
+;-------------------------------------------------------
 .CODE
 ;Draws gun at the new position at gunNewX, gunNewY and stores the previous position in gunPrevX, gunPrevY
 DrawGun PROC FAR
@@ -142,4 +151,9 @@ FireGun_Continue PROC FAR
     notFiring:
     RET
 FireGun_Continue ENDP
+
+DidFireHit PROC FAR
+    
+    RET
+DidFireHit ENDP
 END
