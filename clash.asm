@@ -115,11 +115,9 @@ EmptyString db 22 dup('$')
 isError db 0
 ;---------------------------------Turns------------------------------
 Turn db 1
+;--------------------flag of winner in the game----------------------
+winner db 0
 ;--------------------------From start screen-------------------------
-
-
-
-
 P2_score db 0
 P1_score db 0
 
@@ -446,4 +444,38 @@ SwitchTurn PROC
     SwitchTo2End:
     RET
 SwitchTurn ENDP
+
+CheckWinner proc
+  mov si,offset AxVar1
+  mov cx,8 
+  w1:
+  cmp [si],105eh
+  jz setwinner1
+  add si,2
+  dec cx
+  cmp cx,0
+  jnz w1
+
+  mov si,offset AxVar2
+  mov cx,8
+  w2:
+  cmp [si],105eh
+  jz setwinner2
+  add si,2
+  dec cx
+  cmp cx,0
+  jnz w2  
+  jmp byebye
+
+
+  setwinner1:
+  mov winner,1
+  jmp byebye
+  setwinner2:
+  mov winner,2
+  jmp byebye
+
+  byebye:
+  ret
+CheckWinner endp
 END MAIN

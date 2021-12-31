@@ -16,10 +16,13 @@ FireX dw 0
 FireY dw 0
 isFiring db 0
 ;----------------------Flying objects-------------------
-FlyPosX db 0
-FlyPosY db 0
+FlyPosX_strt dw 0
+FlyPosY_strt dw 0
+FlyPosX_end dw 0
+FlyPosY_end dw 0
 FlyColor db 0
 isFlying db 0
+FireHit db 0
 ;-------------------------------------------------------
 .CODE
 ;Draws gun at the new position at gunNewX, gunNewY and stores the previous position in gunPrevX, gunPrevY
@@ -153,7 +156,22 @@ FireGun_Continue PROC FAR
 FireGun_Continue ENDP
 
 DidFireHit PROC FAR
-    
+    mov ax, FlyPosX_strt
+    CMP FireX, AX
+    JC didntHit
+    mov ax, FlyPosX_end
+    CMP FireX, AX
+    JNC didntHit
+    mov ax, FlyPosY_strt
+    CMP FireY, AX
+    JC didntHit
+    mov ax, FlyPosY_end
+    CMP FireY, AX
+    JNC didntHit
+    MOV FireHit, 1
+    ;here increment color score and total score
+    ;to do
+    didntHit:
     RET
 DidFireHit ENDP
 END
