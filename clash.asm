@@ -34,66 +34,66 @@ main_str2 DB 'To start the game press F2','$'
 main_str3 DB 'To end the program press ESC','$'
 ;----------------------------MEMORY-------------------------------------
 ;These variables are not in an array just to simplifie to vision
+;---------Variables for player 1
+AxVar1 dw 1
+BxVar1 dw 3
+CxVar1 dw 4
+DxVar1 dw 0
+
+SiVar1 dw 0
+DiVar1 dw 0
+SpVar1 dw 0
+BpVar1 dw 0
 ;---------Memory for player 1
-m0_1 db 2fh
-m1_1 DB 24
+m0_1 db 0
+m1_1 DB 0
 m2_1 DB 0
-m3_1 DB 0ah
+m3_1 DB 0
 m4_1 DB 0
 m5_1 DB 0
-m6_1 DB 03h
+m6_1 DB 0
 m7_1 DB 0
-m8_1 DB 0ffh
+m8_1 DB 0
 m9_1 DB 0
 mA_1 DB 0
 mB_1 DB 0
 mC_1 DB 0
 mD_1 DB 0
 mE_1 DB 0
-mF_1 DB 0c1h
+mF_1 DB 0
+;---------------------------------------
+;---------Variables for player 2
+AxVar2 dw 0
+BxVar2 dw 0
+CxVar2 dw 0
+DxVar2 dw 0
+
+SiVar2 dw 0
+DiVar2 dw 0
+SpVar2 dw 0 
+BpVar2 dw 0
 ;---------Memory for player 2
-m0_2 db 2dh
-m1_2 DB 01bh
+m0_2 db 0
+m1_2 DB 0
 m2_2 DB 0
 m3_2 DB 0
 m4_2 DB 0
-m5_2 DB 0c1h
+m5_2 DB 0
 m6_2 DB 0
 m7_2 DB 0
 m8_2 DB 0
 m9_2 DB 0
 mA_2 DB 0
-mB_2 DB 0e9h
+mB_2 DB 0
 mC_2 DB 0
 mD_2 DB 0
 mE_2 DB 0
 mF_2 DB 0
 
 
-;---------Variables for player 1
-P1_score db '50$'
-AxVar1 dw 0h
-BxVar1 dw 0h
-CxVar1 dw 0bbffh
-DxVar1 dw 0h
 
-SiVar1 dw 0f2ah
-DiVar1 dw 0h
-SpVar1 dw 0h 
-BpVar1 dw 0c4bh
 
-;---------Variables for player 2
-P2_name db 'mark','$'
-P2_score db '10$'
-AxVar2 dw 1ah
-BxVar2 dw 12h
-CxVar2 dw 154h
-DxVar2 dw 4h
 
-SiVar2 dw 0ffffh
-DiVar2 dw 9Fh
-SpVar2 dw 0h 
-BpVar2 dw 0h
 
 
 ;------------------Previous and New position of Gun---------------------
@@ -113,6 +113,10 @@ Destination db 00
 Source db 00
 External dw 0000
 
+
+P2_name db 'mark','$'
+P2_score db '10$'
+P1_score db '50$'
 
 .CODE
 MAIN PROC FAR
@@ -167,7 +171,7 @@ MAIN PROC FAR
     drawrectangle   5,162,0ah,5,5 ;draw shape
 
     ;display name
-       push dx
+        push dx
     
         mov dl,5
         mov dh,20
@@ -220,10 +224,10 @@ MAIN PROC FAR
         setcursor 0000
         drawrectanglewithletter  140,101,0Eh,10,10, 63509d,'5',0eh
         setcursor 0000
-             ;------------------------Print, peter-----------------------------
-                    MOV AL,Destination ;PUT THE REAMINDER IN THE AL TO DIVIDE IT AGAIN
+            ;------------------------Print, peter-----------------------------
+                    MOV AL,Source ;PUT THE REAMINDER IN THE AL TO DIVIDE IT AGAIN
                     MOV AH,0  ;MAKE AH=0 TO HAVE THE RIGHT NUMBER IN AX
-                    MOV BL,10 ;THE DIVISION THIS TIME IS OVER 10
+                    MOV BL,10h ;THE DIVISION THIS TIME IS OVER 10
                     DIV BL
                     
                     MOV DL,AL ;TO DISPLAY THE TENS 
@@ -238,7 +242,6 @@ MAIN PROC FAR
                     MOV AH,02H
                     INT 21H
         ;------------------------Print, peter-----------------------------
-
         ;Read Keyboard input
         mov ah, 1
         int 16h
@@ -329,10 +332,10 @@ MAIN PROC FAR
                     cmp al, 13d
                     jnz concat
                     call execute
-                    jmp game
-               
+                jmp game
+            
                     
-                   
+            
 
 
 
