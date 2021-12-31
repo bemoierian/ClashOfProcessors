@@ -9,8 +9,9 @@ EXTRN commandS:BYTE
 
 
 PUBLIC execute
-EXTRN m0_1:BYTE,m1_1:BYTE,m2_1:BYTE,m3_1:BYTE,m4_1:BYTE,m5_1:BYTE,m6_1 :BYTE,m7_1:BYTE,m8_1:BYTE,m9_1:BYTE,mA_1:BYTE,mB_1 :BYTE,mC_1:BYTE,mD_1:BYTE,mE_1:BYTE,mF_1 :BYTE
 EXTRN AxVar1:WORD,BxVar1:WORD,CxVar1:WORD,DxVar1:WORD,SiVar1:WORD,DiVar1:WORD,SpVar1 :WORD,BpVar1 :WORD
+EXTRN m0_1:BYTE,m1_1:BYTE,m2_1:BYTE,m3_1:BYTE,m4_1:BYTE,m5_1:BYTE,m6_1 :BYTE,m7_1:BYTE,m8_1:BYTE,m9_1:BYTE,mA_1:BYTE,mB_1 :BYTE,mC_1:BYTE,mD_1:BYTE,mE_1:BYTE,mF_1 :BYTE
+
 
 
 ;codes : External 1 
@@ -98,23 +99,23 @@ CxCode equ 42h
 DxCode equ 43h
 
 ;8 bit registers codes 
-alCode equ 44h
-ahCode equ 45h
+; alCode equ 44h
+; ahCode equ 45h
 
-blCode equ 46h
-bhCode equ 47h
+; blCode equ 46h
+; bhCode equ 47h
 
-clCode equ 48h
-chCode equ 49h
+; clCode equ 48h
+; chCode equ 49h
 
-dlCode equ 4Ah
-dhCode equ 4Bh
+; dlCode equ 4Ah
+; dhCode equ 4Bh
 
 ;16 bit pointer-index
-SiCode equ 4Ch
-DiCode equ 4Dh
-SpCode equ 4Eh
-BpCode equ 4Fh
+SiCode equ 44h
+DiCode equ 45h
+SpCode equ 46h
+BpCode equ 47h
 
 
 ;emidiate value code
@@ -135,12 +136,10 @@ L4 db ?
 
 CodeToCheck db ?
 ToCheck DB ?
-;SourceToCheck DB ?
 
 Memo_Dest_Valid db 1
 Memo_Source_Valid db 1
 REG_VALID DB 0
-;REG_Source_VALID DB 0
 InstrusctionValid db 0
 NoSecondOperand db 0
 MemoLocation db ?
@@ -151,28 +150,17 @@ DestinationValue dw ?
 SourceValue dw ? 
 
 
-; commandS db 'decax$$$$$'
-; commandCode LABEL BYTE
-; isExternal db 0
-; Instruction db 00
-; Destination db 00
-; Source db 00
-; External dw 0000
-
 v1 db ?
 v2 db ?
 varName dw ?
 destORsource db ?
 flag db 0
-var db 0
-endl db 10,13,'$'
 .code
 execute PROC far
     mov ax, @data
     mov ds, ax
     
-    
-    ; lea si, commandStr
+
     mov InstrusctionValid, 0
     IsMov:
         mov L1, 'm'
@@ -553,85 +541,83 @@ GetDst_Src_Code proc far
         mov ToCheck,BpCode
         call GenerateCode
         cmp REG_VALID,1
-        jnz IsAld
+        ;jnz IsAld
         ret
-    IsAld:
-        mov L1,'a'
-        mov L2,'l'
-        mov ToCheck,alCode
-        call GenerateCode
-        cmp REG_VALID,1
-        jnz IsAhd
-        ret
+    ; IsAld:
+    ;     mov L1,'a'
+    ;     mov L2,'l'
+    ;     mov ToCheck,alCode
+    ;     call GenerateCode
+    ;     cmp REG_VALID,1
+    ;     jnz IsAhd
+    ;     ret
     
-    IsAhd:
-        mov L1,'a'
-        mov L2,'h'
-        mov ToCheck,ahCode
-        call GenerateCode
-        cmp REG_VALID,1
-        jnz IsBld
-        ret
+    ; IsAhd:
+    ;     mov L1,'a'
+    ;     mov L2,'h'
+    ;     mov ToCheck,ahCode
+    ;     call GenerateCode
+    ;     cmp REG_VALID,1
+    ;     jnz IsBld
+    ;     ret
 
 
-    IsBld:
-        mov L1,'b'
-        mov L2,'l'
-        mov ToCheck,blCode
-        call GenerateCode
-        cmp REG_VALID,1
-        jnz IsBhd
-        ret
+    ; IsBld:
+    ;     mov L1,'b'
+    ;     mov L2,'l'
+    ;     mov ToCheck,blCode
+    ;     call GenerateCode
+    ;     cmp REG_VALID,1
+    ;     jnz IsBhd
+    ;     ret
     
-    IsBhd:
-        mov L1,'b'
-        mov L2,'h'
-        mov ToCheck,bhCode
-        call GenerateCode
-        cmp REG_VALID,1
-        jnz IsCld
-        ret
-    IsCld:
-        mov L1,'c'
-        mov L2,'l'
-        mov ToCheck,clCode
-        call GenerateCode
-        cmp REG_VALID,1
-        jnz IsChd
-        ret
-    IsChd:
-        mov L1,'c'
-        mov L2,'h'
-        mov ToCheck,chCode
-        call GenerateCode
-        cmp REG_VALID,1
-        jnz IsDld
-        ret
+    ; IsBhd:
+    ;     mov L1,'b'
+    ;     mov L2,'h'
+    ;     mov ToCheck,bhCode
+    ;     call GenerateCode
+    ;     cmp REG_VALID,1
+    ;     jnz IsCld
+    ;     ret
+    ; IsCld:
+    ;     mov L1,'c'
+    ;     mov L2,'l'
+    ;     mov ToCheck,clCode
+    ;     call GenerateCode
+    ;     cmp REG_VALID,1
+    ;     jnz IsChd
+    ;     ret
+    ; IsChd:
+    ;     mov L1,'c'
+    ;     mov L2,'h'
+    ;     mov ToCheck,chCode
+    ;     call GenerateCode
+    ;     cmp REG_VALID,1
+    ;     jnz IsDld
+    ;     ret
 
 
-    IsDld:
-        mov L1,'d'
-        mov L2,'l'
-        mov ToCheck,dlCode
-        call GenerateCode
-        cmp REG_VALID,1
-        jnz IsDhd
-        ret
+    ; IsDld:
+    ;     mov L1,'d'
+    ;     mov L2,'l'
+    ;     mov ToCheck,dlCode
+    ;     call GenerateCode
+    ;     cmp REG_VALID,1
+    ;     jnz IsDhd
+    ;     ret
     
-    IsDhd:
-        mov L1,'d'
-        mov L2,'h'
-        mov ToCheck,dhCode
-        call GenerateCode
-        cmp REG_VALID,1
-        ret
+    ; IsDhd:
+    ;     mov L1,'d'
+    ;     mov L2,'h'
+    ;     mov ToCheck,dhCode
+    ;     call GenerateCode
+    ;     cmp REG_VALID,1
+    ;     ret
     
-GetDst_Src_Code endp    
-
+GetDst_Src_Code endp 
 
 GenerateDestCodeiFNotreg PROC far
     mov tempSI,si
-    
     MOV AL, '['
     cmp [si], AL
     JNZ NOTMEMO
@@ -920,7 +906,7 @@ GenerateCode PROC far
     RET
 GenerateCode ENDP 
  
-GenerateSrcEmValue PROC far
+GenerateSrcEmValue PROC 
     ;assuming em val is :'movax,0A'
     
 
@@ -930,31 +916,39 @@ GenerateSrcEmValue PROC far
     cmp [si],39h ;cmp with 9
     JLE loopOnNumber
         jmp notValidEVAL; if value is not starting by 0 it is wrong
-    
+        
         loopOnNumber:
-            cmp [si],'a' ;cmp with a
-            JGE numb_
-                sub [si],30h
-                jmp continueOperating
-            numb_:
+            ;mov bl,[si]
+            cmp [si],60h ;cmp with a
+            Jnc numb
                 sub [si],57h
+    ;lea bx ,External
+    ;mov al ,[si]
+    ;mov var,al
+    ;call printpeter
+                jmp continueOperating
+            numb:
+                sub [si],30h
                 
             continueOperating:
+
             lea bx,External
             mov ax, [bx] 
             mov bx,10h
             mul bx
-            lea bx,External
-            mov [bx], ax
+            lea di,External
+            mov [di], ax
             mov al,[si] 
             mov ah,0
             add External,ax
 
             inc si
-            cmp [si],'$'
+            cmp [si],'$$'
             jnz loopOnNumber
-
+    
         numberComplete:
+    
+
         MOV REG_VALID,1
         mov isExternal,1
         mov Source,EmidiateCode
@@ -987,7 +981,7 @@ ExcuteCommand proc far
         ret
         
     is_sub_exe:
-    cmp Instruction,movCode ;sub
+    cmp Instruction,subCode ;sub
     jnz is_sbb_exe
         call ExecuteHelper
         sub [bx],cx

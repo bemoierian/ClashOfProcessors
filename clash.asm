@@ -1,6 +1,8 @@
 ;-------------------------start.asm---------------------------
-EXTRN startScreen:far 
-EXTRN BUFFNAME:BYTE, BufferData:BYTE
+EXTRN startScreen1:far 
+EXTRN BUFFNAME1:BYTE, BufferData1:BYTE
+EXTRN startScreen2:far 
+EXTRN BUFFNAME2:BYTE, BufferData2:BYTE
 ;-------------------------RM.asm---------------------------
 EXTRN RegMemo:far
 PUBLIC m0_1,m1_1,m2_1,m3_1,m4_1,m5_1,m6_1 ,m7_1,m8_1,m9_1,mA_1,mB_1 ,mC_1,mD_1,mE_1,mF_1 
@@ -18,12 +20,16 @@ EXTRN DrawGun:far
 EXTRN FireGun_initial:far
 EXTRN FireGun_Continue:far
 EXTRN gunPrevX:WORD,gunPrevY:WORD,gunNewX:WORD,gunNewY:WORD
-;-------------------------powerups.asm---------------------------
-; EXTRN changeForbidden:far
-; EXTRN forbidden:BYTE
-;-------------------------UI.inc---------------------------
+;-------------------------UI.inc------------------------------
 include UI.inc
-;---------------------------------------------------------
+;-------------------powerups.asm----------------------------
+EXTRN changeForbidden1::FAR
+EXTRN forbidden1:BYTE
+EXTRN changeForbidden2::FAR
+EXTRN forbidden2:BYTE
+
+
+
 .286
 .MODEL SMALL
 .STACK 64
@@ -110,9 +116,12 @@ isError db 0
 ;---------------------------------Turns------------------------------
 Turn db 1
 ;--------------------------From start screen-------------------------
-P2_name db 'mark','$'
-P2_score db '10$'
-P1_score db '50$'
+
+
+
+
+P2_score db 0
+P1_score db 0
 
 .CODE
 MAIN PROC FAR
@@ -120,7 +129,8 @@ MAIN PROC FAR
     MOV DS, AX
     MOV ES, AX
     UserNames:
-        call startScreen  ;start.asm 
+        call startScreen1  ;start.asm 
+        call startScreen2 
     EndUserNames:
     ;Clear Screen
     mov ax,0600h
@@ -169,26 +179,58 @@ MAIN PROC FAR
 
     ;display name
         push dx
-    
+        mov si,offset BufferData1
+
+        MOV AL,[si]
+        sub al,30H
+        MOV AH,0  ;MAKE AH=0 TO HAVE THE RIGHT NUMBER IN AX
+        MOV BL,10 ;THE DIVISION THIS TIME IS OVER 10
+        MUL BL
+                        
+        MOV DL,AL ;TO save the frist digit      
+        mov al,[si+1] ;second digit   
+        sub al,30H   
+        add dl,al
+        mov P1_score,dl ;first initial score
+        ;;;;;;;;;;;;;;;;;;;;;;;;;;;
+        mov si,offset BUFFNAME2
+        MOV AL,[si]
+        sub al,30H
+        MOV AH,0  ;MAKE AH=0 TO HAVE THE RIGHT NUMBER IN AX
+        MOV BL,10 ;THE DIVISION THIS TIME IS OVER 10
+        MUL BL           
+        MOV DL,AL ;TO save the frist digit
+
+        mov al,[si+1] ;second digit   
+        sub al,30H   
+        add dl,al
+        ;;;;;;;;;;;;;;;;;;;;;;;
+        cmp dl,P1_score
+        jz eq
+        jb bel
+        eq:mov P2_score,dl
+        jmp
+        bel:mov p
+        ;I need to know the smallest of the 2 numbers the convet it to string and print it next to each name 
+        ;;;;;;;;;;;;;;;;;;;;;;;
         mov dl,5
         mov dh,20
         mov ah,2
         int 10h
         mov ah,09
-        mov dx,offset BUFFNAME
+        mov dx,offset BUFFNAME1
         int 21h
-        mov dx,offset P1_score
+        mov dx,offset BufferData1
         int 21h
         mov dl,70
         mov dh,20
         mov ah,2
         int 10h
         mov ah,09
-        mov dx,offset P2_name
+        mov dx,offset BUFFNAME2
         int 21h
-        mov dx,offset P2_score
+        mov dx,offset BufferData2
         int 21h
-        mov di, offset commandS
         pop dx
 
         mov di, offset commandS
