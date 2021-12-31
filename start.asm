@@ -220,202 +220,202 @@ startScreen1 PROC FAR
 startScreen1  ENDP
 
 startScreen2 PROC FAR
-    MOV AX, @DATA
-    MOV DS, AX
-    mov ES,ax
+;     MOV AX, @DATA
+;     MOV DS, AX
+;     mov ES,ax
    
-   ;Clear screen
-    mov ax,0600h
-    mov bh,07
-    mov cx,0
-    mov dx,184FH
-    int 10h
-    ;set the cursor in the top left
-    mov bh,0h 
-    mov ah,2
-    mov dh,0
-    mov dl,0
-    int 10h
+;    ;Clear screen
+;     mov ax,0600h
+;     mov bh,07
+;     mov cx,0
+;     mov dx,184FH
+;     int 10h
+;     ;set the cursor in the top left
+;     mov bh,0h 
+;     mov ah,2
+;     mov dh,0
+;     mov dl,0
+;     int 10h
 
-    ;ask for name
-    lea dx,ASK_NAME
-    mov ah,9
-    int 21h
+;     ;ask for name
+;     lea dx,ASK_NAME
+;     mov ah,9
+;     int 21h
     
-    LEA DI,BUFFNAME2
+;     LEA DI,BUFFNAME2
 
-    ;take the name from user with validation
-    mov cx,15 ;max length of the name
+;     ;take the name from user with validation
+;     mov cx,15 ;max length of the name
     
     
-    loopname:  
-    mov ah,1 ;read one char from the user and put it in al
-    int 21h
+;     loopname:  
+;     mov ah,1 ;read one char from the user and put it in al
+;     int 21h
  
-    MOV BL, AL ;bl = ascii code
+;     MOV BL, AL ;bl = ascii code
     
-    cmp bl,13 ;compare with enter if enter pressed jump to points
-    jz points
+;     cmp bl,13 ;compare with enter if enter pressed jump to points
+;     jz points
          
-    CMP BL, 61H   ;check on a
-    JGE DALPHABET_SMALL 
+;     CMP BL, 61H   ;check on a
+;     JGE DALPHABET_SMALL 
          
-    CMP BL, 41H   ;check on A
-    JGE DALPHABET 
+;     CMP BL, 41H   ;check on A
+;     JGE DALPHABET 
          
-    CMP BL, 30H  ;COMPARE WITH 0
-    JGE DDIGIT 
+;     CMP BL, 30H  ;COMPARE WITH 0
+;     JGE DDIGIT 
          
-    CMP BL, 30H ;if it's less than zero jump to special char
-    JL DSPECIAL
+;     CMP BL, 30H ;if it's less than zero jump to special char
+;     JL DSPECIAL
     
-    here:dec cx  
-    jnz loopname
+;     here:dec cx  
+;     jnz loopname
    
-    jmp POINTS ;JUMP TO points AFTER THIS LOOP 
+;     jmp POINTS ;JUMP TO points AFTER THIS LOOP 
     
-    BKspace:
-    mov dx,offset halfbackSpace
-    mov ah,9
-    int 21h   
-    inc cx   
-    dec di
-    jmp loopname
+;     BKspace:
+;     mov dx,offset halfbackSpace
+;     mov ah,9
+;     int 21h   
+;     inc cx   
+;     dec di
+;     jmp loopname
     
-    DSPECIAL: 
-    cmp bl,8 ;if the pressed key is a backspace return to the loop 
-    jz BKspace
-    mov dl,07h
-    mov ah,2
-    int 21h
-    mov dx,offset backSpace
-    mov ah,9
-    int 21h
-    jmp LOOPNAME
+;     DSPECIAL: 
+;     cmp bl,8 ;if the pressed key is a backspace return to the loop 
+;     jz BKspace
+;     mov dl,07h
+;     mov ah,2
+;     int 21h
+;     mov dx,offset backSpace
+;     mov ah,9
+;     int 21h
+;     jmp LOOPNAME
     
-    DDIGIT:  
-    CMP BL, 39H    ;COMPARE WITH THE '9; WHICH IS THE LOWER BOUND OF DIGITS
-    JG DSPECIAL    ;if it's not number jump to special char
-    mov dl,07h     ;bell    
-    mov ah,2
-    int 21h
-    mov dx,offset backSpace;backspace
-    mov ah,9
-    int 21h
-    JMP LOOPNAME  ;jump to loop whithout decreasing the counter
+;     DDIGIT:  
+;     CMP BL, 39H    ;COMPARE WITH THE '9; WHICH IS THE LOWER BOUND OF DIGITS
+;     JG DSPECIAL    ;if it's not number jump to special char
+;     mov dl,07h     ;bell    
+;     mov ah,2
+;     int 21h
+;     mov dx,offset backSpace;backspace
+;     mov ah,9
+;     int 21h
+;     JMP LOOPNAME  ;jump to loop whithout decreasing the counter
     
-    DALPHABET:   ;capital letters
-    CMP BL, 5AH  ;check on Z
-    JG DSPECIAL  ;if it's not jump to special char
-    JMP DALPHABET_SMALL
+;     DALPHABET:   ;capital letters
+;     CMP BL, 5AH  ;check on Z
+;     JG DSPECIAL  ;if it's not jump to special char
+;     JMP DALPHABET_SMALL
     
-    DALPHABET_SMALL: ;small letters
-    CMP BL, 7AH 
-    JG DSPECIAL 
-    STOSB ;TO PUT THE RIGHT CHAR WHICH IS IN AL IN THE STRIG POINTED BY DI
-    JMP here                                        
+;     DALPHABET_SMALL: ;small letters
+;     CMP BL, 7AH 
+;     JG DSPECIAL 
+;     STOSB ;TO PUT THE RIGHT CHAR WHICH IS IN AL IN THE STRIG POINTED BY DI
+;     JMP here                                        
     
- ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     
-    POINTS:    
-    cmp cx,15   ;to force the user to enter his name
-    jz loopname
+;     POINTS:    
+;     cmp cx,15   ;to force the user to enter his name
+;     jz loopname
     
-    mov dx,offset AskPoints ;ask for points
-    MOV AH,9
-    INT 21H
+;     mov dx,offset AskPoints ;ask for points
+;     MOV AH,9
+;     INT 21H
     
-    LEA DI,BufferData2
+;     LEA DI,BufferData2
     
-    mov cx,2 
+;     mov cx,2 
     
-    loopPoints:
+;     loopPoints:
         
-    mov ah,1 ;read one char from the user and put it in al
-    int 21h
+;     mov ah,1 ;read one char from the user and put it in al
+;     int 21h
     
-    MOV BL, AL    
+;     MOV BL, AL    
     
-    cmp bl,13 ;compare with enter if enter pressed jump to looppoints
-    jz loopPoints ;to force the user to enter 2 digits
+;     cmp bl,13 ;compare with enter if enter pressed jump to looppoints
+;     jz loopPoints ;to force the user to enter 2 digits
     
-    CMP BL, 61H   ;check on a
-    JGE DALPHABET_SMALL2 
+;     CMP BL, 61H   ;check on a
+;     JGE DALPHABET_SMALL2 
          
-    CMP BL, 41H   ;check on A
-    JGE DALPHABET2 
+;     CMP BL, 41H   ;check on A
+;     JGE DALPHABET2 
          
-    CMP BL, 30H  ;COMPARE WITH 0
-    JGE DDIGIT2 
+;     CMP BL, 30H  ;COMPARE WITH 0
+;     JGE DDIGIT2 
          
-    CMP BL, 30H 
-    JL DSPECIAL2     
+;     CMP BL, 30H 
+;     JL DSPECIAL2     
     
-    HERE2:   
-    loop loopPoints 
+;     HERE2:   
+;     loop loopPoints 
     
-    JMP PROCEED
+;     JMP PROCEED
     
     
-    BKspace2:
-    mov dx,offset halfbackSpace
-    mov ah,9
-    int 21h  
-    inc cx   
-    dec di 
-    jmp loopPoints
+;     BKspace2:
+;     mov dx,offset halfbackSpace
+;     mov ah,9
+;     int 21h  
+;     inc cx   
+;     dec di 
+;     jmp loopPoints
     
-    DSPECIAL2: 
-    cmp bl,8 ;if the pressed key is a backspace return to the loop 
-    jz BKspace2
-    mov dl,07h
-    mov ah,2
-    int 21h
-    lea dx,backSpace
-    mov ah,9
-    int 21h
-    jmp loopPoints
+;     DSPECIAL2: 
+;     cmp bl,8 ;if the pressed key is a backspace return to the loop 
+;     jz BKspace2
+;     mov dl,07h
+;     mov ah,2
+;     int 21h
+;     lea dx,backSpace
+;     mov ah,9
+;     int 21h
+;     jmp loopPoints
     
-    DDIGIT2:  
-    CMP BL, 39H    ;COMPARE WITH THE '9; WHICH IS THE LOWER BOUND OF DIGITS
-    JG DSPECIAL    ;if it's not number jump to special char
-    STOSB
-    JMP HERE2  ;jump to loop whithout decreasing the counter
+;     DDIGIT2:  
+;     CMP BL, 39H    ;COMPARE WITH THE '9; WHICH IS THE LOWER BOUND OF DIGITS
+;     JG DSPECIAL    ;if it's not number jump to special char
+;     STOSB
+;     JMP HERE2  ;jump to loop whithout decreasing the counter
     
-    DALPHABET2:   ;capital letters
-    CMP BL, 5AH  ;check on Z
-    JG DSPECIAL  ;if it's not jump to special char  
-    mov dl,07h     ;bell    
-    mov ah,2
-    int 21h
-    lea dx,backSpace;backspace
-    mov ah,9
-    int 21h
-    JMP loopPoints 
+;     DALPHABET2:   ;capital letters
+;     CMP BL, 5AH  ;check on Z
+;     JG DSPECIAL  ;if it's not jump to special char  
+;     mov dl,07h     ;bell    
+;     mov ah,2
+;     int 21h
+;     lea dx,backSpace;backspace
+;     mov ah,9
+;     int 21h
+;     JMP loopPoints 
     
-    DALPHABET_SMALL2: ;small letters
-    CMP BL, 7AH 
-    JG DSPECIAL 
-    mov dl,07h     ;bell    
-    mov ah,2
-    int 21h
-    lea dx,backSpace;backspace
-    mov ah,9
-    int 21h
-    JMP loopPoints 
+;     DALPHABET_SMALL2: ;small letters
+;     CMP BL, 7AH 
+;     JG DSPECIAL 
+;     mov dl,07h     ;bell    
+;     mov ah,2
+;     int 21h
+;     lea dx,backSpace;backspace
+;     mov ah,9
+;     int 21h
+;     JMP loopPoints 
     
-PROCEED:;wait for enter
-    lea dx,PRESSENTER
-    mov ah,9
-    int 21h
+; PROCEED:;wait for enter
+;     lea dx,PRESSENTER
+;     mov ah,9
+;     int 21h
     
-    WAITENTER:
-    MOV AH,0
-    INT 16h  
-    CMP AL,0DH   ;check on the pressed key
-    JNZ WAITENTER
-    MOV AH,1;read enter
-    INT 16h 
-    ret
+;     WAITENTER:
+;     MOV AH,0
+;     INT 16h  
+;     CMP AL,0DH   ;check on the pressed key
+;     JNZ WAITENTER
+;     MOV AH,1;read enter
+;     INT 16h 
+;     ret
 startScreen2  ENDP
 END

@@ -23,9 +23,9 @@ EXTRN gunPrevX:WORD,gunPrevY:WORD,gunNewX:WORD,gunNewY:WORD
 ;-------------------------UI.inc------------------------------
 include UI.inc
 ;-------------------powerups.asm----------------------------
-EXTRN changeForbidden1::FAR
+EXTRN changeForbidden1:FAR
 EXTRN forbidden1:BYTE
-EXTRN changeForbidden2::FAR
+EXTRN changeForbidden2:FAR
 EXTRN forbidden2:BYTE
 
 
@@ -130,7 +130,7 @@ MAIN PROC FAR
     MOV ES, AX
     UserNames:
         call startScreen1  ;start.asm 
-        call startScreen2 
+        ; call startScreen2 
     EndUserNames:
     ;Clear Screen
     mov ax,0600h
@@ -179,60 +179,61 @@ MAIN PROC FAR
 
     ;display name
         push dx
-        mov si,offset BufferData1
+        ; mov si,offset BufferData1
 
-        MOV AL,[si]
-        sub al,30H
-        MOV AH,0  ;MAKE AH=0 TO HAVE THE RIGHT NUMBER IN AX
-        MOV BL,10 ;THE DIVISION THIS TIME IS OVER 10
-        MUL BL
+        ; MOV AL,[si]
+        ; sub al,30H
+        ; MOV AH,0  ;MAKE AH=0 TO HAVE THE RIGHT NUMBER IN AX
+        ; MOV BL,10 ;THE DIVISION THIS TIME IS OVER 10
+        ; MUL BL
                         
-        MOV DL,AL ;TO save the frist digit      
-        mov al,[si+1] ;second digit   
-        sub al,30H   
-        add dl,al
-        mov P1_score,dl ;first initial score
-        ;;;;;;;;;;;;;;;;;;;;;;;;;;;
-        mov si,offset BUFFNAME2
-        MOV AL,[si]
-        sub al,30H
-        MOV AH,0  ;MAKE AH=0 TO HAVE THE RIGHT NUMBER IN AX
-        MOV BL,10 ;THE DIVISION THIS TIME IS OVER 10
-        MUL BL           
-        MOV DL,AL ;TO save the frist digit
+        ; MOV DL,AL ;TO save the frist digit      
+        ; mov al,[si+1] ;second digit   
+        ; sub al,30H   
+        ; add dl,al
+        ; mov P1_score,dl ;first initial score
+        ; ;;;;;;;;;;;;;;;;;;;;;;;;;;;
+        ; mov si,offset BUFFNAME2
+        ; MOV AL,[si]
+        ; sub al,30H
+        ; MOV AH,0  ;MAKE AH=0 TO HAVE THE RIGHT NUMBER IN AX
+        ; MOV BL,10 ;THE DIVISION THIS TIME IS OVER 10
+        ; MUL BL           
+        ; MOV DL,AL ;TO save the frist digit
 
-        mov al,[si+1] ;second digit   
-        sub al,30H   
-        add dl,al
-        ;;;;;;;;;;;;;;;;;;;;;;;
-        cmp dl,P1_score
-        jz eq
-        jb bel
-        eq:mov P2_score,dl
-        jmp
-        bel:mov p
-        ;I need to know the smallest of the 2 numbers the convet it to string and print it next to each name 
-        ;;;;;;;;;;;;;;;;;;;;;;;
-        mov dl,5
-        mov dh,20
-        mov ah,2
-        int 10h
-        mov ah,09
-        mov dx,offset BUFFNAME1
-        int 21h
-        mov dx,offset BufferData1
-        int 21h
-        mov dl,70
-        mov dh,20
-        mov ah,2
-        int 10h
-        mov ah,09
-        mov dx,offset BUFFNAME2
-        int 21h
-        mov dx,offset BufferData2
-        int 21h
+        ; mov al,[si+1] ;second digit   
+        ; sub al,30H   
+        ; add dl,al
+        ; ;;;;;;;;;;;;;;;;;;;;;;;
+        ; cmp dl,P1_score
+        ; jz eq
+        ; jb bel
+        ; eq:
+        ;     mov P2_score,dl
+        ; jmp
+        ; bel:mov p
+        ; ;I need to know the smallest of the 2 numbers the convet it to string and print it next to each name 
+        ; ;;;;;;;;;;;;;;;;;;;;;;;
+        ; mov dl,5
+        ; mov dh,20
+        ; mov ah,2
+        ; int 10h
+        ; mov ah,09
+        ; mov dx,offset BUFFNAME1
+        ; int 21h
+        ; mov dx,offset BufferData1
+        ; int 21h
+        ; mov dl,70
+        ; mov dh,20
+        ; mov ah,2
+        ; int 10h
+        ; mov ah,09
+        ; mov dx,offset BUFFNAME2
+        ; int 21h
+        ; mov dx,offset BufferData2
+        ; int 21h
+
         pop dx
-
         mov di, offset commandS
         mov cursor, di
     
@@ -255,24 +256,6 @@ MAIN PROC FAR
         setcursor 0000
         drawrectanglewithletter  140,101,0Eh,10,10, 63509d,'5',0eh
         setcursor 0000
-        ;------------------------Print, peter-----------------------------
-                    MOV AL,Source ;PUT THE REAMINDER IN THE AL TO DIVIDE IT AGAIN
-                    MOV AH,0  ;MAKE AH=0 TO HAVE THE RIGHT NUMBER IN AX
-                    MOV BL,10h ;THE DIVISION THIS TIME IS OVER 10
-                    DIV BL
-                    
-                    MOV DL,AL ;TO DISPLAY THE TENS 
-                    MOV CH,AH ;TO SAVE THE REMAINDER THE UNITS
-                    
-                    ADD DL,30H
-                    MOV AH,02
-                    INT 21H  
-                    
-                    MOV DL,CH ;NO DIVISION
-                    ADD DL,30H
-                    MOV AH,02H
-                    INT 21H
-        ;------------------------Print, peter-----------------------------
         ;Read Keyboard input
         mov ah, 1
         int 16h
@@ -365,7 +348,8 @@ MAIN PROC FAR
                 IsEnter:
                     cmp al, 13d
                     jnz concat
-                     ;------------------------Print, peter-----------------------------
+                    CALL execute
+                    ;------------------------Print, peter-----------------------------
                     MOV AL,Source ;PUT THE REAMINDER IN THE AL TO DIVIDE IT AGAIN
                     MOV AH,0  ;MAKE AH=0 TO HAVE THE RIGHT NUMBER IN AX
                     MOV BL,10h ;THE DIVISION THIS TIME IS OVER 10
