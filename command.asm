@@ -12,7 +12,7 @@ PUBLIC execute
 EXTRN AxVar1:WORD,BxVar1:WORD,CxVar1:WORD,DxVar1:WORD,SiVar1:WORD,DiVar1:WORD,SpVar1 :WORD,BpVar1 :WORD
 EXTRN m0_1:BYTE,m1_1:BYTE,m2_1:BYTE,m3_1:BYTE,m4_1:BYTE,m5_1:BYTE,m6_1 :BYTE,m7_1:BYTE,m8_1:BYTE,m9_1:BYTE,mA_1:BYTE,mB_1 :BYTE,mC_1:BYTE,mD_1:BYTE,mE_1:BYTE,mF_1 :BYTE
 
-
+public countdigit
 
 ;codes : External 1 
 ;codes : instruction 1h -> 14h
@@ -22,7 +22,7 @@ EXTRN m0_1:BYTE,m1_1:BYTE,m2_1:BYTE,m3_1:BYTE,m4_1:BYTE,m5_1:BYTE,m6_1 :BYTE,m7_
 ;codes : Source (registers 40h->4F)
 ;        Source (memory 70h->7F)
 ;        Source (Emmidiate 50)
-
+.286
 .model large
 .stack 64
 .data
@@ -134,33 +134,35 @@ L2 db ?
 L3 db ?
 L4 db ?
 
-CodeToCheck db ?
-ToCheck DB ?
+CodeToCheck db 0
+ToCheck DB 0
 
-Memo_Dest_Valid db 1
-Memo_Source_Valid db 1
+Memo_Dest_Valid db 0
+Memo_Source_Valid db 0
 REG_VALID DB 0
 InstrusctionValid db 0
 NoSecondOperand db 0
-MemoLocation db ?
+MemoLocation db 0
 
 
-tempSI dw ?
-DestinationValue dw ?
-SourceValue dw ? 
-
+tempSI dw 0
+DestinationValue dw 0
+SourceValue dw 0
+countdigit db 0
+is8bit db 0
 
 v1 db ?
 v2 db ?
 varName dw ?
-destORsource db ?
+destORsource db 0
 flag db 0
+
+var db 0
 .code
 execute PROC far
     mov ax, @data
     mov ds, ax
-    
-
+    call resetALLvars
     mov InstrusctionValid, 0
     IsMov:
         mov L1, 'm'
@@ -342,59 +344,76 @@ execute PROC far
 
 
     Dest: ;is destination
-    push si
+
     CALL GenerateDestCodeiFNotreg
-    
+    ;print value of the destination
     cmp Memo_Dest_Valid,1
     jz Src
-    pop si
+
     call GetDst_Src_Code
     MOV AL,ToCheck
     mov Destination,AL
+    mov DestinationValue,bx
 
     Src:  ;is source
-    mov DestinationValue,bx
-    MOV REG_VALID,0
+    MOV REG_VALID,0 
     cmp NoSecondOperand,1
     jz exe
     
     inc si
-    
     cmp [si], ','
     ;jnz close
 
     inc si
     mov tempSI,SI
-    push si
     CALL GenerateSrcCodeiFNotreg
-
     cmp Memo_Source_Valid,1
     jz Exe
-    pop si
-    IsEmmidiate:
-    
-    call GetDst_Src_Code
 
+    call GetDst_Src_Code
+    cmp REG_VALID,1
+    jnz IsEmmidiate
     MOV AL,ToCheck
     mov Source,AL
-    cmp REG_VALID,1
-    jz exe
+    mov SourceValue,bx
+    jmp exe
+
+    IsEmmidiate:
     ;if emmidiate value
     call GenerateSrcEmValue
     ;--    
-    
-    
 ;-------------------------------------EXECUTE----------------------------------------------
     Exe:
-    mov SourceValue,bx
-    
-    
     FinalCommand:
+    
     call ExcuteCommand
-                        
     close:
     ret
 execute ENDP
+
+resetALLvars proc
+mov is8bit,0
+mov isExternal,0
+mov Instruction,0
+mov Destination,0
+mov Source,0
+mov External,0
+;mov commandS,' '
+mov CodeToCheck,0
+mov ToCheck,0
+mov destORsource,0
+mov Memo_Dest_Valid,0
+mov Memo_Source_Valid,0
+mov REG_VALID,0
+mov InstrusctionValid,0
+mov NoSecondOperand,0
+mov MemoLocation,0
+mov DestinationValue,0
+mov SourceValue,0
+mov flag,0
+mov countdigit,0
+ret
+resetALLvars endp
 
 GenerateInstructionCode PROC
     
@@ -543,76 +562,76 @@ GetDst_Src_Code proc far
         cmp REG_VALID,1
         ;jnz IsAld
         ret
-    ; IsAld:
-    ;     mov L1,'a'
-    ;     mov L2,'l'
-    ;     mov ToCheck,alCode
-    ;     call GenerateCode
-    ;     cmp REG_VALID,1
-    ;     jnz IsAhd
-    ;     ret
+    IsAld:
+        mov L1,'a'
+        mov L2,'l'
+        mov ToCheck,alCode
+        call GenerateCode
+        cmp REG_VALID,1
+        jnz IsAhd
+        ret
     
-    ; IsAhd:
-    ;     mov L1,'a'
-    ;     mov L2,'h'
-    ;     mov ToCheck,ahCode
-    ;     call GenerateCode
-    ;     cmp REG_VALID,1
-    ;     jnz IsBld
-    ;     ret
+    IsAhd:
+        mov L1,'a'
+        mov L2,'h'
+        mov ToCheck,ahCode
+        call GenerateCode
+        cmp REG_VALID,1
+        jnz IsBld
+        ret
 
 
-    ; IsBld:
-    ;     mov L1,'b'
-    ;     mov L2,'l'
-    ;     mov ToCheck,blCode
-    ;     call GenerateCode
-    ;     cmp REG_VALID,1
-    ;     jnz IsBhd
-    ;     ret
+    IsBld:
+        mov L1,'b'
+        mov L2,'l'
+        mov ToCheck,blCode
+        call GenerateCode
+        cmp REG_VALID,1
+        jnz IsBhd
+        ret
     
-    ; IsBhd:
-    ;     mov L1,'b'
-    ;     mov L2,'h'
-    ;     mov ToCheck,bhCode
-    ;     call GenerateCode
-    ;     cmp REG_VALID,1
-    ;     jnz IsCld
-    ;     ret
-    ; IsCld:
-    ;     mov L1,'c'
-    ;     mov L2,'l'
-    ;     mov ToCheck,clCode
-    ;     call GenerateCode
-    ;     cmp REG_VALID,1
-    ;     jnz IsChd
-    ;     ret
-    ; IsChd:
-    ;     mov L1,'c'
-    ;     mov L2,'h'
-    ;     mov ToCheck,chCode
-    ;     call GenerateCode
-    ;     cmp REG_VALID,1
-    ;     jnz IsDld
-    ;     ret
+    IsBhd:
+        mov L1,'b'
+        mov L2,'h'
+        mov ToCheck,bhCode
+        call GenerateCode
+        cmp REG_VALID,1
+        jnz IsCld
+        ret
+    IsCld:
+        mov L1,'c'
+        mov L2,'l'
+        mov ToCheck,clCode
+        call GenerateCode
+        cmp REG_VALID,1
+        jnz IsChd
+        ret
+    IsChd:
+        mov L1,'c'
+        mov L2,'h'
+        mov ToCheck,chCode
+        call GenerateCode
+        cmp REG_VALID,1
+        jnz IsDld
+        ret
 
 
-    ; IsDld:
-    ;     mov L1,'d'
-    ;     mov L2,'l'
-    ;     mov ToCheck,dlCode
-    ;     call GenerateCode
-    ;     cmp REG_VALID,1
-    ;     jnz IsDhd
-    ;     ret
+    IsDld:
+        mov L1,'d'
+        mov L2,'l'
+        mov ToCheck,dlCode
+        call GenerateCode
+        cmp REG_VALID,1
+        jnz IsDhd
+        ret
     
-    ; IsDhd:
-    ;     mov L1,'d'
-    ;     mov L2,'h'
-    ;     mov ToCheck,dhCode
-    ;     call GenerateCode
-    ;     cmp REG_VALID,1
-    ;     ret
+    IsDhd:
+        mov L1,'d'
+        mov L2,'h'
+        mov ToCheck,dhCode
+        call GenerateCode
+        cmp REG_VALID,1
+        ret
     
 GetDst_Src_Code endp 
 
@@ -623,16 +642,13 @@ GenerateDestCodeiFNotreg PROC far
     JNZ NOTMEMO
     INC SI
 
-    MOV AL, 30H
-    cmp [si], AL
-    JL ERROR1
-    MOV AL, 39H
-    cmp [si], AL
+    MOV AL, [si]
+    cmp al, 39h
     jg NOTDIGIT
 
 
-    MOV AL, '0'
-    cmp [si], AL
+    MOV AL, [si]
+    cmp al, '0'
     JNZ TAKECURRNUM
     takeNumTillClosed:
         mov al, [si]
@@ -662,11 +678,11 @@ GenerateDestCodeiFNotreg PROC far
     
     mov BX,offset MemoOpcode 
     XLAT
-    mov Destination, al
+    mov destORsource, al
+            
     inc si
-    cmp [si], ']'
-    jnz NOTDIGIT
     jmp calclocdst
+
     NOTDIGIT:
             mov v1,'b'
             mov v2,'x' 
@@ -700,32 +716,30 @@ GenerateDestCodeiFNotreg PROC far
     mov al,MemoLocation
     add BX,ax
     mov DestinationValue,BX
+    mov Memo_Dest_Valid,1
     jmp ENDMEMO
     
             
     NOTMEMO: 
     mov Memo_Dest_Valid,0
+    mov si,tempSI ; to save si location if the operation failed        
     JMP ENDMEMO 
     ERROR1:
-    mov si,tempSI ; to save si location if the operation failed        
     ENDMEMO:
     RET
 GenerateDestCodeiFNotreg ENDP
 
 
-GenerateSrcCodeiFNotreg PROC
+GenerateSrcCodeiFNotreg PROC far
+    mov tempsi,si
     MOV AL, '['
     cmp [si], AL
     JNZ NOTMEMO2
     INC SI
 
-    MOV AL, 30H
-    cmp [si], AL
-    JL ERROR2
     MOV AL, 39H
     cmp [si], AL
     jg NOTDIGIT2
-
 
     MOV AL, '0'
     cmp [si], AL
@@ -744,7 +758,6 @@ GenerateSrcCodeiFNotreg PROC
     TAKECURRNUM2:
     mov al, [si]
     Mov MemoLocation, al
-    ;JMP ENDMEMO2
     ISMEMO2:
     cmp MemoLocation,39h
     jg charNum2
@@ -759,7 +772,7 @@ GenerateSrcCodeiFNotreg PROC
     
     mov BX,offset MemoOpcode 
     XLAT
-    mov Source, al
+    mov destORsource, al
     jmp calclocsrc
     
     NOTDIGIT2:
@@ -790,25 +803,24 @@ GenerateSrcCodeiFNotreg PROC
             jnz ENDMEMO2 
     calclocsrc:
     mov al, destORsource
-    mov source,al
+    mov Source,al
     mov BX,offset m0_1
     mov ah,0
     mov al,MemoLocation
     add BX,ax
     mov SourceValue,BX
-    ;print value of the destination
+    mov Memo_Source_Valid,1
     jmp ENDMEMO2
-        
+    
     NOTMEMO2:
     mov Memo_Source_Valid,0   
     JMP ENDMEMO2      
-    ERROR2:
     mov si,tempSI ; to save si location if the operation failed        
     ENDMEMO2:
     RET
 GenerateSrcCodeiFNotreg ENDP
 
-CheckDirectAddressing proc
+CheckDirectAddressing proc far
     mov al,v1
     cmp [si],al
     jnz chechAnotherReg
@@ -829,36 +841,27 @@ CheckDirectAddressing proc
             mov BX,offset MemoOpcode 
             XLAT
             mov destORsource, al
-            
-            ;jmp calcloc
             mov flag,1
             ret 
             
             RegIndirect1:
-            mov bl,'+'
-            cmp [si],bl
+            mov bl,[si]
+            cmp bl,'+'
             jnz ERROR1
             inc si
             
-            
-            cmp [si],39h
-            jge AF1
-                sub [si], 57h
-            
+            mov bl,[si]
+            cmp bl,39h
+            jle AF1
+                sub bl, 57h
             jmp cont1
             AF1:
             
-            sub [si], 30h
+            sub bl, 30h
             cont1:
-            mov al, [si]
-            
-            
-
+            mov al, bl
             add MemoLocation,al
             mov al,MemoLocation
-            
-            
-            
             mov BX,offset MemoOpcode 
             XLAT
             mov destORsource, al
@@ -866,7 +869,6 @@ CheckDirectAddressing proc
             ;JMP calcloc
             mov flag,1
             chechAnotherReg:
-
             ret
 CheckDirectAddressing endp
 
@@ -882,7 +884,7 @@ GenerateCode PROC far
     jnz notValidD
     ;inc si
     MOV AL,ToCheck     
-    ;mov Destination,AL ---
+    ;mov Destination,AL 
     MOV REG_VALID,1
     mov ah,0
     mov bl,10h
@@ -905,30 +907,22 @@ GenerateCode PROC far
     notValidD:
     RET
 GenerateCode ENDP 
- 
+
 GenerateSrcEmValue PROC 
     ;assuming em val is :'movax,0A'
-    
-
     cmp [si],30h ;cmp with 0
     JGE loopOnNumber
     
     cmp [si],39h ;cmp with 9
     JLE loopOnNumber
-        jmp notValidEVAL; if value is not starting by 0 it is wrong
-        
         loopOnNumber:
-            ;mov bl,[si]
-            cmp [si],60h ;cmp with a
-            Jnc numb
-                sub [si],57h
-    ;lea bx ,External
-    ;mov al ,[si]
-    ;mov var,al
-    ;call printpeter
+            mov cl,[si]
+            cmp cl,'a' ;cmp with a
+            Jle numb
+                sub cl,57h
                 jmp continueOperating
             numb:
-                sub [si],30h
+                sub cl,30h
                 
             continueOperating:
 
@@ -938,23 +932,20 @@ GenerateSrcEmValue PROC
             mul bx
             lea di,External
             mov [di], ax
-            mov al,[si] 
+            mov al,cl 
             mov ah,0
             add External,ax
+
+            inc countdigit
 
             inc si
             cmp [si],'$$'
             jnz loopOnNumber
     
         numberComplete:
-    
-
         MOV REG_VALID,1
         mov isExternal,1
         mov Source,EmidiateCode
-    notValidEVAL:
-    
-    
     RET
 GenerateSrcEmValue ENDP
 
@@ -963,6 +954,11 @@ ExcuteCommand proc far
     cmp Instruction,movCode ;mov
     jnz is_add_exe
         call ExecuteHelper
+                cmp countdigit,2
+                jnc normal
+                mov [bx],cl
+                ret
+        normal:
         mov [bx],cx
         ret
     
@@ -970,6 +966,11 @@ ExcuteCommand proc far
     cmp Instruction,addCode ;add
     jnz is_adc_exe
         call ExecuteHelper
+                cmp countdigit,2
+                jnc normal
+                add [bx],cl
+                ret
+        normal:
         add [bx],cx
         ret
         
@@ -977,6 +978,11 @@ ExcuteCommand proc far
     cmp Instruction,adcCode ;adc
     jnz is_sub_exe
         call ExecuteHelper
+                cmp countdigit,2
+                jnc normal
+                adc [bx],cl
+                ret
+        normal:
         adc [bx],cx
         ret
         
@@ -984,42 +990,66 @@ ExcuteCommand proc far
     cmp Instruction,subCode ;sub
     jnz is_sbb_exe
         call ExecuteHelper
+                cmp countdigit,2
+                jnc normal
+                sub [bx],cl
+                ret
+        normal:
         sub [bx],cx
-        ret    
+        ret   
         
         
     is_sbb_exe:
     cmp Instruction,sbbCode ;sbb
     jnz is_xor_exe
         call ExecuteHelper
+                cmp countdigit,2
+                jnc normal
+                sbb [bx],cl
+                ret
+        normal:
         sbb [bx],cx
-        ret     
+        ret   
         
         
     is_xor_exe:
     cmp Instruction,xorCode ;xor
     jnz is_and_exe
         call ExecuteHelper
+                cmp countdigit,2
+                jnc normal
+                xor [bx],cl
+                ret
+        normal:
         xor [bx],cx
-        ret     
+        ret  
         
     is_and_exe:
     cmp Instruction,andCode ;and
     jnz is_or_exe
         call ExecuteHelper
+                cmp countdigit,2
+                jnc normal
+                and [bx],cl
+                ret
+        normal:
         and [bx],cx
-        ret
+        ret 
     
     
     is_or_exe:
     cmp Instruction,orCode ;or    
     jnz is_nop_exe
         call ExecuteHelper
+                cmp countdigit,2
+                jnc normal
+                or [bx],cl
+                ret
+        normal:
         or [bx],cx
-        ret
-    
+        ret 
     is_nop_exe:
-    cmp Instruction,nopCode ;nop    ;nop di eh????????
+    cmp Instruction,nopCode ;nop    
     jnz is_shr_exe
         nop 
         ret
@@ -1027,17 +1057,25 @@ ExcuteCommand proc far
     cmp Instruction,shrCode ;shr    
     jnz is_shl_exe
         call ExecuteHelper
-        mov ax,[bx]
-        shr ax,cl  ; chech here if source is cx
-        ret
+                cmp countdigit,2
+                jnc normal
+                shr [bx],cl
+                ret
+        normal:
+        shr [bx],cx
+        ret 
         
     is_shl_exe:
     cmp Instruction,shlCode ;shl    
     jnz is_clc_exe
         call ExecuteHelper
-        mov ax,[bx]
-        shl ax,cl  ; chech here if source is cx
-        ret
+                cmp countdigit,2
+                jnc normal
+                shl [bx],cl
+                ret
+        normal:
+        shl [bx],cx
+        ret 
         
     is_clc_exe:
     ;cmp Instruction,clcCode ;clc    
@@ -1048,21 +1086,36 @@ ExcuteCommand proc far
     is_ror_exe:
     cmp Instruction,rorCode ;ror    
     jnz is_rcl_exe
-        mov cx,SourceValue  ; chech here if source is cx
-        ror DestinationValue,cl
-        ret
+        call ExecuteHelper
+                cmp countdigit,2
+                jnc normal
+                ror [bx],cl
+                ret
+        normal:
+        ror [bx],cx 
+        ret 
     is_rcl_exe:
     cmp Instruction,rclCode ;rcl    
     jnz is_rcr_exe
-        mov cx,SourceValue  ; chech here if source is cx
-        rcl DestinationValue,cl
-        ret
+        call ExecuteHelper
+                cmp countdigit,2
+                jnc normal
+                rcl [bx],cl
+                ret
+        normal:
+        rcl [bx],cx 
+        ret 
     is_rcr_exe:
     cmp Instruction,rcrCode ;rcr   
     jnz is_push_exe
-        mov cx,SourceValue  
-        rcr DestinationValue,cl
-        ret
+        call ExecuteHelper
+                cmp countdigit,2
+                jnc normal
+                rcr [bx],cl
+                ret
+        normal:
+        rcr [bx],cx 
+        ret 
     is_push_exe:
     cmp Instruction,pushCode ;push   
     jnz is_pop_exe  
@@ -1093,7 +1146,7 @@ ExcuteCommand endp
 ExecuteHelper PROC
         cmp isExternal,1 ;if it is an external input
         jnz notemmidiatesource
-            mov cx,External
+            mov cx,External  
             jmp finish_exe
         notemmidiatesource:  ;else
             mov al,source
@@ -1103,13 +1156,13 @@ ExecuteHelper PROC
             cmp al,7h;check if memory
             jnz notmemory1
                 mov bx,SourceValue
-                ;mov ch,0
+                mov countdigit,4 ;to help in al,ah,...
                 mov cx,[bx]
                 jmp finish_exe
             notmemory1: 
             mov bx,SourceValue
+            mov countdigit,4
             mov cx,[bx]
-            
         finish_exe:
         mov bx,DestinationValue
         ret
@@ -1118,6 +1171,11 @@ ExecuteHelper ENDP
 
 
 Pushexe proc
+    cmp SpVar1,0
+    jle finishpush 
+    cmp SpVar1,10H
+    jg finishpush
+    ; the upper operations checks if the stack pointer  is out of range
     lea si,mF_1
     mov ax,10h
     sub ax,SpVar1
@@ -1138,10 +1196,14 @@ Pushexe proc
     mov [si],cx
     
     dec Spvar1
+    finishpush:
     ret
 Pushexe endp
 
 Popexe proc
+    cmp SpVar1,0eh
+    jg finishpop
+
     lea si,mF_1
     mov ax,0fh
     sub ax,SpVar1
@@ -1150,6 +1212,7 @@ Popexe proc
     mov bx,DestinationValue
     mov cx,[si]
     mov [bx],cx
+    mov [si],0
     
     cmp Destination,DxCode
     jge bit16_check1_pop
@@ -1161,9 +1224,8 @@ Popexe proc
         inc si
         inc Spvar1
     is8bit_pop:
-    
-    
     inc Spvar1
+    finishpop:
     ret
 Popexe endp
 end 
