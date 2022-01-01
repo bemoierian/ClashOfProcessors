@@ -160,11 +160,11 @@ MAIN PROC FAR
                 ; jmp chat
             keyF2:
                 cmp ah, 3Ch ;compare key code with f1 code
-                jnz keyESC    ;if the key is not F1, jump to next check
+                jnz keyESC    ;if the key is not F2, jump to next check
                 jmp EndMainScreen
             keyESC:
                 cmp ah, 1h ;compare key code with f1 code
-                jnz MainInput    ;if the key is not F1, jump to next check
+                jnz MainInput    ;if the key is not esc, take input again
                 jmp EndGame
             EndMainInput:
 
@@ -186,83 +186,10 @@ MAIN PROC FAR
     
 
     ;display name
-        push dx
-        mov si,offset BufferData1
-
-        MOV AL,[si]
-        sub al,30H
-        MOV AH,0  ;MAKE AH=0 TO HAVE THE RIGHT NUMBER IN AX
-        MOV BL,10 ;THE DIVISION THIS TIME IS OVER 10
-        MUL BL
-                        
-        MOV DL,AL ;TO save the frist digit      
-        mov al,[si+1] ;second digit   
-        sub al,30H   
-        add dl,al
-        mov P1_score,dl ;first initial score
-        ;;;;;;;;;;;;;;;;;;;;;;;;;;;
-        mov si,offset BufferData2
-        MOV AL,[si]
-        sub al,30H
-        MOV AH,0  ;MAKE AH=0 TO HAVE THE RIGHT NUMBER IN AX
-        MOV BL,10 ;THE DIVISION THIS TIME IS OVER 10
-        MUL BL           
-        MOV DL,AL ;TO save the frist digit
-
-        mov al,[si+1] ;second digit   
-        sub al,30H   
-        add dl,al
-        mov P2_score,dl
-        ;I need to know the smallest of the 2 numbers the convet it to string and print it next to each name 
-        ;Finding The min of the 2 initials
-        mov al,P1_score
-        mov bl,P2_score
-        
-        cmp al,bl  
-        jl closeM1
-        jg closeM2     
-        jmp closeM    
-
-        closeM1: 
-        mov P2_score,al
-        jmp closeM
-        
-        closeM2: 
-        mov P1_score,bl 
-        closeM:
-        
-        ;Dispkay the names and the min initial points
-        ;set the crsr
-        mov dl,5
-        mov dh,20
-        mov ah,2
-        int 10h
-        ;print the first name
-        mov ah,09 
-        mov dx,offset BUFFNAME1
-        int 21h 
-        ;print the score of the first player
-        MOV AL,P1_score
-        CALL DisplayNumInAL
-        ;set the crsr
-        mov dl,70 
-        mov dh,20
-        mov ah,2
-        int 10h
-        ;print the second name
-        mov ah,09
-        mov dx,offset BUFFNAME2 
-        int 21h
-        ;print the score of the second player
-        MOV AL,P2_score
-        CALL DisplayNumInAL
-
-        pop dx
-
-        ;START THE GAME
-        mov di, offset commandS
-        mov cursor, di
-    
+    CALL DisplayNamesAndScore
+    ;START THE GAME
+    mov di, offset commandS
+    mov cursor, di
     Game:
         inc cyclesCounter1
         inc cyclesCounter2
@@ -493,7 +420,7 @@ BackspaceInput PROC
     horizontalline 170,0,320            ;horizontal line
     drawrectangle  120,0,0dh,10,120     ;draw the background of the command after deleting to override the old command
 
-    horizontalline 145,162,319          ;horizontal line
+    ; horizontalline 145,162,319          ;horizontal line
     drawrectangle  120,161,0Eh,10,120
 
     BackspaceInputDone:
@@ -596,5 +523,75 @@ DisplayNumInAL PROC
     INT 21H
     ret
 DisplayNumInAL ENDP 
+DisplayNamesAndScore PROC
+        mov si,offset BufferData1
+        MOV AL,[si]
+        sub al,30H
+        MOV AH,0  ;MAKE AH=0 TO HAVE THE RIGHT NUMBER IN AX
+        MOV BL,10 ;THE DIVISION THIS TIME IS OVER 10
+        MUL BL
+                        
+        MOV DL,AL ;TO save the frist digit      
+        mov al,[si+1] ;second digit   
+        sub al,30H   
+        add dl,al
+        mov P1_score,dl ;first initial score
+        ;;;;;;;;;;;;;;;;;;;;;;;;;;;
+        mov si,offset BufferData2
+        MOV AL,[si]
+        sub al,30H
+        MOV AH,0  ;MAKE AH=0 TO HAVE THE RIGHT NUMBER IN AX
+        MOV BL,10 ;THE DIVISION THIS TIME IS OVER 10
+        MUL BL           
+        MOV DL,AL ;TO save the frist digit
 
+        mov al,[si+1] ;second digit   
+        sub al,30H   
+        add dl,al
+        mov P2_score,dl
+        ;I need to know the smallest of the 2 numbers the convet it to string and print it next to each name 
+        ;Finding The min of the 2 initials
+        mov al,P1_score
+        mov bl,P2_score
+        
+        cmp al,bl  
+        jl closeM1
+        jg closeM2     
+        jmp closeM    
+
+        closeM1: 
+        mov P2_score,al
+        jmp closeM
+        
+        closeM2: 
+        mov P1_score,bl 
+        closeM:
+        
+        ;Dispkay the names and the min initial points
+        ;set the crsr
+        mov dl,5
+        mov dh,20
+        mov ah,2
+        int 10h
+        ;print the first name
+        mov ah,09 
+        mov dx,offset BUFFNAME1
+        int 21h 
+        ;print the score of the first player
+        MOV AL,P1_score
+        CALL DisplayNumInAL
+        ;set the crsr
+        mov dl,70 
+        mov dh,20
+        mov ah,2
+        int 10h
+        ;print the second name
+        mov ah,09
+        mov dx,offset BUFFNAME2 
+        int 21h
+        ;print the score of the second player
+        MOV AL,P2_score
+        CALL DisplayNumInAL
+    RET
+DisplayNamesAndScore ENDP  
 END MAIN
