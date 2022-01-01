@@ -1,16 +1,21 @@
 ;-----------------Called in clash.asm------------------
 PUBLIC DrawGun, FireGun_initial, FireGun_Continue
-PUBLIC gunPrevX,gunPrevY,gunNewX,gunNewY
+PUBLIC gun1PrevX,gun1PrevY,gun1NewX,gun1NewY
 ;------------------------------------------------------
 .286
 .MODEL SMALL
 .STACK 64
 .DATA
 ;--------------------------Gun--------------------------
-gunPrevX dw 50
-gunPrevY dw 100
-gunNewX dw 50
-gunNewY dw 100
+gun1PrevX dw 80
+gun1PrevY dw 150
+gun1NewX dw 80
+gun1NewY dw 150
+
+gun2PrevX dw 240
+gun2PrevY dw 150
+gun2NewX dw 240
+gun2NewY dw 150
 ;------------------------Gun fire-----------------------
 FireX dw 0
 FireY dw 0
@@ -34,11 +39,11 @@ DrawGun PROC FAR
     mov bx, 0
     mov ah,0ch       ;Draw Pixel Command
     mov al,0Fh       ;Pixel color
-    mov cx,gunPrevX   ;Column
-    mov dx,gunPrevY   ;Row   
+    mov cx,gun1PrevX   ;Column
+    mov dx,gun1PrevY   ;Row   
     ;loop to draw the new gun
     outer1:
-        mov cx, gunPrevX ;X position of new gun
+        mov cx, gun1PrevX ;X position of new gun
         mov bl, 0 ;inner counter
         inc dx    ;increment row
         cmp bh,4  ;if draw 3 rows then then the gun is completed
@@ -55,10 +60,10 @@ DrawGun PROC FAR
     exit1:
     mov bx, 0
     mov al,04h       ;Pixel color
-    mov cx,gunNewX   ;Column
-    mov dx,gunNewY   ;Row   
+    mov cx,gun1NewX   ;Column
+    mov dx,gun1NewY   ;Row   
     outer2:
-        mov cx, gunNewX ;X position of new gun
+        mov cx, gun1NewX ;X position of new gun
         mov bl, 0 ;inner counter
         inc dx    ;increment row
         cmp bh,4  ;if draw 3 rows then then the gun is completed
@@ -74,10 +79,10 @@ DrawGun PROC FAR
         jz outer2
     exit2:
 
-    mov ax, gunNewX
-    mov bx, gunNewY
-    mov gunPrevX, ax ;move the new position to previous position
-    mov gunPrevY, bx
+    mov ax, gun1NewX
+    mov bx, gun1NewY
+    mov gun1PrevX, ax ;move the new position to previous position
+    mov gun1PrevY, bx
     ret
 DrawGun ENDP     
 
@@ -86,9 +91,9 @@ FireGun_initial PROC FAR
     mov ds, ax
     cmp isFiring, 0
     jnz alreadyFiring
-    mov ax, gunPrevX
+    mov ax, gun1PrevX
     add ax, 3
-    mov bx, gunPrevY
+    mov bx, gun1PrevY
     sub bx, 3
     mov FireX, ax
     mov FireY, bx
