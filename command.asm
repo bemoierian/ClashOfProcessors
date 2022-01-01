@@ -562,76 +562,76 @@ GetDst_Src_Code proc far
         cmp REG_VALID,1
         ;jnz IsAld
         ret
-    IsAld:
-        mov L1,'a'
-        mov L2,'l'
-        mov ToCheck,alCode
-        call GenerateCode
-        cmp REG_VALID,1
-        jnz IsAhd
-        ret
+    ; IsAld:
+    ;     mov L1,'a'
+    ;     mov L2,'l'
+    ;     mov ToCheck,alCode
+    ;     call GenerateCode
+    ;     cmp REG_VALID,1
+    ;     jnz IsAhd
+    ;     ret
     
-    IsAhd:
-        mov L1,'a'
-        mov L2,'h'
-        mov ToCheck,ahCode
-        call GenerateCode
-        cmp REG_VALID,1
-        jnz IsBld
-        ret
+    ; IsAhd:
+    ;     mov L1,'a'
+    ;     mov L2,'h'
+    ;     mov ToCheck,ahCode
+    ;     call GenerateCode
+    ;     cmp REG_VALID,1
+    ;     jnz IsBld
+    ;     ret
 
 
-    IsBld:
-        mov L1,'b'
-        mov L2,'l'
-        mov ToCheck,blCode
-        call GenerateCode
-        cmp REG_VALID,1
-        jnz IsBhd
-        ret
+    ; IsBld:
+    ;     mov L1,'b'
+    ;     mov L2,'l'
+    ;     mov ToCheck,blCode
+    ;     call GenerateCode
+    ;     cmp REG_VALID,1
+    ;     jnz IsBhd
+    ;     ret
     
-    IsBhd:
-        mov L1,'b'
-        mov L2,'h'
-        mov ToCheck,bhCode
-        call GenerateCode
-        cmp REG_VALID,1
-        jnz IsCld
-        ret
-    IsCld:
-        mov L1,'c'
-        mov L2,'l'
-        mov ToCheck,clCode
-        call GenerateCode
-        cmp REG_VALID,1
-        jnz IsChd
-        ret
-    IsChd:
-        mov L1,'c'
-        mov L2,'h'
-        mov ToCheck,chCode
-        call GenerateCode
-        cmp REG_VALID,1
-        jnz IsDld
-        ret
+    ; IsBhd:
+    ;     mov L1,'b'
+    ;     mov L2,'h'
+    ;     mov ToCheck,bhCode
+    ;     call GenerateCode
+    ;     cmp REG_VALID,1
+    ;     jnz IsCld
+    ;     ret
+    ; IsCld:
+    ;     mov L1,'c'
+    ;     mov L2,'l'
+    ;     mov ToCheck,clCode
+    ;     call GenerateCode
+    ;     cmp REG_VALID,1
+    ;     jnz IsChd
+    ;     ret
+    ; IsChd:
+    ;     mov L1,'c'
+    ;     mov L2,'h'
+    ;     mov ToCheck,chCode
+    ;     call GenerateCode
+    ;     cmp REG_VALID,1
+    ;     jnz IsDld
+    ;     ret
 
 
-    IsDld:
-        mov L1,'d'
-        mov L2,'l'
-        mov ToCheck,dlCode
-        call GenerateCode
-        cmp REG_VALID,1
-        jnz IsDhd
-        ret
+    ; IsDld:
+    ;     mov L1,'d'
+    ;     mov L2,'l'
+    ;     mov ToCheck,dlCode
+    ;     call GenerateCode
+    ;     cmp REG_VALID,1
+    ;     jnz IsDhd
+    ;     ret
     
-    IsDhd:
-        mov L1,'d'
-        mov L2,'h'
-        mov ToCheck,dhCode
-        call GenerateCode
-        cmp REG_VALID,1
-        ret
+    ; IsDhd:
+    ;     mov L1,'d'
+    ;     mov L2,'h'
+    ;     mov ToCheck,dhCode
+    ;     call GenerateCode
+    ;     cmp REG_VALID,1
+    ;     ret
     
 GetDst_Src_Code endp 
 
@@ -955,10 +955,10 @@ ExcuteCommand proc far
     jnz is_add_exe
         call ExecuteHelper
                 cmp countdigit,2
-                jnc normal
+                jnc normal1
                 mov [bx],cl
                 ret
-        normal:
+        normal1:
         mov [bx],cx
         ret
     
@@ -967,10 +967,10 @@ ExcuteCommand proc far
     jnz is_adc_exe
         call ExecuteHelper
                 cmp countdigit,2
-                jnc normal
+                jnc normal2
                 add [bx],cl
                 ret
-        normal:
+        normal2:
         add [bx],cx
         ret
         
@@ -979,10 +979,10 @@ ExcuteCommand proc far
     jnz is_sub_exe
         call ExecuteHelper
                 cmp countdigit,2
-                jnc normal
+                jnc normal3
                 adc [bx],cl
                 ret
-        normal:
+        normal3:
         adc [bx],cx
         ret
         
@@ -991,10 +991,10 @@ ExcuteCommand proc far
     jnz is_sbb_exe
         call ExecuteHelper
                 cmp countdigit,2
-                jnc normal
+                jnc normal4
                 sub [bx],cl
                 ret
-        normal:
+        normal4:
         sub [bx],cx
         ret   
         
@@ -1004,10 +1004,10 @@ ExcuteCommand proc far
     jnz is_xor_exe
         call ExecuteHelper
                 cmp countdigit,2
-                jnc normal
+                jnc normal5
                 sbb [bx],cl
                 ret
-        normal:
+        normal5:
         sbb [bx],cx
         ret   
         
@@ -1017,10 +1017,10 @@ ExcuteCommand proc far
     jnz is_and_exe
         call ExecuteHelper
                 cmp countdigit,2
-                jnc normal
+                jnc normal6
                 xor [bx],cl
                 ret
-        normal:
+        normal6:
         xor [bx],cx
         ret  
         
@@ -1029,10 +1029,10 @@ ExcuteCommand proc far
     jnz is_or_exe
         call ExecuteHelper
                 cmp countdigit,2
-                jnc normal
+                jnc normal7
                 and [bx],cl
                 ret
-        normal:
+        normal7:
         and [bx],cx
         ret 
     
@@ -1042,10 +1042,10 @@ ExcuteCommand proc far
     jnz is_nop_exe
         call ExecuteHelper
                 cmp countdigit,2
-                jnc normal
+                jnc normal8
                 or [bx],cl
                 ret
-        normal:
+        normal8:
         or [bx],cx
         ret 
     is_nop_exe:
@@ -1058,10 +1058,10 @@ ExcuteCommand proc far
     jnz is_shl_exe
         call ExecuteHelper
                 cmp countdigit,2
-                jnc normal
+                jnc normal9
                 shr [bx],cl
                 ret
-        normal:
+        normal9:
         shr [bx],cx
         ret 
         
@@ -1070,10 +1070,10 @@ ExcuteCommand proc far
     jnz is_clc_exe
         call ExecuteHelper
                 cmp countdigit,2
-                jnc normal
+                jnc normal9
                 shl [bx],cl
                 ret
-        normal:
+        normal9:
         shl [bx],cx
         ret 
         
@@ -1088,10 +1088,10 @@ ExcuteCommand proc far
     jnz is_rcl_exe
         call ExecuteHelper
                 cmp countdigit,2
-                jnc normal
+                jnc normal10
                 ror [bx],cl
                 ret
-        normal:
+        normal10:
         ror [bx],cx 
         ret 
     is_rcl_exe:
@@ -1099,10 +1099,10 @@ ExcuteCommand proc far
     jnz is_rcr_exe
         call ExecuteHelper
                 cmp countdigit,2
-                jnc normal
+                jnc normal11
                 rcl [bx],cl
                 ret
-        normal:
+        normal11:
         rcl [bx],cx 
         ret 
     is_rcr_exe:
@@ -1110,10 +1110,10 @@ ExcuteCommand proc far
     jnz is_push_exe
         call ExecuteHelper
                 cmp countdigit,2
-                jnc normal
+                jnc normal12
                 rcr [bx],cl
                 ret
-        normal:
+        normal12:
         rcr [bx],cx 
         ret 
     is_push_exe:
