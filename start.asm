@@ -7,7 +7,8 @@ PUBLIC BUFFNAME2,BufferData2
 .DATA
 BUFFNAME1 DB 16 DUP('$')
 BUFFNAME2 DB 16 DUP('$')
-ASK_NAME DB 'Please Enter The Name Of The First Player: ',10,13,'$' 
+ASK_NAME1 DB 'Please Enter The Name Of The First Player: ',10,13,'$' 
+ASK_NAME2 DB 'Please Enter The Name Of The Second Player: ',10,13,'$'
 
 backSpace db 8,32,8,'$' 
 halfBackSpace db 32,8,'$' 
@@ -38,7 +39,7 @@ startScreen1 PROC FAR
     int 10h
 
     ;ask for name
-    lea dx,ASK_NAME
+    lea dx,ASK_NAME1
     mov ah,9
     int 21h
     
@@ -218,7 +219,7 @@ startScreen1 PROC FAR
     INT 16h 
     ret
 startScreen1  ENDP
-
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 startScreen2 PROC FAR
     MOV AX, @DATA
     MOV DS, AX
@@ -238,7 +239,7 @@ startScreen2 PROC FAR
     int 10h
 
     ;ask for name
-    lea dx,ASK_NAME
+    lea dx,ASK_NAME2
     mov ah,9
     int 21h
     
