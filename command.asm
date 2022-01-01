@@ -48,49 +48,6 @@ popCode equ 12h
 incCode equ 13h
 decCode equ 14h  
 
-; ;16 bit registers variables
-; AxVar dw 01h
-; BxVar dw 03h
-; CxVar dw 30ch
-; DxVar dw 4h
-
-; ;8 bit register variables
-; ;AlVar db 21h
-; ;AhVar db 22h
-
-; ;BlVar db 23h
-; ;BhVar db 24h
-
-; ;ClVar db 25h
-; ;ChVar db 26h
-
-; ;DlVar db 27h
-; ;DhVar db 28h
-; ;16 bit pointer-registers 
-
-; SiVar dw 1h
-; DiVar dw 1h
-; SpVar dw 0Eh ;must point at 10h at begin
-; BpVar dw 4h
-
-; ;Memory Locations
-; loc0 db 1h
-; loc1 db 2h
-; loc2 db 3h
-; loc3 db 4h
-; loc4 db 5h
-; loc5 db 6h
-; loc6 db 7h
-; loc7 db 8h
-; loc8 db 9h
-; loc9 db 10h
-; locA db 11h
-; locB db 12h
-; locC db 1fh
-; locD db 1eh
-; locE db 0ch
-; locF db 0dh
-
 
 ;16 bit registers codes general
 AxCode equ 40h
@@ -99,17 +56,17 @@ CxCode equ 42h
 DxCode equ 43h
 
 ;8 bit registers codes 
-; alCode equ 44h
-; ahCode equ 45h
+alCode equ 30h
+ahCode equ 31h
 
-; blCode equ 46h
-; bhCode equ 47h
+blCode equ 32h
+bhCode equ 33h
 
-; clCode equ 48h
-; chCode equ 49h
+clCode equ 34h
+chCode equ 35h
 
-; dlCode equ 4Ah
-; dhCode equ 4Bh
+dlCode equ 36h
+dhCode equ 37h
 
 ;16 bit pointer-index
 SiCode equ 44h
@@ -128,6 +85,13 @@ MemoOpcode DB 70h,71h,72h,73h,74h,75h,76h,77h,78h,79h,7Ah,7Bh,7Ch,7Dh,7Eh,7Fh
 
 NumberTrans DB 0,1,2,3,4,5,6,7,8,9,0ah,0bh,0ch,0dh,0eh,0fh
 
+;--------------------------------E-R-R-O-R-S---------------------------
+err_SIZE_MISMATCH db 0
+err_MEMO_TO_MEMO db 0
+err_INVALID_REG_NAME db 0
+err_PUSHING_8_BITS db 0
+err_INCORRECT_ADDRESSING db 0
+CLEAR_TO_EXECUTE db 0
 ;-------------------Variables to discover command string---------------
 L1 db ?
 L2 db ?
@@ -149,7 +113,10 @@ tempSI dw 0
 DestinationValue dw 0
 SourceValue dw 0
 countdigit db 0
-is8bitreg db 0
+is8bitreg_temp db 0
+is8bitreg_dest db 0
+is8bitreg_src db 0
+
 
 v1 db ?
 v2 db ?
@@ -344,7 +311,6 @@ execute PROC far
 
 
     Dest: ;is destination
-
     CALL GenerateDestCodeiFNotreg
     ;print value of the destination
     cmp Memo_Dest_Valid,1
@@ -356,6 +322,9 @@ execute PROC far
     mov DestinationValue,bx
 
     Src:  ;is source
+    mov al,is8bitreg_temp
+    mov is8bitreg_dest,al
+    mov is8bitreg_temp,0
     MOV REG_VALID,0 
     cmp NoSecondOperand,1
     jz exe
@@ -384,15 +353,29 @@ execute PROC far
     ;--    
 ;-------------------------------------EXECUTE----------------------------------------------
     Exe:
+    mov al,is8bitreg_temp
+    mov is8bitreg_src,al
+    mov is8bitreg_temp,0
     FinalCommand:
     
-    call ExcuteCommand
+    call Check_Errors
+    cmp CLEAR_TO_EXECUTE,1
+    jnz close ; force quite if there is an error of any type
+    call ExcuteCommand ; command is cleare to be executed !
     close:
     ret
 execute ENDP
 
 resetALLvars proc
-mov is8bitreg,0
+mov err_SIZE_MISMATCH,0
+mov err_MEMO_TO_MEMO,0
+mov err_INVALID_REG_NAME,0
+mov err_PUSHING_8_BITS ,0
+mov err_INCORRECT_ADDRESSING,0
+mov CLEAR_TO_EXECUTE,0
+mov is8bitreg_temp,0
+mov is8bitreg_dest,0
+mov is8bitreg_src,0
 mov isExternal,0
 mov Instruction,0
 mov Destination,0
@@ -560,78 +543,78 @@ GetDst_Src_Code proc far
         mov ToCheck,BpCode
         call GenerateCode
         cmp REG_VALID,1
-        ;jnz IsAld
+        jnz IsAld
         ret
-    ; IsAld:
-    ;     mov L1,'a'
-    ;     mov L2,'l'
-    ;     mov ToCheck,alCode
-    ;     call GenerateCode
-    ;     cmp REG_VALID,1
-    ;     jnz IsAhd
-    ;     ret
+    IsAld:
+        mov L1,'a'
+        mov L2,'l'
+        mov ToCheck,alCode
+        call GenerateCode
+        cmp REG_VALID,1
+        jnz IsAhd
+        ret
     
-    ; IsAhd:
-    ;     mov L1,'a'
-    ;     mov L2,'h'
-    ;     mov ToCheck,ahCode
-    ;     call GenerateCode
-    ;     cmp REG_VALID,1
-    ;     jnz IsBld
-    ;     ret
+    IsAhd:
+        mov L1,'a'
+        mov L2,'h'
+        mov ToCheck,ahCode
+        call GenerateCode
+        cmp REG_VALID,1
+        jnz IsBld
+        ret
 
 
-    ; IsBld:
-    ;     mov L1,'b'
-    ;     mov L2,'l'
-    ;     mov ToCheck,blCode
-    ;     call GenerateCode
-    ;     cmp REG_VALID,1
-    ;     jnz IsBhd
-    ;     ret
+    IsBld:
+        mov L1,'b'
+        mov L2,'l'
+        mov ToCheck,blCode
+        call GenerateCode
+        cmp REG_VALID,1
+        jnz IsBhd
+        ret
     
-    ; IsBhd:
-    ;     mov L1,'b'
-    ;     mov L2,'h'
-    ;     mov ToCheck,bhCode
-    ;     call GenerateCode
-    ;     cmp REG_VALID,1
-    ;     jnz IsCld
-    ;     ret
-    ; IsCld:
-    ;     mov L1,'c'
-    ;     mov L2,'l'
-    ;     mov ToCheck,clCode
-    ;     call GenerateCode
-    ;     cmp REG_VALID,1
-    ;     jnz IsChd
-    ;     ret
-    ; IsChd:
-    ;     mov L1,'c'
-    ;     mov L2,'h'
-    ;     mov ToCheck,chCode
-    ;     call GenerateCode
-    ;     cmp REG_VALID,1
-    ;     jnz IsDld
-    ;     ret
+    IsBhd:
+        mov L1,'b'
+        mov L2,'h'
+        mov ToCheck,bhCode
+        call GenerateCode
+        cmp REG_VALID,1
+        jnz IsCld
+        ret
+    IsCld:
+        mov L1,'c'
+        mov L2,'l'
+        mov ToCheck,clCode
+        call GenerateCode
+        cmp REG_VALID,1
+        jnz IsChd
+        ret
+    IsChd:
+        mov L1,'c'
+        mov L2,'h'
+        mov ToCheck,chCode
+        call GenerateCode
+        cmp REG_VALID,1
+        jnz IsDld
+        ret
 
 
-    ; IsDld:
-    ;     mov L1,'d'
-    ;     mov L2,'l'
-    ;     mov ToCheck,dlCode
-    ;     call GenerateCode
-    ;     cmp REG_VALID,1
-    ;     jnz IsDhd
-    ;     ret
+    IsDld:
+        mov L1,'d'
+        mov L2,'l'
+        mov ToCheck,dlCode
+        call GenerateCode
+        cmp REG_VALID,1
+        jnz IsDhd
+        ret
     
-    ; IsDhd:
-    ;     mov L1,'d'
-    ;     mov L2,'h'
-    ;     mov ToCheck,dhCode
-    ;     call GenerateCode
-    ;     cmp REG_VALID,1
-    ;     ret
+    IsDhd:
+        mov L1,'d'
+        mov L2,'h'
+        mov ToCheck,dhCode
+        call GenerateCode
+        cmp REG_VALID,1
+        ret
     
 GetDst_Src_Code endp 
 
@@ -882,23 +865,29 @@ GenerateCode PROC far
     MOV AL,L2
     cmp [si], AL
     jnz notValidD
-    ;inc si
+    ;check on 8 bit registers
     MOV AL,ToCheck     
-    ;mov Destination,AL 
     MOV REG_VALID,1
     mov ah,0
     mov bl,10h
     div bl
-    mov dl,ah
+    mov dl,ah ;get the unites of the dest/src code
     mov dh,0
-    ;mov the address of the destLocation to the destination
+    ;---------
     mov bx,offset AxVar1
     mov ax,2
-    mul dx ;multiply dx by 2
+    ;this for low register only
+    cmp L2,'l'
+    jz ishigh_low
+    cmp L2,'h'
+    jnz not8bitregister
+            ishigh_low:
+            mov is8bitreg_temp,1
+            mov ax,1
+    not8bitregister:
+    
+    mul dx ;multiply dx by 2 or 1
     add bx,ax
-    ;inc bx
-    ;inc bx ;inc only one time if it is a 
-
         cmp Instruction,popCode
         jl  hasSecondOperand
             mov NoSecondOperand,1
@@ -1116,11 +1105,55 @@ ExcuteCommand proc far
         ret
 ExcuteCommand endp
 
-    
+
+
+Check_Errors PROC
+    mov al,is8bitreg_dest
+    mov al,is8bitreg_src
+    cmp al,ah
+    jnz not_SIZE_mismatch
+    cmp is8bitreg_src,1
+    jnz not_SIZE_mismatch
+    ;here to handle type mismatch error
+            mov err_SIZE_MISMATCH,1
+            ret
+    not_SIZE_mismatch:
+    ;------------------
+    mov al,source
+    mov ah,0
+    mov bl,10
+    div bl
+    mov dl,al ;dl contain the tens of the source
+    mov al,source
+    mov ah,0
+    mov bl,10
+    div bl
+    mov dh,al ;dh contain the tens of the destination
+    jnz not_MEMO_ERR
+    ;here to handle memory to memoty operation error
+            mov err_MEMO_TO_MEMO,1
+            ret
+    not_MEMO_ERR:
+    ;------------------
+    cmp Instruction,pushCode
+    jnz not_PUSH_ERR
+        cmp Destination,dhCode
+        jg not_PUSH_ERR
+            ;here to handle memory to memoty operation error
+            mov err_PUSHING_8_BITS,1
+            ret
+    not_PUSH_ERR:
+    ;[err_INVALID_REG_NAME] & [err_INCORRECT_ADDRESSING] is handled in funtions : 'GenerateSrcCodeiFNotreg' , 'GenerateDstCodeiFNotreg' , 'GetDst_Src_Code'
+    mov CLEAR_TO_EXECUTE,1
+    ret
+Check_Errors ENDP
+
+
+
 ExecuteHelper PROC
         cmp isExternal,1 ;if it is an external input
         jnz notemmidiatesource
-            mov cx,External  
+            mov cx,External
             jmp finish_exe
         notemmidiatesource:  ;else
             mov al,source
@@ -1138,6 +1171,10 @@ ExecuteHelper PROC
             mov countdigit,4
             mov cx,[bx]
         finish_exe:
+        cmp is8bitreg_dest,1
+        jnz allreg
+            mov countdigit,1
+        allreg:
         mov bx,DestinationValue
         ret
 ExecuteHelper ENDP

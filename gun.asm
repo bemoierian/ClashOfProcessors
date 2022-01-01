@@ -1,6 +1,7 @@
 ;-----------------Called in clash.asm------------------
 PUBLIC DrawGun, FireGun_initial, FireGun_Continue, FlyObj_Continue, FlyObj_initial
 PUBLIC gun1PrevX,gun1PrevY,gun1NewX,gun1NewY
+PUBLIC l11,c11,l12,c12,l13,c13,l14,c14,l15,c15,l21,c21,l22,c22,l23,c23,l24,c24,l25,c25
 ;------------------------------------------------------
 .286
 .MODEL SMALL
@@ -30,6 +31,28 @@ isFlying db 0
 FireHit db 0
 ColorCount db 0 ;index for color array
 arr_color db 0ah,09h,0ch,0dh,0eh
+;-------------------scores values and colors --------------
+l11 db '1'
+c11 db 0ah
+l12 db '1'
+c12 db 9h
+l13 db '1'
+c13 db 0ch
+l14 db '1'
+c14 db 0eh
+l15 db '1'
+c15 db 0dh
+;-----------------
+l21 db '1'
+c21 db 0ah
+l22 db '1'
+c22 db 9h
+l23 db '1'
+c23 db 0ch
+l24 db '1'
+c24 db 0eh
+l25 db '1'
+c25 db 0dh
 ;-------------------------------------------------------
 .CODE
 ;Draws gun at the new position at gunNewX, gunNewY and stores the previous position in gunPrevX, gunPrevY
