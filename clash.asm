@@ -46,7 +46,7 @@ main_str3 DB 'To end the program press ESC','$'
 ;----------------------------MEMORY-------------------------------------
 ;These variables are not in an array just to simplifie to vision
 ;---------Registers for player 1
-AxVar1 dw 1
+AxVar1 dw 105eh
 BxVar1 dw 3
 CxVar1 dw 4
 DxVar1 dw 0
@@ -120,8 +120,6 @@ EmptyString db 22 dup('$')
 isError db 0
 ;---------------------------------Turns------------------------------
 Turn db 1
-;--------------------flag of winner in the game----------------------
-winner db 0
 ;--------------------------From start screen-------------------------
 P2_score db 0
 P1_score db 0
@@ -158,6 +156,12 @@ c25 db ?
 
 
 ;----------------------------------------------------------
+;---------print winner---------------
+printwin1 DB 'winner is player 1','$'
+printwin2 DB 'winner is player 2','$'
+
+ winner db 0 ;flag of winner in the game
+;------------------------------------
 cyclesCounter1 dw 0
 cyclesCounter2 DW 0
 .CODE
@@ -293,6 +297,16 @@ MAIN PROC FAR
         mov cursor, di
     
     Game:
+    ;---------------------------
+    push cx
+    call  CheckWinner
+    pop cx
+    cmp winner,1
+     jz print1 
+
+    cmp winner,2
+     jz print2 
+       hell:
         inc cyclesCounter1
         inc cyclesCounter2
         CALL ResetInputFlags
@@ -414,6 +428,20 @@ MAIN PROC FAR
         cmp al, 13h
         jz MainScreen
         jmp Game
+print1:
+setcursor 0010d
+mov ah,09
+ mov dx,offset printwin1
+ int 21h
+ jmp hell
+print2:
+setcursor 0010d
+ mov ah,09
+ mov dx,offset printwin2
+ int 21h
+jmp hell
+;hell:
+
 EndGame:
 HLT
 MAIN ENDP
