@@ -19,7 +19,7 @@ PUBLIC commandS
 EXTRN DrawGun:far
 EXTRN FireGun_initial:far
 EXTRN FireGun_Continue:far
-EXTRN gunPrevX:WORD,gunPrevY:WORD,gunNewX:WORD,gunNewY:WORD
+EXTRN gun1PrevX:WORD,gun1PrevY:WORD,gun1NewX:WORD,gun1NewY:WORD
 ;-------------------------UI.inc------------------------------
 include UI.inc
 ;-------------------powerups.asm----------------------------
@@ -27,7 +27,9 @@ EXTRN changeForbidden1:FAR
 EXTRN forbidden1:BYTE
 EXTRN changeForbidden2:FAR
 EXTRN forbidden2:BYTE
-
+;-------------------flyingObjects.asm----------
+EXTRN flying:FAR
+EXTRN varCount:BYTE
 
 
 .286
@@ -120,7 +122,13 @@ winner db 0
 ;--------------------------From start screen-------------------------
 P2_score db 0
 P1_score db 0
-
+;---------------------------INPUT FLAGS-------------------------
+isGun db 0
+isBackSpace db 0
+isEnter db 0
+isChar db 0
+;-------------------
+cyclesCounter dw 0
 .CODE
 MAIN PROC FAR
     MOV AX, @DATA
@@ -236,9 +244,9 @@ MAIN PROC FAR
         mov cursor, di
     
     Game:
+        CALL ResetInputFlags
         CALL PrintCommandString
-        ;----------------------gun.asm-----------------------------
-        CALL DrawGun       
+        ;----------------------gun.asm-----------------------------      
         CALL FireGun_Continue
         ;----------------------rm.asm-----------------------------
         call RegMemo
@@ -264,131 +272,31 @@ MAIN PROC FAR
         ;-------------------------------------------------INPORTANT NOTE-------------------------------------------------------
         ;DON'T CALL ANY FUNCTION HERE THAT CHANGES THE VALUE OF AX,
         ;IF YOU WANT TO USE AX, PUSH IT IN REG THEN POP WHEN YOU FINISH TO RESTORE ITS VALUE 
-        Gun:
-            ;right arrow
-            right:
-                cmp ah, 4Dh ;compare key code with right key code
-                jnz left    ;if the key is not right, jump to next check
-                add gunNewX, 3  ;if the key is right, move the gun 3 pixels to the right
-                jmp Game
-            ;left arrow    
-            left:
-                cmp ah, 4Bh
-                jnz up
-                sub gunNewX, 3
-                jmp Game
-            ;up arrow
-            up:
-                cmp ah, 48h
-                jnz down
-                sub gunNewY, 3
-                jmp Game
-            ;down arrow
-            down:
-                cmp ah, 50h
-                jnz space
-                add gunNewY, 3
-                jmp Game
-
-            space:
-                cmp ah, 39h
-                jnz commandIn
-                CALL FireGun_initial
-                jmp Game
-        EndGun:
-        commandIn:
-            backSpace:
-                cmp ah, 0Eh
-                jnz InsertChar
-                cmp cmdCurrSize, 0 ;if the string is empty, do nothing and continue the main loop
-                jz Game
-                mov di, cursor ;get cursor
-                dec di
-                mov [di], '$$' ;to delete a character, put $. we add 2 $ because it's a word
-                dec cmdCurrSize ;decrement cursor
-                mov cursor, di
-                horizontalline 170,0,320            ;horizontal line
-                drawrectangle  120,0,0dh,10,120     ;draw the background of the command after deleting to override the old command
-
-                horizontalline 145,162,319          ;horizontal line
-                drawrectangle  120,161,0Eh,10,120
-                jmp Game
-            InsertChar:
-                ;Validation
-                ; ; there is no supported characters under 30h
-                ; ; range of number 30h->39h
-                ; cmp al, 30h
-                ; jl Game
-                ; cmp al, 39h
-                ; jg isChar
-                ; jmp concat
-                ; ;range of small letters 61h->7Ah
-                ; isChar:
-                ;     cmp al, 61h
-                ;     jl isObracket
-                ;     cmp al, 7Ah
-                ;     jg Game
-                ;     jmp concat
-                ; ;next 2 for addressing modes
-                ; isObracket:
-                ;     cmp al, 5Bh
-                ;     jnz isCbracket
-                ;     jmp concat
-                ; isCbracket:
-                ;     cmp al, 5Dh
-                ;     jnz isComma
-                ;     jmp concat
-                ; isComma:
-                ;     cmp al, 2Ch
-                ;     jnz Game
-                ;     jmp concat
-                ; ; concatinate the character after validation
-                IsEnter:
-                    cmp al, 13d
-                    jnz concat
-                    CALL execute
-                    ;------------------------Print, peter-----------------------------
-                    MOV AL,Source ;PUT THE REAMINDER IN THE AL TO DIVIDE IT AGAIN
-                    MOV AH,0  ;MAKE AH=0 TO HAVE THE RIGHT NUMBER IN AX
-                    MOV BL,10h ;THE DIVISION THIS TIME IS OVER 10
-                    DIV BL
-                    
-                    MOV DL,AL ;TO DISPLAY THE TENS 
-                    MOV CH,AH ;TO SAVE THE REMAINDER THE UNITS
-                    
-                    ADD DL,30H
-                    MOV AH,02
-                    INT 21H  
-                    
-                    MOV DL,CH ;NO DIVISION
-                    ADD DL,30H
-                    MOV AH,02H
-                    INT 21H
-                    ;------------------------Print, peter-----------------------------
-                    CALL ClearCommandString
-                    CALL SwitchTurn
-                jmp game
-            
-                    
-            
-
-
-
-                concat:
-                    mov dl, cmdCurrSize
-                    cmp dl, cmdMaxSize
-                    jz endInsertChar
-                    mov di, cursor 
-                    mov [di], al
-                    inc cmdCurrSize
-                    inc di
-                    mov cursor, di
-            endInsertChar:
-        endcommandIn:
-
-
-
+        ;----------------------------GUN--------------------------------
+        CALL GunInput
+        CMP isGun, 1
+        jz Game
+        ;------------------------BACKSPACE------------------------------
+        CALL BackspaceInput
+        CMP isBackSpace, 1
+        jz Game
+        ;--------------------------ENTER--------------------------------
+        CALL EnterInput
+        CMP isEnter, 1
+        jz Game
+        ;-------------------------CHARACTER------------------------------
+        CALL CharInput
+        ;--------------------Exit game if key is F3----------------------
+        inc cyclesCounter
+        cmp cyclesCounter,0FFFFH
+        jnz no_flying
+        CALL flying
+        INC varCount
+        CMP varCount,5
+        JNZ no_flying 
+        MOV varCount,0
         ;Exit game if key if F3
+        no_flying:
         cmp al, 13h
         jz MainScreen
         jmp Game
@@ -478,4 +386,156 @@ CheckWinner proc
   byebye:
   ret
 CheckWinner endp
+;description
+ResetInputFlags PROC
+    MOV isGun, 0
+    MOV isBackSpace, 0
+    MOV isEnter, 0
+    MOV isChar, 0
+    RET
+ResetInputFlags ENDP
+
+;description
+GunInput PROC
+     ;right arrow
+    right:
+        cmp ah, 4Dh ;compare key code with right key code
+        jnz left    ;if the key is not right, jump to next check
+        CMP gun1NewX, 141
+        JNC GunInputDone
+        add gun1NewX, 3  ;if the key is right, move the gun 3 pixels to the right
+        jmp GunInputDone
+    ;left arrow    
+    left:
+        cmp ah, 4Bh
+        jnz up
+        CMP gun1NewX, 4
+        JC GunInputDone
+        sub gun1NewX, 3
+        jmp GunInputDone
+    ;up arrow
+    up:
+        cmp ah, 48h
+        jnz down
+        CMP gun1NewY, 4
+        JC GunInputDone
+        sub gun1NewY, 3
+        jmp GunInputDone
+    ;down arrow
+    down:
+        cmp ah, 50h
+        jnz space
+        CMP gun1NewY, 160
+        JNC GunInputDone
+        add gun1NewY, 3
+        jmp GunInputDone
+
+    space:
+        cmp ah, 39h
+        jnz NotGunInput
+        CALL FireGun_initial
+
+    GunInputDone:
+    MOV isGun, 1
+    CALL DrawGun 
+    NotGunInput:
+    RET
+GunInput ENDP
+;description
+BackspaceInput PROC
+    cmp ah, 0Eh
+    jnz NotBackspaceInput
+    cmp cmdCurrSize, 0 ;if the string is empty, do nothing and continue the main loop
+    jz BackspaceInputDone
+    mov di, cursor ;get cursor
+    dec di
+    mov [di], '$$' ;to delete a character, put $. we add 2 $ because it's a word
+    dec cmdCurrSize ;decrement cursor
+    mov cursor, di
+    horizontalline 170,0,320            ;horizontal line
+    drawrectangle  120,0,0dh,10,120     ;draw the background of the command after deleting to override the old command
+
+    horizontalline 145,162,319          ;horizontal line
+    drawrectangle  120,161,0Eh,10,120
+
+    BackspaceInputDone:
+    MOV isBackSpace, 1
+    NotBackspaceInput:
+    RET
+BackspaceInput ENDP
+;description
+EnterInput PROC
+    cmp al, 13d
+    jnz NotEnterInput
+    CMP cmdCurrSize, 0
+    JZ EnterInputDone
+    CALL execute
+    ;------------------------Print, peter-----------------------------
+    MOV AL,Source ;PUT THE REAMINDER IN THE AL TO DIVIDE IT AGAIN
+    MOV AH,0  ;MAKE AH=0 TO HAVE THE RIGHT NUMBER IN AX
+    MOV BL,10h ;THE DIVISION THIS TIME IS OVER 10
+    DIV BL
+    
+    MOV DL,AL ;TO DISPLAY THE TENS 
+    MOV CH,AH ;TO SAVE THE REMAINDER THE UNITS
+    
+    ADD DL,30H
+    MOV AH,02
+    INT 21H  
+    
+    MOV DL,CH ;NO DIVISION
+    ADD DL,30H
+    MOV AH,02H
+    INT 21H
+    ;------------------------Print, peter-----------------------------
+    CALL ClearCommandString
+    CALL SwitchTurn
+
+    EnterInputDone:
+    MOV isEnter, 1
+    NotEnterInput:
+    RET
+EnterInput ENDP
+;description
+CharInput PROC
+    ;Validation
+    ; ; there is no supported characters under 30h
+    ; ; range of number 30h->39h
+    ; cmp al, 30h
+    ; jl Game
+    ; cmp al, 39h
+    ; jg isChar
+    ; jmp concat
+    ; ;range of small letters 61h->7Ah
+    ; isChar:
+    ;     cmp al, 61h
+    ;     jl isObracket
+    ;     cmp al, 7Ah
+    ;     jg Game
+    ;     jmp concat
+    ; ;next 2 for addressing modes
+    ; isObracket:
+    ;     cmp al, 5Bh
+    ;     jnz isCbracket
+    ;     jmp concat
+    ; isCbracket:
+    ;     cmp al, 5Dh
+    ;     jnz isComma
+    ;     jmp concat
+    ; isComma:
+    ;     cmp al, 2Ch
+    ;     jnz Game
+    ;     jmp concat
+    ; ; concatinate the character after validation
+    mov dl, cmdCurrSize
+    cmp dl, cmdMaxSize
+    jz endInsertChar
+    mov di, cursor 
+    mov [di], al
+    inc cmdCurrSize
+    inc di
+    mov cursor, di
+    endInsertChar:
+    RET
+CharInput ENDP
 END MAIN
