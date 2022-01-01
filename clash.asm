@@ -27,7 +27,9 @@ EXTRN changeForbidden1:FAR
 EXTRN forbidden1:BYTE
 EXTRN changeForbidden2:FAR
 EXTRN forbidden2:BYTE
-
+;-------------------flyingObjects.asm----------
+EXTRN flying:FAR
+EXTRN varCount:BYTE
 
 
 .286
@@ -120,7 +122,8 @@ winner db 0
 ;--------------------------From start screen-------------------------
 P2_score db 0
 P1_score db 0
-
+;-------------------
+cyclesCounter dw 0
 .CODE
 MAIN PROC FAR
     MOV AX, @DATA
@@ -385,10 +388,16 @@ MAIN PROC FAR
                     mov cursor, di
             endInsertChar:
         endcommandIn:
-
-
-
+        inc cyclesCounter
+        cmp cyclesCounter,0FFFFH
+        jnz no_flying
+        CALL flying
+        INC varCount
+        CMP varCount,5
+        JNZ no_flying 
+        MOV varCount,0
         ;Exit game if key if F3
+        no_flying:
         cmp al, 13h
         jz MainScreen
         jmp Game
