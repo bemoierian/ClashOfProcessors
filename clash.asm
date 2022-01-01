@@ -274,7 +274,7 @@ MAIN PROC FAR
 
         CALL FireGun_Continue
 
-        cmp cyclesCounter1, 50H
+        cmp cyclesCounter1, 100H
         jnz dontInitiateFly
         CALL FlyObj_initial
         mov cyclesCounter1, 0
