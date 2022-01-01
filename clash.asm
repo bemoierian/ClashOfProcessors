@@ -19,6 +19,9 @@ PUBLIC commandS
 EXTRN DrawGun:far
 EXTRN FireGun_initial:far
 EXTRN FireGun_Continue:far
+EXTRN FlyObj_Continue:far
+EXTRN FlyObj_initial:far
+
 EXTRN gun1PrevX:WORD,gun1PrevY:WORD,gun1NewX:WORD,gun1NewY:WORD
 ;-------------------------UI.inc------------------------------
 include UI.inc
@@ -28,8 +31,8 @@ EXTRN forbidden1:BYTE
 EXTRN changeForbidden2:FAR
 EXTRN forbidden2:BYTE
 ;-------------------flyingObjects.asm----------
-EXTRN flying:FAR
-EXTRN varCount:BYTE
+; EXTRN flying:FAR
+; EXTRN varCount:BYTE
 
 
 .286
@@ -128,7 +131,8 @@ isBackSpace db 0
 isEnter db 0
 isChar db 0
 ;-------------------
-cyclesCounter dw 0
+cyclesCounter1 dw 0
+cyclesCounter2 DW 0
 .CODE
 MAIN PROC FAR
     MOV AX, @DATA
@@ -244,10 +248,25 @@ MAIN PROC FAR
         mov cursor, di
     
     Game:
+        inc cyclesCounter1
+        inc cyclesCounter2
         CALL ResetInputFlags
         CALL PrintCommandString
-        ;----------------------gun.asm-----------------------------      
+        ;----------------------gun.asm----------------------------- 
+
         CALL FireGun_Continue
+
+        cmp cyclesCounter1, 50H
+        jnz dontInitiateFly
+        CALL FlyObj_initial
+        mov cyclesCounter1, 0
+        dontInitiateFly:
+
+        cmp cyclesCounter2, 2H
+        jnz dontDrawFly
+        CALL FlyObj_Continue
+        mov cyclesCounter2, 0
+        dontDrawFly:
         ;----------------------rm.asm-----------------------------
         call RegMemo
         ;draw score squares UI.inc 
@@ -287,16 +306,16 @@ MAIN PROC FAR
         ;-------------------------CHARACTER------------------------------
         CALL CharInput
         ;--------------------Exit game if key is F3----------------------
-        inc cyclesCounter
-        cmp cyclesCounter,0FFFFH
-        jnz no_flying
-        CALL flying
-        INC varCount
-        CMP varCount,5
-        JNZ no_flying 
-        MOV varCount,0
-        ;Exit game if key if F3
-        no_flying:
+        
+        ; cmp cyclesCounter,0FFFFH
+        ; jnz no_flying
+        ; CALL flying
+        ; INC varCount
+        ; CMP varCount,5
+        ; JNZ no_flying 
+        ; MOV varCount,0
+        ; ;Exit game if key if F3
+        ; no_flying:
         cmp al, 13h
         jz MainScreen
         jmp Game
