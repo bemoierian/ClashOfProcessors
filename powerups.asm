@@ -1,61 +1,111 @@
-PUBLIC changeForbidden1
-PUBLIC forbidden1
-PUBLIC changeForbidden2
-PUBLIC forbidden2
+PUBLIC power_up3_player1
+PUBLIC forbiddin_char1
+PUBLIC power_up3_player2
+PUBLIC forbiddin_char2
+EXTRN P1_score:BYTE,P2_score:BYTE
 .model small
 .data
-forbidden1 db 0
-forbidden2 db 0
+;power up 3
+forbiddin_char1 db 0
+forbiddin_char2 db 0
+powerup3_isused_player1 db 0h
+powerup3_isused_player2 db 0h
 ;power uo 4
 line_num1 DB 0
 stuck_value1 DB 0
 line_num2 DB 0
 stuck_value2 DB 0
+;power up5
+powerup5_isused_player1 db 0h
+powerup5_isused_player2 db 0h
+
 .code
+;power up 3
+power_up3_player1 PROC FAR 
+  cmp powerup3_isused_player1,1h
+    jz used_before31  
+    mov dl,1 ;SET THE CRSR
+    mov dh,20
+    mov ah,2
+    int 10h
+;    CHECK1: mov ah,1
+;    int 16h
+;    jz CHECK1
+;    mov ah,0
+;    int 16h
+    mov ah,1
+    int 21h ;READ THE CHAR
+    mov forbiddin_char1,al ;CHANGE THE FORBIDDEN CHAR
+    sub P1_score,8h ;sub from the score
+    mov powerup3_isused_player1,1h ;set used
+used_before31:
+    mov dl,1 ;set the crsr 
+    mov dh,20
+    mov ah,2
+    int 10h
+    mov ah,2 ;print space
+    mov dl,20h
+    int 21h
+    ret
+power_up3_player1 ENDP 
 
-changeForbidden1 PROC far
-MOV AX,@DATA
-MOV DS,AX
-MOV AH,01H
-INT 21h
-MOV forbidden1,AL
-RET
-changeForbidden1 ENDP
 
-changeForbidden2 PROC far
-MOV AX,@DATA
-MOV DS,AX
-MOV AH,01H
-INT 21h
-MOV forbidden2,AL
-RET
-changeForbidden2 ENDP
-
+power_up3_player2 PROC FAR
+ cmp powerup3_isused_player2,1h
+    jz used_before32  
+    mov dl,65 
+    mov dh,20
+    mov ah,2
+    int 10h
+    ; CHECK2: mov ah,1
+    ; int 16h
+    ; jz CHECK2
+    ; mov ah,0
+    ; int 16h
+    mov ah,1
+    int 21h
+    mov forbiddin_char2,al
+    sub P2_score,8h 
+    mov powerup3_isused_player2,1h
+used_before32:
+ mov dl,65 
+    mov dh,20
+    mov ah,2
+    int 10h
+    mov ah,2
+    mov dl,20h
+    int 21h
+    ret
+power_up3_player2 ENDP
+;power up 4
 power_up4_player1 PROC FAR
-    MOV AX, @DATA
-    MOV DS, AX
-    ; take line number
-    ; display_string_main mes_power4_line,1h,1h
-    ; mov ah,1 ;read one char from the user and put it in al
-    ; int 21h 
-    ; mov line_num1,al  
-    
-    ; display_string_main mes_power4_value,1h,3h
-    ; mov ah,1 ;read one char from the user and put it in al
-    ; int 21h 
-    ; mov stuck_value1,al 
-    noline:
-    mov ah,1
-    int 16h
-    jz noline 
-    mov ah,0
-    int 16h
-    mov line_num1,al
-    nokey:
-    mov ah,1
-    int 16h
-    jz nokey
+    ;take line number
+    mov dl,1 ;SET THE CRSR
+    mov dh,20
+    mov ah,2
+    int 10h
+    mov ah,1 ;read one char from the user and put it in al
+    int 21h 
+    mov line_num1,al  
+    mov dl,2 ;SET THE CRSR
+    mov dh,20
+    mov ah,2
+    int 10h
+    mov ah,1 ;read one char from the user and put it in al
+    int 21h 
     mov stuck_value1,al 
+    ; noline:
+    ; mov ah,1
+    ; int 16h
+    ; jz noline 
+    ; mov ah,0
+    ; int 16h
+    ; mov line_num1,al
+    ; nokey:
+    ; mov ah,1
+    ; int 16h
+    ; jz nokey
+    ; mov stuck_value1,al 
 ;stuck_value one or zero
 cmp stuck_value1,31h
 jz stuck_at_one
@@ -207,41 +257,52 @@ L0E:and src_value1,0BFFFH
 L0F:and src_value1,07FFFH
     jmp exit 
 ;_____________________________________________________________________________    
-exit: 
-    sub player1_points,2h 
+exit:
+    mov dl,1 ;SET THE CRSR
+    mov dh,20
+    mov ah,2
+    int 10h
+    mov ah,2 ;print space
+    mov dl,20h
+    int 21h
+    mov dl,2 ;SET THE CRSR
+    mov dh,20
+    mov ah,2
+    int 10h
+    mov ah,2 ;print space
+    mov dl,20h
+    int 21h
+    sub P1_score,2h 
     ret
 power_up4_player1 ENDP 
 
 power_up4_player2 PROC FAR  
-    
-    MOV AX, @DATA
-    MOV DS, AX     
-        
-    ; MOV AH , 00H          ;change to graphics mode
-    ; MOV AL , 13H
-    ; INT 10H 
-
-    ; ; take line number
-    ; display_string_main mes_power4_line,1h,1h
-    ; mov ah,1 ;read one char from the user and put it in al
-    ; int 21h 
-    ; mov line_num2,al  
-    
-    ; display_string_main mes_power4_value,1h,3h
-    ; mov ah,1 ;read one char from the user and put it in al
-    ; int 21h 
-    ; mov stuck_value2,al  
-    noline2:
-    mov ah,1
-    int 16h
-    jz noline2
-    mov ah,0
-    int 16h
-    mov line_num2,al
-    nokey2:
-    mov ah,1
-    int 16h
-    jz nokey2
+    ; take line number
+    mov dl,65 
+    mov dh,20
+    mov ah,2
+    int 10h
+    mov ah,1 ;read one char from the user and put it in al
+    int 21h 
+    mov line_num2,al  
+    mov dl,66 
+    mov dh,20
+    mov ah,2
+    int 10h
+    mov ah,1 ;read one char from the user and put it in al
+    int 21h 
+    mov stuck_value2,al  
+    ; noline2:
+    ; mov ah,1
+    ; int 16h
+    ; jz noline2
+    ; mov ah,0
+    ; int 16h
+    ; mov line_num2,al
+    ; nokey2:
+    ; mov ah,1
+    ; int 16h
+    ; jz nokey2
     mov stuck_value2,al 
 
 ;stuck_value one or zero
@@ -395,8 +456,63 @@ L0E_2:and src_value2,0BFFFH
 L0F_2:and src_value2,07FFFH
     jmp exit2 
 ;_____________________________________________________________________________    
-exit2: 
-    sub player2_points,2h 
+exit2:
+    mov dl,65 
+    mov dh,20
+    mov ah,2
+    int 10h
+    mov ah,2 ;print space
+    mov dl,20h
+    int 21h
+    mov dl,66 
+    mov dh,20
+    mov ah,2
+    int 10h
+    mov ah,2 ;print space
+    mov dl,20h
+    int 21h
+    sub P2_score,2h 
     ret
 power_up4_player2 ENDP 
+;POWER UP 5
+power_up5_player1 PROC  
+    cmp powerup5_isused_player1,1h
+    jz used_before1
+
+    mov AxVar1, 0h
+    mov BxVar1, 0h
+    mov CxVar1, 0h
+    mov DxVar1, 0h
+    mov SiVar1, 0h
+    mov DiVar1, 0h
+    mov SpVar1, 0h 
+    mov BpVar1, 0h 
+
+    sub P1_score,1Eh ;SUB FROM SCORE 1EH
+    mov powerup5_isused_player1,1h ;SET USED
+    
+    used_before1:  
+    ret
+power_up5_player1 ENDP 
+
+
+power_up5_player2 PROC
+   cmp powerup5_isused_player2,1h
+   jz used_before2
+
+   mov AxVar2, 0h
+   mov BxVar2, 0h
+   mov CxVar2, 0h
+   mov DxVar2, 0h
+   mov SiVar2, 0h
+   mov DiVar2, 0h
+   mov SpVar2, 0h 
+   mov BpVar2, 0h 
+   
+   sub P2_score,1Eh ;SUB FROM SCORE
+   mov powerup5_isused_player2,1h
+
+    used_before2: 
+    ret
+power_up5_player2 ENDP
 END
