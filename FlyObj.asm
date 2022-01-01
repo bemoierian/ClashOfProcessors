@@ -1,5 +1,6 @@
 public flying
 public varCount
+
 drawrectanglemoving  macro  col,y1,x1,y2,x2
 local outer,inner
     ;DRAW ONE RECTANGEL
@@ -63,10 +64,10 @@ flying PROC far
     mov ax,@data
     mov ds,ax  
 
-    mov ah,0   ;enter graphics mode
-    mov al,13h 
+    ; mov ah,0   ;enter graphics mode
+    ; mov al,13h 
     ;mov ax,0013h
-    int 10h
+    ;int 10h
     mov bx,offset arr_color
     mov al,varCount
     XLAT
@@ -91,6 +92,7 @@ flying PROC far
             cmp x2ii,320
             jz close
             ;push cx
+            ;to delay the flying object
             mov cx,0ff00h
             ldummy:
             loop ldummy
