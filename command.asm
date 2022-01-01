@@ -149,7 +149,7 @@ tempSI dw 0
 DestinationValue dw 0
 SourceValue dw 0
 countdigit db 0
-is8bit db 0
+is8bitreg db 0
 
 v1 db ?
 v2 db ?
@@ -392,7 +392,7 @@ execute PROC far
 execute ENDP
 
 resetALLvars proc
-mov is8bit,0
+mov is8bitreg,0
 mov isExternal,0
 mov Instruction,0
 mov Destination,0
@@ -1057,24 +1057,13 @@ ExcuteCommand proc far
     cmp Instruction,shrCode ;shr    
     jnz is_shl_exe
         call ExecuteHelper
-                cmp countdigit,2
-                jnc normal9
-                shr [bx],cl
-                ret
-        normal9:
-        shr [bx],cx
+        ;shr [bx],cl
         ret 
         
     is_shl_exe:
     cmp Instruction,shlCode ;shl    
     jnz is_clc_exe
-        call ExecuteHelper
-                cmp countdigit,2
-                jnc normal9
-                shl [bx],cl
-                ret
-        normal9:
-        shl [bx],cx
+        ;shl [bx],cl
         ret 
         
     is_clc_exe:
@@ -1087,34 +1076,19 @@ ExcuteCommand proc far
     cmp Instruction,rorCode ;ror    
     jnz is_rcl_exe
         call ExecuteHelper
-                cmp countdigit,2
-                jnc normal10
-                ror [bx],cl
-                ret
-        normal10:
-        ror [bx],cx 
+        ;ror [bx],cl
         ret 
     is_rcl_exe:
     cmp Instruction,rclCode ;rcl    
     jnz is_rcr_exe
         call ExecuteHelper
-                cmp countdigit,2
-                jnc normal11
-                rcl [bx],cl
-                ret
-        normal11:
-        rcl [bx],cx 
+        ;rcl [bx],cl
         ret 
     is_rcr_exe:
     cmp Instruction,rcrCode ;rcr   
     jnz is_push_exe
         call ExecuteHelper
-                cmp countdigit,2
-                jnc normal12
-                rcr [bx],cl
-                ret
-        normal12:
-        rcr [bx],cx 
+        ;rcr [bx],cl 
         ret 
     is_push_exe:
     cmp Instruction,pushCode ;push   
