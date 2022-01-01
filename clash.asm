@@ -27,7 +27,9 @@ EXTRN changeForbidden1:FAR
 EXTRN forbidden1:BYTE
 EXTRN changeForbidden2:FAR
 EXTRN forbidden2:BYTE
-
+;-------------------flyingObjects.asm----------
+EXTRN flying:FAR
+EXTRN varCount:BYTE
 
 
 .286
@@ -125,6 +127,8 @@ isGun db 0
 isBackSpace db 0
 isEnter db 0
 isChar db 0
+;-------------------
+cyclesCounter dw 0
 .CODE
 MAIN PROC FAR
     MOV AX, @DATA
@@ -283,6 +287,16 @@ MAIN PROC FAR
         ;-------------------------CHARACTER------------------------------
         CALL CharInput
         ;--------------------Exit game if key is F3----------------------
+        inc cyclesCounter
+        cmp cyclesCounter,0FFFFH
+        jnz no_flying
+        CALL flying
+        INC varCount
+        CMP varCount,5
+        JNZ no_flying 
+        MOV varCount,0
+        ;Exit game if key if F3
+        no_flying:
         cmp al, 13h
         jz MainScreen
         jmp Game
