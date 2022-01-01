@@ -21,19 +21,15 @@ EXTRN FireGun_initial:far
 EXTRN FireGun_Continue:far
 EXTRN FlyObj_Continue:far
 EXTRN FlyObj_initial:far
-
 EXTRN gun1PrevX:WORD,gun1PrevY:WORD,gun1NewX:WORD,gun1NewY:WORD
-;-------------------------UI.inc------------------------------
-include UI.inc
+EXTRN l11:BYTE,c11:BYTE,l12:BYTE,c12:BYTE,l13:BYTE,c13:BYTE,l14:BYTE,c14:BYTE,l15:BYTE,c15:BYTE,l21:BYTE,c21:BYTE,l22:BYTE,c22:BYTE,l23:BYTE,c23:BYTE,l24:BYTE,c24:BYTE,l25:BYTE,c25:BYTE
 ;-------------------powerups.asm----------------------------
 EXTRN changeForbidden1:FAR
 EXTRN forbidden1:BYTE
 EXTRN changeForbidden2:FAR
 EXTRN forbidden2:BYTE
-;-------------------flyingObjects.asm----------
-; EXTRN flying:FAR
-; EXTRN varCount:BYTE
-
+;-------------------------UI.inc------------------------------
+include UI.inc
 
 .286
 .MODEL SMALL
@@ -130,31 +126,6 @@ isEnter db 0
 isChar db 0
 ;-------------------scores values and colors --------------
 
-  
-l11 db ?
-c11 db ?
-l12 db ?
-c12 db ?
-l13 db ?
-c13 db ?
-l14 db ?
-c14 db ?
-l15 db ?
-c15 db ?
-;-----------------
-l21 db ?
-c21 db ?
-l22 db ?
-c22 db ?
-l23 db ?
-c23 db ?
-l24 db ?
-c24 db ?
-l25 db ?
-c25 db ?
-
-
-
 ;----------------------------------------------------------
 ;---------print winner---------------
 printwin1 DB 'winner is player 1','$'
@@ -193,11 +164,11 @@ MAIN PROC FAR
                 ; jmp chat
             keyF2:
                 cmp ah, 3Ch ;compare key code with f1 code
-                jnz keyESC    ;if the key is not F1, jump to next check
+                jnz keyESC    ;if the key is not F2, jump to next check
                 jmp EndMainScreen
             keyESC:
                 cmp ah, 1h ;compare key code with f1 code
-                jnz MainInput    ;if the key is not F1, jump to next check
+                jnz MainInput    ;if the key is not esc, take input again
                 jmp EndGame
             EndMainInput:
 
@@ -214,88 +185,15 @@ MAIN PROC FAR
     drawrectangle  120,0,0dh,10,120
     
     verticalline 0,160,170              ;vertical line
-    horizontalline 145,162,319          ;horizontal line
+    ; horizontalline 145,162,319          ;horizontal line
     drawrectangle  120,161,0Eh,10,120
     
 
     ;display name
-        push dx
-        mov si,offset BufferData1
-
-        MOV AL,[si]
-        sub al,30H
-        MOV AH,0  ;MAKE AH=0 TO HAVE THE RIGHT NUMBER IN AX
-        MOV BL,10 ;THE DIVISION THIS TIME IS OVER 10
-        MUL BL
-                        
-        MOV DL,AL ;TO save the frist digit      
-        mov al,[si+1] ;second digit   
-        sub al,30H   
-        add dl,al
-        mov P1_score,dl ;first initial score
-        ;;;;;;;;;;;;;;;;;;;;;;;;;;;
-        mov si,offset BufferData2
-        MOV AL,[si]
-        sub al,30H
-        MOV AH,0  ;MAKE AH=0 TO HAVE THE RIGHT NUMBER IN AX
-        MOV BL,10 ;THE DIVISION THIS TIME IS OVER 10
-        MUL BL           
-        MOV DL,AL ;TO save the frist digit
-
-        mov al,[si+1] ;second digit   
-        sub al,30H   
-        add dl,al
-        mov P2_score,dl
-        ;I need to know the smallest of the 2 numbers the convet it to string and print it next to each name 
-        ;Finding The min of the 2 initials
-        mov al,P1_score
-        mov bl,P2_score
-        
-        cmp al,bl  
-        jl closeM1
-        jg closeM2     
-        jmp closeM    
-
-        closeM1: 
-        mov P2_score,al
-        jmp closeM
-        
-        closeM2: 
-        mov P1_score,bl 
-        closeM:
-        
-        ;Dispkay the names and the min initial points
-        ;set the crsr
-        mov dl,5
-        mov dh,20
-        mov ah,2
-        int 10h
-        ;print the first name
-        mov ah,09 
-        mov dx,offset BUFFNAME1
-        int 21h 
-        ;print the score of the first player
-        MOV AL,P1_score
-        CALL DisplayNumInAL
-        ;set the crsr
-        mov dl,70 
-        mov dh,20
-        mov ah,2
-        int 10h
-        ;print the second name
-        mov ah,09
-        mov dx,offset BUFFNAME2 
-        int 21h
-        ;print the score of the second player
-        MOV AL,P2_score
-        CALL DisplayNumInAL
-
-        pop dx
-
-        ;START THE GAME
-        mov di, offset commandS
-        mov cursor, di
-    
+    CALL DisplayNamesAndScore
+    ;START THE GAME
+    mov di, offset commandS
+    mov cursor, di
     Game:
     ;---------------------------
     push cx
@@ -328,25 +226,7 @@ MAIN PROC FAR
         dontDrawFly:
         ;----------------------rm.asm-----------------------------
         call RegMemo
-        ;draw score squares UI.inc 
-          setcursor 0000
-       
-       mov l11,'1'
-       mov c11,0ah
-
-       mov l12,'2'
-       mov c12,9h
-
-       mov l13,'3'
-       mov c13,0ch
-
-        mov l14,'4'
-       mov c14,0eh
-
-       mov l15,'5'
-       mov c15,0dh
-      
-      
+        setcursor 0000
        drawrectanglewithletter  140,7,c11,10,10,63497d,l11,c11
        setcursor 0000
        drawrectanglewithletter  140,30,c12,10,10,63500d,l12,c12
@@ -356,27 +236,8 @@ MAIN PROC FAR
        drawrectanglewithletter  140,77,c14,10,10,63506d,l14,c14
        setcursor 0000
        drawrectanglewithletter  140,101,c15,10,10, 63509d,l15,c15
-       setcursor 0000
-
-
-       mov l21,'1'
-       mov c21,0ah
-
-
-       mov l22,'2'
-       mov c22,9h
-
-       mov l23,'3'
-       mov c23,0ch
-
-       mov l24,'4'
-       mov c24,0eh
-
-       mov l25,'5'
-       mov c25,0dh
-      
-        setcursor 0000
-      
+    
+        setcursor 0000  
         drawrectanglewithletter  135,163,c21,10,10,63518d,l21,c21
         setcursor 0000
         drawrectanglewithletter  135,186,c22,10,10,63521d,l22,c22
@@ -386,7 +247,6 @@ MAIN PROC FAR
         drawrectanglewithletter  135,232,c24,10,10,63527d,l24,c24
         setcursor 0000
         drawrectanglewithletter  135,255,c25,10,10, 63530d,l25,c25
-        setcursor 0000
 
 
 
@@ -415,16 +275,7 @@ MAIN PROC FAR
         ;-------------------------CHARACTER------------------------------
         CALL CharInput
         ;--------------------Exit game if key is F3----------------------
-        
-        ; cmp cyclesCounter,0FFFFH
-        ; jnz no_flying
-        ; CALL flying
-        ; INC varCount
-        ; CMP varCount,5
-        ; JNZ no_flying 
-        ; MOV varCount,0
-        ; ;Exit game if key if F3
-        ; no_flying:
+    
         cmp al, 13h
         jz MainScreen
         jmp Game
@@ -597,7 +448,7 @@ BackspaceInput PROC
     horizontalline 170,0,320            ;horizontal line
     drawrectangle  120,0,0dh,10,120     ;draw the background of the command after deleting to override the old command
 
-    horizontalline 145,162,319          ;horizontal line
+    ; horizontalline 145,162,319          ;horizontal line
     drawrectangle  120,161,0Eh,10,120
 
     BackspaceInputDone:
@@ -700,5 +551,75 @@ DisplayNumInAL PROC
     INT 21H
     ret
 DisplayNumInAL ENDP 
+DisplayNamesAndScore PROC
+        mov si,offset BufferData1
+        MOV AL,[si]
+        sub al,30H
+        MOV AH,0  ;MAKE AH=0 TO HAVE THE RIGHT NUMBER IN AX
+        MOV BL,10 ;THE DIVISION THIS TIME IS OVER 10
+        MUL BL
+                        
+        MOV DL,AL ;TO save the frist digit      
+        mov al,[si+1] ;second digit   
+        sub al,30H   
+        add dl,al
+        mov P1_score,dl ;first initial score
+        ;;;;;;;;;;;;;;;;;;;;;;;;;;;
+        mov si,offset BufferData2
+        MOV AL,[si]
+        sub al,30H
+        MOV AH,0  ;MAKE AH=0 TO HAVE THE RIGHT NUMBER IN AX
+        MOV BL,10 ;THE DIVISION THIS TIME IS OVER 10
+        MUL BL           
+        MOV DL,AL ;TO save the frist digit
 
+        mov al,[si+1] ;second digit   
+        sub al,30H   
+        add dl,al
+        mov P2_score,dl
+        ;I need to know the smallest of the 2 numbers the convet it to string and print it next to each name 
+        ;Finding The min of the 2 initials
+        mov al,P1_score
+        mov bl,P2_score
+        
+        cmp al,bl  
+        jl closeM1
+        jg closeM2     
+        jmp closeM    
+
+        closeM1: 
+        mov P2_score,al
+        jmp closeM
+        
+        closeM2: 
+        mov P1_score,bl 
+        closeM:
+        
+        ;Dispkay the names and the min initial points
+        ;set the crsr
+        mov dl,5
+        mov dh,20
+        mov ah,2
+        int 10h
+        ;print the first name
+        mov ah,09 
+        mov dx,offset BUFFNAME1
+        int 21h 
+        ;print the score of the first player
+        MOV AL,P1_score
+        CALL DisplayNumInAL
+        ;set the crsr
+        mov dl,70 
+        mov dh,20
+        mov ah,2
+        int 10h
+        ;print the second name
+        mov ah,09
+        mov dx,offset BUFFNAME2 
+        int 21h
+        ;print the score of the second player
+        MOV AL,P2_score
+        CALL DisplayNumInAL
+    RET
+DisplayNamesAndScore ENDP  
 END MAIN
