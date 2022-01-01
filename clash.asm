@@ -130,7 +130,34 @@ isGun db 0
 isBackSpace db 0
 isEnter db 0
 isChar db 0
-;-------------------
+;-------------------scores values and colors --------------
+
+  
+l11 db ?
+c11 db ?
+l12 db ?
+c12 db ?
+l13 db ?
+c13 db ?
+l14 db ?
+c14 db ?
+l15 db ?
+c15 db ?
+;-----------------
+l21 db ?
+c21 db ?
+l22 db ?
+c22 db ?
+l23 db ?
+c23 db ?
+l24 db ?
+c24 db ?
+l25 db ?
+c25 db ?
+
+
+
+;----------------------------------------------------------
 cyclesCounter1 dw 0
 cyclesCounter2 DW 0
 .CODE
@@ -181,11 +208,11 @@ MAIN PROC FAR
     Background                          ;background color
     horizontalline 170,0,320            ;horizontal line
     drawrectangle  120,0,0dh,10,120
-    drawrectangle   5,2,0ah,5,5 ;draw shape
+    
     verticalline 0,160,170              ;vertical line
     horizontalline 145,162,319          ;horizontal line
     drawrectangle  120,161,0Eh,10,120
-    drawrectangle   5,162,0ah,5,5 ;draw shape
+    
 
     ;display name
         push dx
@@ -288,17 +315,67 @@ MAIN PROC FAR
         ;----------------------rm.asm-----------------------------
         call RegMemo
         ;draw score squares UI.inc 
+          setcursor 0000
+       
+       mov l11,'1'
+       mov c11,0ah
+
+       mov l12,'2'
+       mov c12,9h
+
+       mov l13,'3'
+       mov c13,0ch
+
+        mov l14,'4'
+       mov c14,0eh
+
+       mov l15,'5'
+       mov c15,0dh
+      
+      
+       drawrectanglewithletter  140,7,c11,10,10,63497d,l11,c11
+       setcursor 0000
+       drawrectanglewithletter  140,30,c12,10,10,63500d,l12,c12
+       setcursor 0000
+       drawrectanglewithletter  140,53,c13,10,10,63503d,l13,c13
+       setcursor 0000
+       drawrectanglewithletter  140,77,c14,10,10,63506d,l14,c14
+       setcursor 0000
+       drawrectanglewithletter  140,101,c15,10,10, 63509d,l15,c15
+       setcursor 0000
+
+
+       mov l21,'1'
+       mov c21,0ah
+
+
+       mov l22,'2'
+       mov c22,9h
+
+       mov l23,'3'
+       mov c23,0ch
+
+       mov l24,'4'
+       mov c24,0eh
+
+       mov l25,'5'
+       mov c25,0dh
+      
         setcursor 0000
-        drawrectanglewithletter  140,7,0ah,10,10,63497d,'1',0ah
+      
+        drawrectanglewithletter  135,163,c21,10,10,63518d,l21,c21
         setcursor 0000
-        drawrectanglewithletter  140,30,9h,10,10,63500d,'2',09h
+        drawrectanglewithletter  135,186,c22,10,10,63521d,l22,c22
         setcursor 0000
-        drawrectanglewithletter  140,53,0ch,10,10,63503d,'3',0ch
+        drawrectanglewithletter   135,209,c23,10,10,63524d,l23,c23
         setcursor 0000
-        drawrectanglewithletter  140,77,0dh,10,10,63506d,'4',0dh
+        drawrectanglewithletter  135,232,c24,10,10,63527d,l24,c24
         setcursor 0000
-        drawrectanglewithletter  140,101,0Eh,10,10, 63509d,'5',0eh
+        drawrectanglewithletter  135,255,c25,10,10, 63530d,l25,c25
         setcursor 0000
+
+
+
         ;Read Keyboard input
         mov ah, 1
         int 16h
@@ -395,7 +472,7 @@ CheckWinner proc
   mov cx,8 
   w1:
   cmp [si],105eh
-  jz setwinner1
+  jz setwinner2
   add si,2
   dec cx
   cmp cx,0
@@ -405,7 +482,7 @@ CheckWinner proc
   mov cx,8
   w2:
   cmp [si],105eh
-  jz setwinner2
+  jz setwinner1
   add si,2
   dec cx
   cmp cx,0
