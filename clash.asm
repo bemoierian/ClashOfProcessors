@@ -17,12 +17,15 @@ EXTRN execute:far
 PUBLIC commandStr,commandCode,isExternal,Instruction,Destination,Source,External
 PUBLIC commandS
 ;-------------------------Gun.asm---------------------------
-EXTRN DrawGun:far
-EXTRN FireGun_initial:far
-EXTRN FireGun_Continue:far
+EXTRN DrawGun1:far
+EXTRN FireGun1_initial:far
+EXTRN FireGun1_Continue:far
+EXTRN DrawGun2:far
+EXTRN FireGun2_initial:far
+EXTRN FireGun2_Continue:far
 EXTRN FlyObj_Continue:far
 EXTRN FlyObj_initial:far
-EXTRN gun1PrevX:WORD,gun1PrevY:WORD,gun1NewX:WORD,gun1NewY:WORD
+EXTRN gun1NewX:WORD,gun1NewY:WORD,gun2NewX:WORD,gun2NewY:WORD
 EXTRN l11:BYTE,c11:BYTE,l12:BYTE,c12:BYTE,l13:BYTE,c13:BYTE,l14:BYTE,c14:BYTE,l15:BYTE,c15:BYTE,l21:BYTE,c21:BYTE,l22:BYTE,c22:BYTE,l23:BYTE,c23:BYTE,l24:BYTE,c24:BYTE,l25:BYTE,c25:BYTE
 ;-------------------powerups.asm----------------------------
 EXTRN forbiddin_char1:BYTE,forbiddin_char2:BYTE
@@ -134,7 +137,8 @@ Turn db 1
 P2_score db 0
 P1_score db 0
 ;---------------------------INPUT FLAGS-------------------------
-isGun db 0
+isGun1 db 0
+isGun2 db 0
 isBackSpace db 0
 isEnter db 0
 isChar db 0
@@ -237,7 +241,8 @@ MAIN PROC FAR
         CALL DisplayNamesAndScore
         ;----------------------gun.asm----------------------------- 
 
-        CALL FireGun_Continue
+        CALL FireGun1_Continue
+        CALL FireGun2_Continue
 
         cmp cyclesCounter1, 100H
         jnz dontInitiateFly
@@ -288,8 +293,12 @@ MAIN PROC FAR
         ;DON'T CALL ANY FUNCTION HERE THAT CHANGES THE VALUE OF AX,
         ;IF YOU WANT TO USE AX, PUSH IT IN REG THEN POP WHEN YOU FINISH TO RESTORE ITS VALUE 
         ;----------------------------GUN--------------------------------
-        CALL GunInput
-        CMP isGun, 1
+        CALL Gun1Input
+        CMP isGun1, 1
+        jz Game
+
+        CALL Gun2Input
+        CMP isGun2, 1
         jz Game
         ;------------------------BACKSPACE------------------------------
         CALL BackspaceInput
@@ -406,7 +415,8 @@ CheckWinner proc
 CheckWinner endp
 ;description
 ResetInputFlags PROC
-    MOV isGun, 0
+    MOV isGun1, 0
+    MOV isGun2, 0
     MOV isBackSpace, 0
     MOV isEnter, 0
     MOV isChar, 0
@@ -415,51 +425,96 @@ ResetInputFlags PROC
 ResetInputFlags ENDP
 
 ;description
-GunInput PROC
+Gun1Input PROC
      ;right arrow
-    right:
-        cmp ah, 4Dh ;compare key code with right key code
-        jnz left    ;if the key is not right, jump to next check
+    right1:
+        cmp ax, 4D00h ;compare key code with right key code
+        jnz left1    ;if the key is not right, jump to next check
         CMP gun1NewX, 141
-        JNC GunInputDone
+        JNC Gun1InputDone
         add gun1NewX, 3  ;if the key is right, move the gun 3 pixels to the right
-        jmp GunInputDone
+        jmp Gun1InputDone
     ;left arrow    
-    left:
-        cmp ah, 4Bh
-        jnz up
+    left1:
+        cmp ax, 4B00h
+        jnz up1
         CMP gun1NewX, 4
-        JC GunInputDone
+        JC Gun1InputDone
         sub gun1NewX, 3
-        jmp GunInputDone
+        jmp Gun1InputDone
     ;up arrow
-    up:
-        cmp ah, 48h
-        jnz down
+    up1:
+        cmp ax, 4800h
+        jnz down1
         CMP gun1NewY, 4
-        JC GunInputDone
+        JC Gun1InputDone
         sub gun1NewY, 3
-        jmp GunInputDone
+        jmp Gun1InputDone
     ;down arrow
-    down:
-        cmp ah, 50h
-        jnz space
+    down1:
+        cmp ax, 5000h
+        jnz fire1
         CMP gun1NewY, 160
-        JNC GunInputDone
+        JNC Gun1InputDone
         add gun1NewY, 3
-        jmp GunInputDone
-
-    space:
+        jmp Gun1InputDone
+    ;space
+    fire1: 
         cmp ah, 39h
-        jnz NotGunInput
-        CALL FireGun_initial
+        jnz NotGun1Input
+        CALL FireGun1_initial
 
-    GunInputDone:
-    MOV isGun, 1
-    CALL DrawGun 
-    NotGunInput:
+    Gun1InputDone:
+    MOV isGun1, 1
+    CALL DrawGun1 
+    NotGun1Input:
     RET
-GunInput ENDP
+Gun1Input ENDP
+Gun2Input PROC
+     ;right arrow
+    right2:
+        cmp ax, 4D36h ;compare key code with right key code
+        jnz left2    ;if the key is not right, jump to next check
+        CMP gun2NewX, 311
+        JNC Gun2InputDone
+        add gun2NewX, 3  ;if the key is right, move the gun 3 pixels to the right
+        jmp Gun2InputDone
+    ;left arrow    
+    left2:
+        cmp ax, 4B34h
+        jnz up2
+        CMP gun2NewX, 164
+        JC Gun2InputDone
+        sub gun2NewX, 3
+        jmp Gun2InputDone
+    ;up arrow
+    up2:
+        cmp ax, 4838h
+        jnz down2
+        CMP gun2NewY, 4
+        JC Gun2InputDone
+        sub gun2NewY, 3
+        jmp Gun2InputDone
+    ;down arrow
+    down2:
+        cmp ax, 5032h
+        jnz fire2
+        CMP gun2NewY, 160
+        JNC Gun2InputDone
+        add gun2NewY, 3
+        jmp Gun2InputDone
+
+    fire2:
+        cmp ax, 5230h
+        jnz NotGun2Input
+        CALL FireGun2_initial
+
+    Gun2InputDone:
+    MOV isGun2, 1
+    CALL DrawGun2
+    NotGun2Input:
+    RET
+Gun2Input ENDP
 ;description
 BackspaceInput PROC
     cmp ah, 0Eh
@@ -701,4 +756,16 @@ SetInitialPoints PROC
     mov P2_score,dl
     RET
 SetInitialPoints ENDP 
+ArePointsZero PROC
+    CMP P1_score, 0
+    JNZ ISP2ZERO
+    MOV winner, 2
+    JMP ENDZEROES
+    ISP2ZERO:
+    CMP P2_score, 0
+    JNZ ENDZEROES
+    MOV winner, 1
+    ENDZEROES:
+    RET
+ArePointsZero ENDP
 END MAIN
