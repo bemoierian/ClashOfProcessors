@@ -1,11 +1,11 @@
-PUBLIC power_up3_player1
-PUBLIC power_up3_player2
+PUBLIC power_up3_player1,power_up1_player1,power_up2_player1,power_up6_player1
+PUBLIC power_up3_player2,power_up1_player2,power_up2_player2,power_up6_player2
 PUBLIC power_up4_player1,power_up4_player2
 PUBLIC power_up5_player1,power_up5_player2
-EXTRN P1_score:BYTE,P2_score:BYTE,Source:BYTE,forbiddin_char1:BYTE,forbiddin_char2:BYTE,SourceValue:WORD,External:WORD
+EXTRN P1_score:BYTE,P2_score:BYTE,Source:BYTE,forbiddin_char1:BYTE,forbiddin_char2:BYTE,SourceValue1:WORD,External:WORD
 EXTRN AxVar1:WORD,BxVar1:WORD,CxVar1:WORD,DxVar1:WORD,SiVar1:WORD,DiVar1:WORD,SpVar1 :WORD,BpVar1 :WORD
 EXTRN AxVar2:WORD,BxVar2:WORD,CxVar2:WORD,DxVar2:WORD,SiVar2:WORD,DiVar2:WORD,SpVar2 :WORD,BpVar2 :WORD
-EXTRN chosen_level:BYTE
+EXTRN chosen_level:BYTE,target:WORD
 .model small
 .data
 ;power up 3
@@ -22,7 +22,9 @@ src_value2  DW  0
 ;power up5
 powerup5_isused_player1 db 0h
 powerup5_isused_player2 db 0h
-
+;POWER UP 6
+ASC_TBL DB   '0','1','2','3','4','5','6','7','8','9'
+        DB   'A','B','C','D','E','F'
 .code
 ;POWER UP 1
 power_up1_player1 PROC FAR
@@ -106,7 +108,7 @@ used_before32:
 power_up3_player2 ENDP
 ;power up 4     NOT COMPLETE==>SOURCE VALUES
 power_up4_player1 PROC FAR
-    MOV BX,SourceValue ;SOURCE VALUE OF THE FIRST PLAYER
+    MOV BX,SourceValue1 ;SOURCE VALUE OF THE FIRST PLAYER
     MOV DX,[BX]
     MOV src_value1,DX
     ;take line number
@@ -305,7 +307,7 @@ exit:
 power_up4_player1 ENDP 
 
 power_up4_player2 PROC FAR  
-    MOV BX,SourceValue ;SOURCE VALUE OF THE FIRST PLAYER
+    MOV BX,SourceValue1 ;SOURCE VALUE OF THE FIRST PLAYER
     MOV DX,[BX]
     MOV src_value2,DX
     ;take line number
@@ -547,4 +549,22 @@ power_up5_player2 PROC
     used_before2: 
     ret
 power_up5_player2 ENDP
+;power up 6 for level 2
+power_up6_player1 PROC
+    mov al,9
+    mov BX,offset ASC_TBL
+    XLAT    ;translate and put the result in AL
+            ;AL= ASC_TBL[AL]
+            ;used with look-up tables
+    
+power_up6_player1 ENDP
+
+power_up6_player2 PROC
+    mov al,9
+    mov BX,offset ASC_TBL
+    XLAT    ;translate and put the result in AL
+            ;AL= ASC_TBL[AL]
+            ;used with look-up tables
+    
+power_up6_player2 ENDP
 END

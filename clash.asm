@@ -13,7 +13,8 @@ PUBLIC Carry_1,Carry_2
 ;-------------------------chat.asm---------------------------
 EXTRN Chat:far 
 ;-------------------------command.asm---------------------------
-EXTRN execute:far 
+EXTRN execute1:far 
+EXTRN execute2:far 
 PUBLIC commandStr,commandCode,isExternal,Instruction,Destination,Source,External
 PUBLIC commandS
 ;-------------------------Gun.asm---------------------------
@@ -29,13 +30,19 @@ EXTRN gun1NewX:WORD,gun1NewY:WORD,gun2NewX:WORD,gun2NewY:WORD
 EXTRN l11:BYTE,c11:BYTE,l12:BYTE,c12:BYTE,l13:BYTE,c13:BYTE,l14:BYTE,c14:BYTE,l15:BYTE,c15:BYTE,l21:BYTE,c21:BYTE,l22:BYTE,c22:BYTE,l23:BYTE,c23:BYTE,l24:BYTE,c24:BYTE,l25:BYTE,c25:BYTE
 ;-------------------powerups.asm----------------------------
 EXTRN forbiddin_char1:BYTE,forbiddin_char2:BYTE
+EXTRN power_up1_player1:FAR
+EXTRN power_up1_player2:FAR
+EXTRN power_up2_player1:FAR
+EXTRN power_up2_player2:FAR
 EXTRN power_up3_player1:FAR
 EXTRN power_up3_player2:FAR
 EXTRN power_up4_player1:FAR
 EXTRN power_up4_player2:FAR
 EXTRN power_up5_player1:FAR
 EXTRN power_up5_player2:FAR
-PUBLIC P1_score,P2_score
+EXTRN power_up6_player1:FAR
+EXTRN power_up6_player2:FAR
+PUBLIC P1_score,P2_score,target
 ;-------------------------LEVEL.ASM--------------------------
 EXTRN forbiddin_char1:BYTE,forbiddin_char2:BYTE,chosen_level:BYTE
 EXTRN select_level:FAR
@@ -147,7 +154,7 @@ isPowerUp db 0
 ;---------print winner---------------
 ; printwin1 DB 'winner is player 1','$'
 ; printwin2 DB 'winner is player 2','$'
-
+target dw 105eH ;target values
 winner db 0 ;flag of winner in the game
 ;------------------------------------
 cyclesCounter1 dw 0
@@ -311,7 +318,7 @@ MAIN PROC FAR
         ;-------------------------CHARACTER------------------------------
         CALL CharInput
         ;--------------------Exit game if key is F3----------------------
-    
+        call PowerUpInput
         cmp al, 13h
         jz MainScreen
         jmp Game
@@ -542,24 +549,31 @@ EnterInput PROC
     jnz NotEnterInput
     CMP cmdCurrSize, 0
     JZ EnterInputDone
-    CALL execute
+    cmp turn,2
+    jnz turn_1
+    CALL execute2
+    jmp finish_execute
+    turn_1:
+    CALL execute1
+
+    finish_execute:
     ;------------------------Print, peter-----------------------------
-    MOV AL,Source ;PUT THE REAMINDER IN THE AL TO DIVIDE IT AGAIN
-    MOV AH,0  ;MAKE AH=0 TO HAVE THE RIGHT NUMBER IN AX
-    MOV BL,10h ;THE DIVISION THIS TIME IS OVER 10
-    DIV BL
+    ; MOV AL,Source ;PUT THE REAMINDER IN THE AL TO DIVIDE IT AGAIN
+    ; MOV AH,0  ;MAKE AH=0 TO HAVE THE RIGHT NUMBER IN AX
+    ; MOV BL,10h ;THE DIVISION THIS TIME IS OVER 10
+    ; DIV BL
     
-    MOV DL,AL ;TO DISPLAY THE TENS 
-    MOV CH,AH ;TO SAVE THE REMAINDER THE UNITS
+    ; MOV DL,AL ;TO DISPLAY THE TENS 
+    ; MOV CH,AH ;TO SAVE THE REMAINDER THE UNITS
     
-    ADD DL,30H
-    MOV AH,02
-    INT 21H  
+    ; ADD DL,30H
+    ; MOV AH,02
+    ; INT 21H  
     
-    MOV DL,CH ;NO DIVISION
-    ADD DL,30H
-    MOV AH,02H
-    INT 21H
+    ; MOV DL,CH ;NO DIVISION
+    ; ADD DL,30H
+    ; MOV AH,02H
+    ; INT 21H
     ;------------------------Print, peter-----------------------------
     CALL ClearCommandString
     CALL SwitchTurn
@@ -628,31 +642,69 @@ PowerUpInput PROC
         cmp ah, 3Fh ;compare key code with f5 code
         jnz keyF6    ;if the key is not F5, jump to next check
         ;call powerup
+        cmp Turn,1
+        jnz P21
+        CALL power_up1_player1
+        jmp PowerUpInputDone
+        P21:
+        CALL power_up1_player2
         jmp PowerUpInputDone
     keyF6:
         cmp ah, 40h ;compare key code with f6 code
         jnz keyF7    ;if the key is not F6, jump to next check
         ;call powerup
+        cmp Turn,1
+        jnz P22
+        CALL power_up2_player1
+        jmp PowerUpInputDone
+        P22:
+        CALL power_up2_player1
         jmp PowerUpInputDone
     keyF7:
         cmp ah, 41h ;compare key code with f7 code
         jnz keyF8    
         ;call powerup
+        cmp Turn,1
+        jnz P23
+        CALL power_up3_player1
+        jmp PowerUpInputDone
+        P23:
+        CALL power_up3_player2
         jmp PowerUpInputDone
     keyF8:
         cmp ah, 42h ;compare key code with f8 code
         jnz keyF9  
         ;call powerup  
+        cmp Turn,1
+        jnz P24
+        CALL power_up4_player1
+        jmp PowerUpInputDone
+        P24:
+        CALL power_up4_player2
         jmp PowerUpInputDone
     keyF9:
         cmp ah, 43h ;compare key code with f9 code
         jnz keyF10  
-        ;call powerup  
+        ;call powerup
+        cmp Turn,1
+        jnz P25  
+        CALL power_up5_player1
+        jmp PowerUpInputDone
+        P25:
+        CALL power_up5_player2
         jmp PowerUpInputDone
     keyF10:
+        CMP chosen_level,2
+        JNZ PowerUpInputDone ;if not level 2 no power up 6
         cmp ah, 44h ;compare key code with f10 code
-        jnz NotPowerUpInput 
-        ;call powerup
+        jnz PowerUpInputDone  
+        cmp Turn,1
+        jnz P26
+        CALL power_up6_player1
+        jmp PowerUpInputDone
+        P26:
+        CALL power_up6_player1
+        ;jmp PowerUpInputDone
     PowerUpInputDone:
     MOV isPowerUp, 1
     NotPowerUpInput:
@@ -678,6 +730,7 @@ DisplayNumInAL PROC
     INT 21H
     ret
 DisplayNumInAL ENDP 
+
 DisplayNamesAndScore PROC
         ;Dispkay the names and the min initial points
         ;set the crsr
@@ -707,7 +760,7 @@ DisplayNamesAndScore PROC
     RET
 DisplayNamesAndScore ENDP  
 DISPLAYLEVEL PROC
-    
+
 DISPLAYLEVEL ENDP
 
 SetMinPoints PROC
