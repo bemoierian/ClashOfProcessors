@@ -12,9 +12,12 @@ PUBLIC AxVar2,BxVar2,CxVar2,DxVar2,SiVar2,DiVar2,SpVar2 ,BpVar2
 PUBLIC Carry_1,Carry_2
 ;-------------------------chat.asm---------------------------
 EXTRN Chat:far 
-;-------------------------command.asm---------------------------
+;-------------------------cmd_p1.asm---------------------------
 EXTRN execute1:far 
-EXTRN execute2:far 
+EXTRN CLEAR_TO_EXECUTE_1:BYTE
+;-------------------------cmd_p2.asm---------------------------
+EXTRN execute2:far
+EXTRN CLEAR_TO_EXECUTE_2:BYTE
 PUBLIC commandStr,commandCode,isExternal,Instruction,Destination,Source,External
 PUBLIC commandS
 ;-------------------------Gun.asm---------------------------
@@ -43,6 +46,7 @@ EXTRN power_up5_player2:FAR
 EXTRN power_up6_player1:FAR
 EXTRN power_up6_player2:FAR
 PUBLIC P1_score,P2_score,target
+PUBLIC ClearCommandString,SwitchTurn
 ;-------------------------LEVEL.ASM--------------------------
 EXTRN forbiddin_char1:BYTE,forbiddin_char2:BYTE,chosen_level:BYTE
 EXTRN select_level:FAR
@@ -50,6 +54,8 @@ EXTRN show_level:FAR
 EXTRN select_forbidden_char1:FAR
 EXTRN select_forbidden_char2:FAR
 EXTRN show_forb_chars:FAR
+EXTRN initial_reg1:far
+EXTRN initial_reg2:far
 ;-------------------------UI.inc------------------------------
 include UI.inc
 ;------------------win.asm----------
@@ -154,11 +160,8 @@ isEnter db 0
 isChar db 0
 isPowerUp db 0
 ;----------------------------------------------------------
-;---------print winner---------------
-; printwin1 DB 'winner is player 1','$'
-; printwin2 DB 'winner is player 2','$'
 target dw 105eH ;target values
-;winner db 0 ;flag of winner in the game
+
 ;------------------------------------
 cyclesCounter1 dw 0
 cyclesCounter2 DW 0
@@ -182,6 +185,11 @@ MAIN PROC FAR
     ;CHOOSE LEVEL
     CALL select_level
     CALL show_level
+    cmp chosen_level,2
+    jnz level1
+    call initial_reg1
+    call initial_reg2
+    level1:
     CALL select_forbidden_char1
     CALL select_forbidden_char2
     CALL show_forb_chars
@@ -218,14 +226,14 @@ MAIN PROC FAR
     mov al,13h
     int 10h
 
-    ;Main Game Loop
+
     Background                          ;background color
     horizontalline 170,0,320            ;horizontal line
-    drawrectangle  120,0,0dh,10,120
+    drawrectangle  125,0,0dh,13,120
     
     verticalline 0,160,170              ;vertical line
      ;horizontalline 145,162,319          ;horizontal line
-    drawrectangle  120,161,0Eh,10,120
+    drawrectangle  125,161,0Eh,13,120
     
 
     
@@ -234,9 +242,9 @@ MAIN PROC FAR
     mov cursor, di
     Game:
         ;---------------------------
-        push cx
-        call  CheckWinner
-        pop cx
+        pusha
+        call CheckWinner
+        popa
         inc cyclesCounter1
         inc cyclesCounter2
         CALL ResetInputFlags
@@ -336,7 +344,7 @@ PrintCommandString PROC
     isTurn2:
     MOV  DL, 20        ;column
     isTurn1End:
-    MOV  DH, 15      ;row
+    MOV  DH, 16      ;row
     MOV  BH, 0        ;page
     MOV  AH, 02H      ;set cursor 
     INT  10H
@@ -357,8 +365,8 @@ ClearCommandString PROC
     MOV cmdCurrSize, 0
     ;-----------------DRAW BACKGROUND RECTANGLE AGAIN TO OVERRIDE CURRENT DISPLAYED STRING----
     horizontalline 170,0,320            ;horizontal line
-    drawrectangle  120,0,0dh,10,120     ;draw the background of the command after deleting to override the old command
-    drawrectangle  120,161,0Eh,10,120
+    drawrectangle  125,0,0dh,13,120     ;draw the background of the command after deleting to override the old command
+    drawrectangle  125,161,0Eh,13,120
     RET
 ClearCommandString ENDP
 
@@ -414,7 +422,7 @@ Gun1Input PROC
     down1:
         cmp ax, 5000h
         jnz fire1
-        CMP gun1NewY, 160
+        CMP gun1NewY, 115
         JNC Gun1InputDone
         add gun1NewY, 3
         jmp Gun1InputDone
@@ -459,7 +467,7 @@ Gun2Input PROC
     down2:
         cmp ax, 5032h
         jnz fire2
-        CMP gun2NewY, 160
+        CMP gun2NewY, 115
         JNC Gun2InputDone
         add gun2NewY, 3
         jmp Gun2InputDone
@@ -487,10 +495,10 @@ BackspaceInput PROC
     dec cmdCurrSize ;decrement cursor
     mov cursor, di
     horizontalline 170,0,320            ;horizontal line
-    drawrectangle  120,0,0dh,10,120     ;draw the background of the command after deleting to override the old command
+    drawrectangle  125,0,0dh,13,120     ;draw the background of the command after deleting to override the old command
 
     ; horizontalline 145,162,319          ;horizontal line
-    drawrectangle  120,161,0Eh,10,120
+    drawrectangle  125,161,0Eh,13,120
     BackspaceInputDone:
     MOV isBackSpace, 1
     NotBackspaceInput:
@@ -505,29 +513,17 @@ EnterInput PROC
     cmp turn,2
     jnz turn_1
     CALL execute2
+    CMP CLEAR_TO_EXECUTE_2, 0
+    JNZ finish_execute
+    DEC P2_score
     jmp finish_execute
     turn_1:
     CALL execute1
-
+    CMP CLEAR_TO_EXECUTE_1, 0
+    JNZ finish_execute
+    DEC P1_score
+    
     finish_execute:
-    ;------------------------Print, peter-----------------------------
-    ; MOV AL,Source ;PUT THE REAMINDER IN THE AL TO DIVIDE IT AGAIN
-    ; MOV AH,0  ;MAKE AH=0 TO HAVE THE RIGHT NUMBER IN AX
-    ; MOV BL,10h ;THE DIVISION THIS TIME IS OVER 10
-    ; DIV BL
-    
-    ; MOV DL,AL ;TO DISPLAY THE TENS 
-    ; MOV CH,AH ;TO SAVE THE REMAINDER THE UNITS
-    
-    ; ADD DL,30H
-    ; MOV AH,02
-    ; INT 21H  
-    
-    ; MOV DL,CH ;NO DIVISION
-    ; ADD DL,30H
-    ; MOV AH,02H
-    ; INT 21H
-    ;------------------------Print, peter-----------------------------
     CALL ClearCommandString
     CALL SwitchTurn
 
@@ -611,7 +607,7 @@ PowerUpInput PROC
         CALL power_up2_player1
         jmp PowerUpInputDone
         P22:
-        CALL power_up2_player1
+        CALL power_up2_player2
         jmp PowerUpInputDone
     keyF7:
         cmp ah, 41h ;compare key code with f7 code
@@ -648,15 +644,15 @@ PowerUpInput PROC
         jmp PowerUpInputDone
     keyF10:
         CMP chosen_level,2
-        JNZ PowerUpInputDone ;if not level 2 no power up 6
+        JNZ NotPowerUpInput ;if not level 2 no power up 6
         cmp ah, 44h ;compare key code with f10 code
-        jnz PowerUpInputDone  
+        jnz NotPowerUpInput  
         cmp Turn,1
         jnz P26
         CALL power_up6_player1
         jmp PowerUpInputDone
         P26:
-        CALL power_up6_player1
+        CALL power_up6_player2
         ;jmp PowerUpInputDone
     PowerUpInputDone:
     MOV isPowerUp, 1
@@ -695,6 +691,10 @@ DisplayNamesAndScore PROC
         mov ah,09 
         mov dx,offset BUFFNAME1
         int 21h 
+
+        mov ah,02 
+        mov dl, ':'
+        int 21h 
         ;print the score of the first player
         MOV AL,P1_score
         CALL DisplayNumInAL
@@ -707,14 +707,14 @@ DisplayNamesAndScore PROC
         mov ah,09
         mov dx,offset BUFFNAME2 
         int 21h
+        mov ah,02 
+        mov dl, ':'
+        int 21h 
         ;print the score of the second player
         MOV AL,P2_score
         CALL DisplayNumInAL
     RET
 DisplayNamesAndScore ENDP  
-DISPLAYLEVEL PROC
-
-DISPLAYLEVEL ENDP
 
 SetMinPoints PROC
     mov al,P1_score

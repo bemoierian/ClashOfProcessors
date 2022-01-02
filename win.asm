@@ -18,8 +18,8 @@ endm setcursor
 .DATA
 ;--------------------------win--------------------------
 ;---------print winner---------------
-printwin1 DB 'winner is player 1 ','$'
-printwin2 DB 'winner is player 2 ','$'
+printwin1 DB 'winner is player 1  ','$'
+printwin2 DB 'winner is player 2  ','$'
 
 winner db 0 ;flag of winner in the game
 ;------------------------------------
@@ -28,7 +28,6 @@ winner db 0 ;flag of winner in the game
 CheckWinner PROC FAR
     mov ax, @data
     mov ds, ax
-    ;;;;;;;;;;;;;;;;;;
     cmp P1_score,0
     jz setwinner2
     cmp P2_score,0
@@ -117,8 +116,7 @@ CheckWinner PROC FAR
     RET
     No: 
     MOV AH, 04CH    ;TO RETURN TO THE OPERATING SYSTEM
-    INT 21H 
-    ret
+    INT 21H
 CheckWinner ENDP
 END
 

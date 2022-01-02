@@ -2,10 +2,16 @@ PUBLIC power_up3_player1,power_up1_player1,power_up2_player1,power_up6_player1
 PUBLIC power_up3_player2,power_up1_player2,power_up2_player2,power_up6_player2
 PUBLIC power_up4_player1,power_up4_player2
 PUBLIC power_up5_player1,power_up5_player2
-EXTRN P1_score:BYTE,P2_score:BYTE,Source:BYTE,forbiddin_char1:BYTE,forbiddin_char2:BYTE,SourceValue1:WORD,External:WORD
+EXTRN P1_score:BYTE,P2_score:BYTE,Source:BYTE,forbiddin_char1:BYTE,forbiddin_char2:BYTE,SourceValue1:WORD,SourceValue2:WORD,External:WORD
 EXTRN AxVar1:WORD,BxVar1:WORD,CxVar1:WORD,DxVar1:WORD,SiVar1:WORD,DiVar1:WORD,SpVar1 :WORD,BpVar1 :WORD
 EXTRN AxVar2:WORD,BxVar2:WORD,CxVar2:WORD,DxVar2:WORD,SiVar2:WORD,DiVar2:WORD,SpVar2 :WORD,BpVar2 :WORD
 EXTRN chosen_level:BYTE,target:WORD
+EXTRN execute1:FAR
+EXTRN execute2:FAR
+EXTRN ClearCommandString:FAR
+EXTRN SwitchTurn:far
+EXTRN CLEAR_TO_EXECUTE_1:BYTE
+EXTRN CLEAR_TO_EXECUTE_2:BYTE
 .model small
 .data
 ;power up 3
@@ -23,39 +29,103 @@ src_value2  DW  0
 powerup5_isused_player1 db 0h
 powerup5_isused_player2 db 0h
 ;POWER UP 6
-ASC_TBL DB   '0','1','2','3','4','5','6','7','8','9'
-        DB   'A','B','C','D','E','F'
+digit db '$'
+number dw 0
 powerup6_isused_player1 db 0h
 powerup6_isused_player2 db 0h
+exist db 0
 
 .code
 ;POWER UP 1
 power_up1_player1 PROC FAR
     ;CALL EXCUTE FOR PLAYER 1
+    cmp P1_score,5
+    jb notP11
+    call execute2
+    CMP CLEAR_TO_EXECUTE_2, 0
+    JNZ finish_execute11
+    cmp P1_score,5
+    jz finish_execute11
+    DEC P1_score
+    finish_execute11:
+
+    CALL ClearCommandString
+    CALL SwitchTurn
+    cmp chosen_level,2
+    jz notP11
     SUB P1_score,5
+    notP11:
+    ret
+    ;call execute1
 power_up1_player1 ENDP
 
 power_up1_player2 PROC FAR
+    cmp P2_score,5
+    jb notP12
     ;CALL EXCUTE FOR PLAYER 2
+    CALL execute1
+    CMP CLEAR_TO_EXECUTE_1, 0
+    JNZ finish_execute12
+    cmp P2_score,5
+    jz finish_execute12
+    DEC P2_score
+    finish_execute12:
+
+    CALL ClearCommandString
+    CALL SwitchTurn
+    cmp chosen_level,2
+    jz notP12
     SUB P2_score,5
+    notP12:
+    ret
 power_up1_player2 ENDP
 
 ;POWER UP 2
 power_up2_player1 PROC FAR
+    cmp P1_score,3
+    jb notP21
     ;CALL EXCUTE FOR PLAYER 1
+    call execute1
     ;CALL EXCUTE FOR PLAYER 2
+    CALL execute2
+    CMP CLEAR_TO_EXECUTE_2, 0
+    JNZ finish_execute21
+    cmp P1_score,3
+    jz finish_execute21
+    DEC P1_score
+    finish_execute21:
+    CALL ClearCommandString
+    CALL SwitchTurn
     SUB P1_score,3
+    notP21:
+    ret
 power_up2_player1 ENDP
 
 power_up2_player2 PROC FAR
+    cmp P2_score,3
+    jb notP22
     ;CALL EXCUTE FOR PLAYER 1
+    call execute1
     ;CALL EXCUTE FOR PLAYER 2
+    CALL execute2
+    CMP CLEAR_TO_EXECUTE_1, 0
+    JNZ finish_execute22
+    cmp P2_score,3
+    jz finish_execute22
+    DEC P2_score
+    finish_execute22:
+    CALL ClearCommandString
+    CALL SwitchTurn
     SUB P2_score,3
+    notP22:
+    ret
 power_up2_player2 ENDP
 
 ;power up 3
 power_up3_player1 PROC FAR 
-  cmp powerup3_isused_player1,1h
+    cmp P1_score,8
+    jb P31
+    cmp powerup3_isused_player1,1h
     jz used_before31  
     ; mov dl,1 ;SET THE CRSR
     ; mov dh,20
@@ -66,10 +136,10 @@ power_up3_player1 PROC FAR
    jz CHECK1
    mov ah,0
    int 16h
-    mov ah,1
-    int 21h ;READ THE CHAR
+    ; mov ah,1
+    ; int 21h ;READ THE CHAR
     mov forbiddin_char1,al ;CHANGE THE FORBIDDEN CHAR
-    sub P1_score,8h ;sub from the score
+    sub P1_score,8 ;sub from the score
     mov powerup3_isused_player1,1h ;set used
 used_before31:
     mov dl,1 ;set the crsr 
@@ -79,17 +149,21 @@ used_before31:
     mov ah,2 ;print space
     mov dl,20h
     int 21h
+    P31:
     ret
 power_up3_player1 ENDP 
 
 power_up3_player2 PROC FAR
- cmp powerup3_isused_player2,1h
+    cmp P2_score,8
+    jb notP32
+    cmp powerup3_isused_player2,1h
     jz used_before32  
     ; mov dl,65 
     ; mov dh,20
     ; mov ah,2
     ; int 10h
-    CHECK2: mov ah,1
+    CHECK2: 
+    mov ah,1
     int 16h
     jz CHECK2
     mov ah,0
@@ -99,28 +173,31 @@ power_up3_player2 PROC FAR
     mov forbiddin_char2,al
     sub P2_score,8h 
     mov powerup3_isused_player2,1h
-used_before32:
- mov dl,65 
+    used_before32:
+    mov dl,65 
     mov dh,20
     mov ah,2
     int 10h
     mov ah,2
     mov dl,20h
     int 21h
+    notP32:
     ret
 power_up3_player2 ENDP
-;power up 4     NOT COMPLETE==>SOURCE VALUES
+;power up 4
 power_up4_player1 PROC FAR
+    cmp P1_score,2
+    jb P41
     MOV BX,SourceValue1 ;SOURCE VALUE OF THE FIRST PLAYER
     MOV DX,[BX]
-    MOV src_value1,DX
+    MOV SourceValue1,DX
     ;take line number
     mov dl,1 ;SET THE CRSR
     mov dh,20
     mov ah,2
     int 10h
-    mov ah,1 ;read one char from the user and put it in al
-    int 21h 
+    ; mov ah,1 ;read one char from the user and put it in al
+    ; int 21h 
     mov line_num1,al  
     mov dl,2 ;SET THE CRSR
     mov dh,20
@@ -306,13 +383,16 @@ exit:
     mov dl,20h
     int 21h
     sub P1_score,2h 
+    P41:
     ret
 power_up4_player1 ENDP 
 
 power_up4_player2 PROC FAR  
-    MOV BX,SourceValue1 ;SOURCE VALUE OF THE FIRST PLAYER
+    cmp P2_score,2
+    jb P42
+    MOV BX,SourceValue2 ;SOURCE VALUE OF THE FIRST PLAYER
     MOV DX,[BX]
-    MOV src_value2,DX
+    MOV SourceValue2,DX
     ;take line number
     mov dl,65 
     mov dh,20
@@ -508,11 +588,14 @@ exit2:
     mov dl,20h
     int 21h
     sub P2_score,2h 
+    P42:
     ret
 power_up4_player2 ENDP 
 
 ;POWER UP 5
-power_up5_player1 PROC  
+power_up5_player1 PROC 
+    cmp P1_score,30
+    jz  used_before1
     cmp powerup5_isused_player1,1h
     jz used_before1
 
@@ -534,6 +617,8 @@ power_up5_player1 ENDP
 
 
 power_up5_player2 PROC
+   cmp P2_score,30
+   jz used_before2
    cmp powerup5_isused_player2,1h
    jz used_before2
 
@@ -554,23 +639,150 @@ power_up5_player2 PROC
 power_up5_player2 ENDP
 ;power up 6 for level 2
 power_up6_player1 PROC
+    mov exist,0
     cmp chosen_level,1
     jz cannot1
-
-    mov al,9
-    mov BX,offset ASC_TBL
-    XLAT    ;translate and put the result in AL
-            ;AL= ASC_TBL[AL]
-            ;used with look-up tables
+    cmp powerup6_isused_player1,1
+    jz cannot1
+    call ConvertStrTo4Digit
+    call compareAllReg
+    cmp exist,1
+    jz cannot1
+    mov bx,number
+    mov target,bx
     cannot1:
+    sub P1_score,8 ;let it consumes 8 points
+    ret
 power_up6_player1 ENDP
 
 power_up6_player2 PROC
-    mov al,9
-    mov BX,offset ASC_TBL
-    XLAT    ;translate and put the result in AL
-            ;AL= ASC_TBL[AL]
-            ;used with look-up tables
-    
+    mov exist,0
+    cmp chosen_level,2
+    jz cannot2
+    cmp powerup6_isused_player2,1
+    jz cannot2
+    call ConvertStrTo4Digit
+    call compareAllReg
+    cmp exist,1
+    jz cannot2
+    mov bx,number
+    mov target,bx
+    cannot2:
+    sub P2_score,8 
+    ret
 power_up6_player2 ENDP
+
+ConvertStrTo4Digit proc far 
+    mov number,0
+    firstDigit:
+    mov ah,1
+    int 21H 
+    mov digit,al
+    cmp digit,39h ;'9'
+    jg alpha
+    sub digit,30h
+    mov dl,digit
+    mov ax,1000h ;al base 16 34an kda 1000h
+    mov dh,0
+    mul dx ;dxax = ax*dx       
+    mov number,ax
+    jmp secDigit
+    alpha:   
+    sub digit,57h
+    mov dl,digit
+    mov ax,1000h 
+    mov dh,0
+    mul dx ;dxax = ax*dl       
+    mov number,ax
+    
+    secDigit: 
+    mov ah,1
+    int 21H 
+    mov digit,al
+    cmp digit,39h ;'9'
+    jg alpha2
+    sub digit,30h
+    mov dl,digit
+    mov ax,100h 
+    mov dh,0
+    mul dx ;dxax = ax*dl       
+    add number,ax
+    jmp thirdDigit
+    alpha2:   
+    sub digit,57h
+    mov dl,digit
+    mov ax,100h 
+    mov dh,0
+    mul dx ;dxax = ax*dl       
+    add number,ax  
+    
+    thirdDigit:
+    mov ah,1
+    int 21H 
+    mov digit,al
+    cmp digit,39h ;'9'
+    jg alpha3
+    sub digit,30h
+    mov dl,digit
+    mov ax,10h 
+    mov dh,0
+    mul dx ;dxax = ax*dl       
+    add number,ax
+    jmp forthDigit
+    alpha3:   
+    sub digit,57h
+    mov dl,digit
+    mov ax,10h 
+    mov dh,0
+    mul dx ;dxax = ax*dl       
+    add number,ax 
+    
+    forthDigit:
+    mov ah,1
+    int 21H 
+    mov digit,al
+    cmp digit,39h ;'9'
+    jg alpha4
+    sub digit,30h
+    mov dl,digit
+    mov dh,0       
+    add number,dx
+    jmp e
+    alpha4:   
+    sub digit,57h
+    mov dl,digit 
+    mov dh,0      
+    add number,dx
+    e:
+    ret
+ConvertStrTo4Digit endp
+
+compareAllReg PROC
+    lea si,AxVar1
+    mov cx,8 
+    w1:
+    mov dx,number
+    cmp [si],dx
+    mov exist,1
+    jz another ;if the value in any of the regs
+    add si,2
+    dec cx
+    cmp cx,0
+    jnz w1 ;loop over all reg
+
+    lea si, AxVar2
+    mov cx,8
+    w2:
+    mov dx,number
+    cmp [si],dx
+    jz another
+    add si,2
+    dec cx
+    cmp cx,0
+    jnz w2  
+    ;if the number not exist
+    mov exist,0
+    another:
+    ret
+compareAllReg ENDP
 END

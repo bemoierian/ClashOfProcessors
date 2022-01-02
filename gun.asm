@@ -14,14 +14,14 @@ EXTRN P1_score:BYTE, P2_score:BYTE
 .DATA
 ;--------------------------Gun--------------------------
 gun1PrevX dw 80
-gun1PrevY dw 150
+gun1PrevY dw 100
 gun1NewX dw 80
-gun1NewY dw 150
+gun1NewY dw 100
 
 gun2PrevX dw 240
-gun2PrevY dw 150
+gun2PrevY dw 100
 gun2NewX dw 240
-gun2NewY dw 150
+gun2NewY dw 100
 ;------------------------Gun fire-----------------------
 Fire1X dw 0
 Fire1Y dw 0
