@@ -118,6 +118,7 @@ CheckWinner PROC FAR
     No: 
     MOV AH, 04CH    ;TO RETURN TO THE OPERATING SYSTEM
     INT 21H 
+    ret
 CheckWinner ENDP
 END
 
