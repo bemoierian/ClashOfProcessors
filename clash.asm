@@ -240,7 +240,7 @@ MAIN PROC FAR
     drawrectangle  125,161,0Eh,13,120
     
 
-    MOV cmdCurrSize, 0
+    CALL ClearCommandString
     ;START THE GAME
     mov di, offset commandS
     mov cursor, di
@@ -704,7 +704,7 @@ DisplayNamesAndScore PROC
         INT 21H
         NOPRINT1:
         ;set the crsr
-        mov dl,70 
+        mov dl,25 
         mov dh,20
         mov ah,2
         int 10h
