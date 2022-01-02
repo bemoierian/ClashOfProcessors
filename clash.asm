@@ -194,13 +194,16 @@ MAIN PROC FAR
     CALL select_forbidden_char1
     CALL select_forbidden_char2
     CALL show_forb_chars
+    MainScreen:
+    mov ah,0          ;Change video mode (Text MODE)
+    mov al,03h
+    int 10h 
     ;CLEAR SCREEN
     mov ax,0600h
     mov bh,07
     mov cx,0
     mov dx,184FH
     int 10h
-    MainScreen:
         draw_mainscreen main_str1, main_str2, main_str3 ;UI.inc
         MainInput:
             mov ah,1
@@ -754,16 +757,4 @@ SetInitialPoints PROC
     mov P2_score,dl
     RET
 SetInitialPoints ENDP 
-ArePointsZero PROC
-    CMP P1_score, 0
-    JNZ ISP2ZERO
-    MOV winner, 2
-    JMP ENDZEROES
-    ISP2ZERO:
-    CMP P2_score, 0
-    JNZ ENDZEROES
-    MOV winner, 1
-    ENDZEROES:
-    RET
-ArePointsZero ENDP
 END MAIN
