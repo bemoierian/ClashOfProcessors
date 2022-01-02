@@ -24,11 +24,15 @@ EXTRN FlyObj_initial:far
 EXTRN gun1PrevX:WORD,gun1PrevY:WORD,gun1NewX:WORD,gun1NewY:WORD
 EXTRN l11:BYTE,c11:BYTE,l12:BYTE,c12:BYTE,l13:BYTE,c13:BYTE,l14:BYTE,c14:BYTE,l15:BYTE,c15:BYTE,l21:BYTE,c21:BYTE,l22:BYTE,c22:BYTE,l23:BYTE,c23:BYTE,l24:BYTE,c24:BYTE,l25:BYTE,c25:BYTE
 ;-------------------powerups.asm----------------------------
-
+EXTRN forbiddin_char1:BYTE,forbiddin_char2:BYTE
+EXTRN power_up3_player1:FAR
+EXTRN power_up3_player2:FAR
+EXTRN power_up4_player1:FAR
+EXTRN power_up4_player2:FAR
+EXTRN power_up5_player1:FAR
+EXTRN power_up5_player2:FAR
 ;-------------------------UI.inc------------------------------
 include UI.inc
-
-
 
 .286
 .MODEL HUGE

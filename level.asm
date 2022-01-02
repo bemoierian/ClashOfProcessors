@@ -1,3 +1,5 @@
+PUBLIC forbiddin_char1,forbiddin_char2
+
 display_string_main MACRO mes,x,y
     MOV  DL, x  ;COLUMN
     MOV  DH, y   ;ROW
