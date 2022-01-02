@@ -1,6 +1,9 @@
 ;-----------------Called in clash.asm------------------
-PUBLIC DrawGun, FireGun_initial, FireGun_Continue, FlyObj_Continue, FlyObj_initial
-PUBLIC gun1PrevX,gun1PrevY,gun1NewX,gun1NewY
+PUBLIC FlyObj_Continue, FlyObj_initial
+PUBLIC DrawGun1, FireGun1_initial, FireGun1_Continue
+PUBLIC gun1NewX,gun1NewY
+PUBLIC DrawGun2, FireGun2_initial, FireGun2_Continue
+PUBLIC gun2NewX,gun2NewY
 PUBLIC l11,c11,l12,c12,l13,c13,l14,c14,l15,c15,l21,c21,l22,c22,l23,c23,l24,c24,l25,c25
 ;------------------------------------------------------
 EXTRN P1_score:BYTE, P2_score:BYTE
@@ -20,17 +23,23 @@ gun2PrevY dw 150
 gun2NewX dw 240
 gun2NewY dw 150
 ;------------------------Gun fire-----------------------
-FireX dw 0
-FireY dw 0
-isFiring db 0
+Fire1X dw 0
+Fire1Y dw 0
+isFiring1 db 0
+Fire1Hit db 0
+
+Fire2X dw 0
+Fire2Y dw 0
+isFiring2 db 0
+Fire2Hit db 0
 ;----------------------Flying objects-------------------
-FlyPosX_strt dw 150
+FlyPosX_strt dw 310
 FlyPosY_strt dw 3
 FlyPosX_end dw 0
 FlyPosY_end dw 0
 FlyColor db 04h
 isFlying db 0
-FireHit db 0
+
 ColorCount db 0 ;index for color array
 arr_color db 0ah,09h,0ch,0eh,0DH
 ;-------------------scores values and colors --------------
@@ -45,20 +54,20 @@ c13 db 0ch
 c14 db 0eh
 c15 db 0dh
 ;-----------------
-l21 db 01
+l21 db 0
+l22 db 0
+l23 db 0
+l24 db 0
+l25 db 0
 c21 db 0ah
-l22 db 02
 c22 db 9h
-l23 db 10
 c23 db 0ch
-l24 db 09
 c24 db 0eh
-l25 db 05
 c25 db 0dh
 ;-------------------------------------------------------
 .CODE
 ;Draws gun at the new position at gunNewX, gunNewY and stores the previous position in gunPrevX, gunPrevY
-DrawGun PROC FAR
+DrawGun1 PROC FAR
     mov ax, @data
     mov ds, ax
     ;size of gun = 3x9
@@ -68,7 +77,7 @@ DrawGun PROC FAR
     mov al,0Fh       ;Pixel color
     mov cx,gun1PrevX   ;Column
     mov dx,gun1PrevY   ;Row   
-    ;loop to draw the new gun
+    ;loop to delete the old gun (draw white box)
     outer1:
         mov cx, gun1PrevX ;X position of new gun
         mov bl, 0 ;inner counter
@@ -111,39 +120,39 @@ DrawGun PROC FAR
     mov gun1PrevX, ax ;move the new position to previous position
     mov gun1PrevY, bx
     ret
-DrawGun ENDP     
+DrawGun1 ENDP     
 
-FireGun_initial PROC FAR
+FireGun1_initial PROC FAR
     mov ax, @data
     mov ds, ax
-    cmp isFiring, 0
-    jnz alreadyFiring
+    cmp isFiring1, 0
+    jnz alreadyFiring1
     mov ax, gun1PrevX
     add ax, 3
     mov bx, gun1PrevY
     sub bx, 3
-    mov FireX, ax
-    mov FireY, bx
-    mov isFiring, 1
-    mov FireHit, 0
-    alreadyFiring:
+    mov Fire1X, ax
+    mov Fire1Y, bx
+    mov isFiring1, 1
+    mov Fire1Hit, 0
+    alreadyFiring1:
     RET
-FireGun_initial ENDP
+FireGun1_initial ENDP
 
 
-FireGun_Continue PROC FAR
+FireGun1_Continue PROC FAR
     mov ax, @data
     mov ds, ax
-    cmp isFiring, 1
-    jnz notFiring
+    cmp isFiring1, 1
+    jnz notFiring1
     mov bx, 0
     mov ah,0ch       ;Draw Pixel Command
     mov al,0Fh       ;Pixel color
-    mov cx,FireX   ;Column
-    mov dx,FireY   ;Row   
+    mov cx,Fire1X   ;Column
+    mov dx,Fire1Y   ;Row   
     ;loop to draw the new gun
     outer3:
-        mov cx, FireX ;X position of new gun
+        mov cx, Fire1X ;X position of new gun
         mov bl, 0 ;inner counter
         inc dx    ;increment row
         cmp bh,3  ;if draw 3 rows then then the gun is completed
@@ -158,18 +167,18 @@ FireGun_Continue PROC FAR
         jnz inner3
         jz outer3
     exit3:
-    cmp FireY, 0
-    jnz stillFiring
-    mov isFiring, 0
-    jmp notFiring
-    stillFiring:
-    sub FireY, 1
+    cmp Fire1Y, 0
+    jnz stillFiring1
+    mov isFiring1, 0
+    jmp notFiring1
+    stillFiring1:
+    sub Fire1Y, 1
     mov bx, 0
     mov al,04h       ;Pixel color
-    mov cx,FireX   ;Column
-    mov dx,FireY   ;Row   
+    mov cx,Fire1X   ;Column
+    mov dx,Fire1Y   ;Row   
     outer4:
-        mov cx, FireX ;X position of new gun
+        mov cx, Fire1X ;X position of new gun
         mov bl, 0 ;inner counter
         inc dx    ;increment row
         cmp bh,3  ;if draw 3 rows then then the gun is completed
@@ -184,28 +193,30 @@ FireGun_Continue PROC FAR
         jnz inner4
         jz outer4
     exit4:
-    CMP FireHit, 0
-    JNZ notFiring
-    CALL DidFireHit
-    notFiring:
+    CMP Fire1Hit, 0
+    JNZ notFiring1
+    CALL DidFire1Hit
+    notFiring1:
     RET
-FireGun_Continue ENDP
+FireGun1_Continue ENDP
 
-DidFireHit PROC FAR
+DidFire1Hit PROC FAR
+    CMP isFlying, 1
+    JNZ didntHit1
     mov ax, FlyPosX_strt
-    CMP FireX, AX
-    JC didntHit
+    CMP Fire1X, AX
+    JC didntHit1
     mov ax, FlyPosX_end
-    CMP FireX, AX
-    JNC didntHit
+    CMP Fire1X, AX
+    JNC didntHit1
     mov ax, FlyPosY_strt
-    CMP FireY, AX
-    JC didntHit
+    CMP Fire1Y, AX
+    JC didntHit1
     mov ax, FlyPosY_end
-    CMP FireY, AX
-    JNC didntHit
+    CMP Fire1Y, AX
+    JNC didntHit1
     MOV isFlying, 0
-    MOV FireHit, 1
+    MOV Fire1Hit, 1
     LEA BX, l11
     MOV DL, ColorCount
     MOV DH, 0
@@ -213,12 +224,169 @@ DidFireHit PROC FAR
     DEC DI
     ADD [BX][DI], 1
     ADD P1_score, DL
-
-
-    didntHit:
+    didntHit1:
     RET
-DidFireHit ENDP
+DidFire1Hit ENDP
 
+DrawGun2 PROC FAR
+    mov ax, @data
+    mov ds, ax
+    ;size of gun = 3x9
+    ;Draw pixel
+    mov bx, 0
+    mov ah,0ch       ;Draw Pixel Command
+    mov al,0Fh       ;Pixel color
+    mov cx,gun2PrevX   ;Column
+    mov dx,gun2PrevY   ;Row   
+    ;loop to delete the old gun (draw white box)
+    outer11:
+        mov cx, gun2PrevX ;X position of new gun
+        mov bl, 0 ;inner counter
+        inc dx    ;increment row
+        cmp bh,4  ;if draw 3 rows then then the gun is completed
+        jz exit11
+        inc bh    ;outer counter
+        ;same as inner1
+        inner11:  
+        int 10h  ;draw pixel
+        inc cx   ;inc column
+        inc bl   ;inc counter
+        cmp bl,9 ;if you draw 3 columns jump to outer
+        jnz inner11
+        jz outer11
+    exit11:
+    mov bx, 0
+    mov al,20h       ;Pixel color
+    mov cx,gun2NewX   ;Column
+    mov dx,gun2NewY   ;Row   
+    outer21:
+        mov cx, gun2NewX ;X position of new gun
+        mov bl, 0 ;inner counter
+        inc dx    ;increment row
+        cmp bh,4  ;if draw 3 rows then then the gun is completed
+        jz exit21
+        inc bh    ;outer counter
+        ;same as inner1
+        inner21:  
+        int 10h  ;draw pixel
+        inc cx   ;inc column
+        inc bl   ;inc counter
+        cmp bl,9 ;if you draw 3 columns jump to outer
+        jnz inner21
+        jz outer21
+    exit21:
+    mov ax, gun2NewX
+    mov bx, gun2NewY
+    mov gun2PrevX, ax ;move the new position to previous position
+    mov gun2PrevY, bx
+    ret
+DrawGun2 ENDP     
+
+FireGun2_initial PROC FAR
+    mov ax, @data
+    mov ds, ax
+    cmp isFiring2, 0
+    jnz alreadyFiring2
+    mov ax, gun2PrevX
+    add ax, 3
+    mov bx, gun2PrevY
+    sub bx, 3
+    mov Fire2X, ax
+    mov Fire2Y, bx
+    mov isFiring2, 1
+    mov Fire2Hit, 0
+    alreadyFiring2:
+    RET
+FireGun2_initial ENDP
+
+
+FireGun2_Continue PROC FAR
+    mov ax, @data
+    mov ds, ax
+    cmp isFiring2, 1
+    jnz notFiring2
+    mov bx, 0
+    mov ah,0ch       ;Draw Pixel Command
+    mov al,0Fh       ;Pixel color
+    mov cx,Fire2X   ;Column
+    mov dx,Fire2Y   ;Row   
+    ;loop to draw the new gun
+    outer31:
+        mov cx, Fire2X ;X position of new gun
+        mov bl, 0 ;inner counter
+        inc dx    ;increment row
+        cmp bh,3  ;if draw 3 rows then then the gun is completed
+        jz exit31
+        inc bh    ;outer counter
+        ;same as inner1
+        inner31:  
+        int 10h  ;draw pixel
+        inc cx   ;inc column
+        inc bl   ;inc counter
+        cmp bl,3 ;if you draw 3 columns jump to outer
+        jnz inner31
+        jz outer31
+    exit31:
+    cmp Fire2Y, 0
+    jnz stillFiring2
+    mov isFiring2, 0
+    jmp notFiring2
+    stillFiring2:
+    sub Fire2Y, 1
+    mov bx, 0
+    mov al,20h       ;Pixel color
+    mov cx,Fire2X   ;Column
+    mov dx,Fire2Y   ;Row   
+    outer41:
+        mov cx, Fire2X ;X position of new gun
+        mov bl, 0 ;inner counter
+        inc dx    ;increment row
+        cmp bh,3  ;if draw 3 rows then then the gun is completed
+        jz exit41
+        inc bh    ;outer counter
+        ;same as inner1
+        inner41:  
+        int 10h  ;draw pixel
+        inc cx   ;inc column
+        inc bl   ;inc counter
+        cmp bl,3 ;if you draw 3 columns jump to outer
+        jnz inner41
+        jz outer41
+    exit41:
+    CMP Fire2Hit, 0
+    JNZ notFiring2
+    CALL DidFire2Hit
+    notFiring2:
+    RET
+FireGun2_Continue ENDP
+
+DidFire2Hit PROC FAR
+    CMP isFlying, 1
+    JNZ didntHit2
+    mov ax, FlyPosX_strt
+    CMP Fire2X, AX
+    JC didntHit2
+    mov ax, FlyPosX_end
+    CMP Fire2X, AX
+    JNC didntHit2
+    mov ax, FlyPosY_strt
+    CMP Fire2Y, AX
+    JC didntHit2
+    mov ax, FlyPosY_end
+    CMP Fire2Y, AX
+    JNC didntHit2
+    MOV isFlying, 0
+    MOV Fire2Hit, 1
+    LEA BX, l21
+    MOV DL, ColorCount
+    MOV DH, 0
+    MOV DI, DX
+    DEC DI
+    ADD [BX][DI], 1
+    ADD P2_score, DL
+    didntHit2:
+    RET
+DidFire2Hit ENDP
 
 FlyObj_Continue PROC FAR
     mov ax, @data
@@ -295,7 +463,7 @@ FlyObj_initial PROC FAR
     jnz CorrectColor
     mov ColorCount, 0
     CorrectColor:
-    mov FlyPosX_strt, 150
+    mov FlyPosX_strt, 310
     mov FlyPosY_strt, 3
     mov al, ColorCount
     mov bx, offset arr_color
