@@ -42,6 +42,8 @@ power_up1_player1 PROC FAR
     call execute2
     CALL ClearCommandString
     CALL SwitchTurn
+    cmp chosen_level,2
+    jz notP11
     SUB P1_score,5
     notP11:
     ret
@@ -55,6 +57,8 @@ power_up1_player2 PROC FAR
     CALL execute1
     CALL ClearCommandString
     CALL SwitchTurn
+    cmp chosen_level,2
+    jz notP12
     SUB P2_score,5
     notP12:
     ret
@@ -92,7 +96,7 @@ power_up2_player2 ENDP
 ;power up 3
 power_up3_player1 PROC FAR 
     cmp P1_score,8
-    jb notP31
+    jb P31
     cmp powerup3_isused_player1,1h
     jz used_before31  
     ; mov dl,1 ;SET THE CRSR
@@ -104,8 +108,8 @@ power_up3_player1 PROC FAR
    jz CHECK1
    mov ah,0
    int 16h
-    mov ah,1
-    int 21h ;READ THE CHAR
+    ; mov ah,1
+    ; int 21h ;READ THE CHAR
     mov forbiddin_char1,al ;CHANGE THE FORBIDDEN CHAR
     sub P1_score,8 ;sub from the score
     mov powerup3_isused_player1,1h ;set used
@@ -164,8 +168,8 @@ power_up4_player1 PROC FAR
     mov dh,20
     mov ah,2
     int 10h
-    mov ah,1 ;read one char from the user and put it in al
-    int 21h 
+    ; mov ah,1 ;read one char from the user and put it in al
+    ; int 21h 
     mov line_num1,al  
     mov dl,2 ;SET THE CRSR
     mov dh,20
@@ -616,9 +620,10 @@ power_up6_player1 PROC
     call compareAllReg
     cmp exist,1
     jz cannot1
-    mov target,number
+    mov bx,number
+    mov target,bx
     cannot1:
-    sub P1_score,8 ;power
+    sub P1_score,8 ;let it consumes 8 points
     ret
 power_up6_player1 ENDP
 
@@ -632,7 +637,8 @@ power_up6_player2 PROC
     call compareAllReg
     cmp exist,1
     jz cannot2
-    mov target,number
+    mov bx,number
+    mov target,bx
     cannot2:
     sub P2_score,8 
     ret
@@ -713,21 +719,22 @@ ConvertStrTo4Digit proc far
     mov dl,digit
     mov dh,0       
     add number,dx
-    jmp exit
+    jmp e
     alpha4:   
     sub digit,57h
     mov dl,digit 
     mov dh,0      
     add number,dx
-    exit:ret
+    e:
+    ret
 ConvertStrTo4Digit endp
 
 compareAllReg PROC
-    mov si,offset AxVar1
+    lea si,AxVar1
     mov cx,8 
     w1:
-    mov dl,number
-    cmp [si],dl
+    mov dx,number
+    cmp [si],dx
     mov exist,1
     jz another ;if the value in any of the regs
     add si,2
@@ -735,11 +742,11 @@ compareAllReg PROC
     cmp cx,0
     jnz w1 ;loop over all reg
 
-    mov si,offset AxVar2
+    lea si, AxVar2
     mov cx,8
     w2:
-    mov dl,number
-    cmp [si],dl
+    mov dx,number
+    cmp [si],dx
     jz another
     add si,2
     dec cx

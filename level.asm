@@ -1,4 +1,4 @@
-PUBLIC forbiddin_char1,forbiddin_char2,chosen_level
+PUBLIC forbiddin_char1,forbiddin_char2,chosen_level,initial_reg1,initial_reg2
 PUBLIC select_level,select_forbidden_char1,select_forbidden_char2,show_forb_chars,show_level
 EXTRN AxVar1:WORD,BxVar1:WORD,CxVar1:WORD,DxVar1:WORD,SiVar1:WORD,DiVar1:WORD,SpVar1 :WORD,BpVar1 :WORD
 EXTRN AxVar2:WORD,BxVar2:WORD,CxVar2:WORD,DxVar2:WORD,SiVar2:WORD,DiVar2:WORD,SpVar2 :WORD,BpVar2 :WORD
@@ -113,8 +113,220 @@ back3: mov ah,0
        jnz back3
     ret
 show_level ENDP 
+;initial values for registers in level 2
+initial_reg1 PROC  
 
+   ;Clear screen
+    mov ax,0600h
+    mov bh,07
+    mov cx,0
+    mov dx,184FH
+    int 10h
+    
+display_string_main mes_initial1,1h,1h  
+ 
+;ax
+display_string_main mes_ax,1h,3h     
+call ConvertStrTo4Digit     
+mov ax,number 
+mov AxVar1,ax 
 
+;bx   
+display_string_main mes_bx,1h,5h     
+call ConvertStrTo4Digit     
+mov ax,number  
+mov BxVar1,ax
+      
+;cx    
+display_string_main mes_cx,1h,7h     
+call ConvertStrTo4Digit     
+mov ax,number   
+mov CxVar1,ax   
+         
+ ;dx   
+display_string_main mes_dx,1h,9h     
+call ConvertStrTo4Digit     
+mov ax,number 
+mov DxVar1,ax
+      
+;si    
+display_string_main mes_si,1h,0bh     
+call ConvertStrTo4Digit     
+mov ax,number 
+mov SiVar1,ax
+       
+;di    
+display_string_main mes_di,1h,0dh     
+call ConvertStrTo4Digit     
+mov ax,number 
+mov DiVar1,ax
+       
+;sp    
+display_string_main mes_sp,1h,0fh     
+call ConvertStrTo4Digit     
+mov ax,number   
+mov SpVar1,ax
+         
+    
+;bp    
+display_string_main mes_bp,1h,11h     
+call ConvertStrTo4Digit     
+mov ax,number 
+mov BpVar1,ax
+        
+   ret
+initial_reg1 ENDP 
+
+initial_reg2 PROC  
+   
+    ;Clear screen
+    mov ax,0600h
+    mov bh,07
+    mov cx,0
+    mov dx,184FH
+    int 10h
+    
+display_string_main mes_initial2,1h,1h  
+ 
+;ax
+display_string_main mes_ax,1h,3h     
+call ConvertStrTo4Digit     
+mov ax,number 
+mov AxVar2,ax 
+
+;bx   
+display_string_main mes_bx,1h,5h     
+call ConvertStrTo4Digit     
+mov ax,number  
+mov BxVar2,ax
+      
+;cx    
+display_string_main mes_cx,1h,7h     
+call ConvertStrTo4Digit     
+mov ax,number   
+mov CxVar2,ax   
+         
+ ;dx   
+display_string_main mes_dx,1h,9h     
+call ConvertStrTo4Digit     
+mov ax,number 
+mov DxVar2,ax
+      
+;si    
+display_string_main mes_si,1h,0bh     
+call ConvertStrTo4Digit     
+mov ax,number 
+mov SiVar2,ax
+       
+;di    
+display_string_main mes_di,1h,0dh     
+call ConvertStrTo4Digit     
+mov ax,number 
+mov DiVar2,ax
+       
+;sp    
+display_string_main mes_sp,1h,0fh     
+call ConvertStrTo4Digit     
+mov ax,number   
+mov SpVar2,ax
+         
+    
+;bp    
+display_string_main mes_bp,1h,11h     
+call ConvertStrTo4Digit     
+mov ax,number 
+mov BpVar2,ax
+        
+   ret
+initial_reg2 ENDP 
+
+ConvertStrTo4Digit proc    
+    mov ax,@data
+    mov ds,ax 
+
+    firstDigit:
+    mov ah,1
+    int 21H      
+    mov digit,al
+    cmp digit,39h ;'9'
+    jg alpha
+    sub digit,30h    
+    mov dl,digit
+    mov ax,1000h 
+    mov dh,0
+    mul dx ;dxax = ax*dl       
+    mov number,ax
+    jmp secDigit
+    alpha:   
+    sub digit,57h
+    mov dl,digit
+    mov ax,1000h 
+    mov dh,0
+    mul dx ;dxax = ax*dl       
+    mov number,ax
+    
+    secDigit: 
+    mov ah,1
+    int 21H 
+    mov digit,al
+    cmp digit,39h ;'9'
+    jg alpha2
+    sub digit,30h
+    mov dl,digit
+    mov ax,100h 
+    mov dh,0
+    mul dx ;dxax = ax*dl       
+    add number,ax
+    jmp thirdDigit
+    alpha2:   
+    sub digit,57h
+    mov dl,digit
+    mov ax,100h 
+    mov dh,0
+    mul dx ;dxax = ax*dl       
+    add number,ax  
+    
+    thirdDigit:
+    mov ah,1
+    int 21H 
+    mov digit,al
+    cmp digit,39h ;'9'
+    jg alpha3
+    sub digit,30h
+    mov dl,digit
+    mov ax,10h 
+    mov dh,0
+    mul dx ;dxax = ax*dl       
+    add number,ax
+    jmp forthDigit
+    alpha3:   
+    sub digit,57h
+    mov dl,digit
+    mov ax,10h 
+    mov dh,0
+    mul dx ;dxax = ax*dl       
+    add number,ax 
+    
+    forthDigit:
+    mov ah,1
+    int 21H 
+    mov digit,al
+    cmp digit,39h ;'9'
+    jg alpha4
+    sub digit,30h
+    mov dl,digit
+    mov dh,0       
+    add number,dx
+    jmp exit
+    alpha4:   
+    sub digit,57h
+    mov dl,digit 
+    mov dh,0      
+    add number,dx
+    exit:
+        
+    ret
+ConvertStrTo4Digit endp  
 
 select_forbidden_char1 PROC far  
      
