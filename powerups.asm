@@ -1,13 +1,13 @@
 PUBLIC power_up3_player1
-PUBLIC forbiddin_char1
 PUBLIC power_up3_player2
-PUBLIC forbiddin_char2
-EXTRN P1_score:BYTE,P2_score:BYTE
+;PUBLIC power_up4_player1,power_up4_player2
+PUBLIC power_up5_player1,power_up5_player2
+EXTRN P1_score:BYTE,P2_score:BYTE,Source:BYTE,forbiddin_char1:BYTE,forbiddin_char2:BYTE
+EXTRN AxVar1:WORD,BxVar1:WORD,CxVar1:WORD,DxVar1:WORD,SiVar1:WORD,DiVar1:WORD,SpVar1 :WORD,BpVar1 :WORD
+EXTRN AxVar2:WORD,BxVar2:WORD,CxVar2:WORD,DxVar2:WORD,SiVar2:WORD,DiVar2:WORD,SpVar2 :WORD,BpVar2 :WORD
 .model small
 .data
 ;power up 3
-forbiddin_char1 db 0
-forbiddin_char2 db 0
 powerup3_isused_player1 db 0h
 powerup3_isused_player2 db 0h
 ;power uo 4
@@ -77,7 +77,7 @@ used_before32:
     int 21h
     ret
 power_up3_player2 ENDP
-;power up 4
+;power up 4     NOT COMPLETE==>SOURCE VALUES
 power_up4_player1 PROC FAR
     ;take line number
     mov dl,1 ;SET THE CRSR
@@ -149,8 +149,6 @@ jz L1E
 cmp line_num1,66h
 jz L1F 
 ;_______________________________________________________________________________________
-
-
 ;if stuck at zero and with 11-0-11
 stuck_at_zero: 
 cmp line_num1,30h
@@ -277,7 +275,7 @@ exit:
 power_up4_player1 ENDP 
 
 power_up4_player2 PROC FAR  
-    ; take line number
+    take line number
     mov dl,65 
     mov dh,20
     mov ah,2
@@ -474,7 +472,7 @@ exit2:
     sub P2_score,2h 
     ret
 power_up4_player2 ENDP 
-;POWER UP 5
+POWER UP 5
 power_up5_player1 PROC  
     cmp powerup5_isused_player1,1h
     jz used_before1

@@ -9,6 +9,7 @@ PUBLIC m0_1,m1_1,m2_1,m3_1,m4_1,m5_1,m6_1 ,m7_1,m8_1,m9_1,mA_1,mB_1 ,mC_1,mD_1,m
 PUBLIC m0_2,m1_2,m2_2,m3_2,m4_2,m5_2,m6_2 ,m7_2,m8_2,m9_2,mA_2,mB_2 ,mC_2,mD_2,mE_2,mF_2 
 PUBLIC AxVar1,BxVar1,CxVar1,DxVar1,SiVar1,DiVar1,SpVar1 ,BpVar1
 PUBLIC AxVar2,BxVar2,CxVar2,DxVar2,SiVar2,DiVar2,SpVar2 ,BpVar2
+PUBLIC Carry_1,Carry_2
 ;-------------------------chat.asm---------------------------
 EXTRN Chat:far 
 ;-------------------------command.asm---------------------------
@@ -24,7 +25,13 @@ EXTRN FlyObj_initial:far
 EXTRN gun1PrevX:WORD,gun1PrevY:WORD,gun1NewX:WORD,gun1NewY:WORD
 EXTRN l11:BYTE,c11:BYTE,l12:BYTE,c12:BYTE,l13:BYTE,c13:BYTE,l14:BYTE,c14:BYTE,l15:BYTE,c15:BYTE,l21:BYTE,c21:BYTE,l22:BYTE,c22:BYTE,l23:BYTE,c23:BYTE,l24:BYTE,c24:BYTE,l25:BYTE,c25:BYTE
 ;-------------------powerups.asm----------------------------
-
+EXTRN forbiddin_char1:BYTE,forbiddin_char2:BYTE
+EXTRN power_up3_player1:FAR
+EXTRN power_up3_player2:FAR
+EXTRN power_up4_player1:FAR
+EXTRN power_up4_player2:FAR
+EXTRN power_up5_player1:FAR
+EXTRN power_up5_player2:FAR
 ;-------------------------UI.inc------------------------------
 include UI.inc
 
@@ -65,6 +72,7 @@ mC_1 DB 0
 mD_1 DB 0
 mE_1 DB 0
 mF_1 DB 0
+Carry_1 DB 0
 ;---------------------------------------
 ;---------Registers for player 2
 AxVar2 dw 0
@@ -93,6 +101,8 @@ mC_2 DB 0
 mD_2 DB 0
 mE_2 DB 0
 mF_2 DB 0
+
+Carry_2 DB 0
 ;-------------------------Command String-------------------------------
 commandStr LABEL BYTE
 cmdMaxSize db 15 ;maximum size of command
@@ -123,8 +133,8 @@ isChar db 0
 isPowerUp db 0
 ;----------------------------------------------------------
 ;---------print winner---------------
-; printwin1 DB 'winner is player 1','$'
-; printwin2 DB 'winner is player 2','$'
+printwin1 DB 'winner is player 1','$'
+printwin2 DB 'winner is player 2','$'
 
 winner db 0 ;flag of winner in the game
 ;------------------------------------
@@ -180,7 +190,7 @@ MAIN PROC FAR
     drawrectangle  120,0,0dh,10,120
     
     verticalline 0,160,170              ;vertical line
-    ; horizontalline 145,162,319          ;horizontal line
+     ;horizontalline 145,162,319          ;horizontal line
     drawrectangle  120,161,0Eh,10,120
     
 
@@ -191,15 +201,15 @@ MAIN PROC FAR
     mov cursor, di
     Game:
         ;---------------------------
-        ; push cx
-        ; call  CheckWinner
-        ; pop cx
-        ; cmp winner,1
-        ;  jz print1 
+        push cx
+        call  CheckWinner
+        pop cx
+        cmp winner,1
+         jz print1 
 
-        ; cmp winner,2
-        ;  jz print2 
-        ;    hell:
+        cmp winner,2
+         jz print2 
+           hell:
         inc cyclesCounter1
         inc cyclesCounter2
         CALL ResetInputFlags
@@ -221,28 +231,58 @@ MAIN PROC FAR
         dontDrawFly:
         ;----------------------rm.asm-----------------------------
         call RegMemo
-        ;-----------------------UI.inc----------------------------
+         mov l11,01
+       mov c11,0ah
+
+       mov l12,05
+       mov c12,9h
+
+       mov l13,03
+       mov c13,0ch
+
+        mov l14,08
+       mov c14,0eh
+
+       mov l15,02
+       mov c15,0dh
+
+       mov l21,07
+       mov c21,0ah
+
+
+       mov l22,04
+       mov c22,9h
+
+       mov l23,05
+       mov c23,0ch
+
+       mov l24,09
+       mov c24,0eh
+
+       mov l25,09
+       mov c25,0dh
+     
         setcursor 0000
-        drawrectanglewithletter  140,7,c11,10,10,63497d,l11,c11
-        setcursor 0000
-        drawrectanglewithletter  140,30,c12,10,10,63500d,l12,c12
-        setcursor 0000
-        drawrectanglewithletter  140,53,c13,10,10,63503d,l13,c13
-        setcursor 0000
-        drawrectanglewithletter  140,77,c14,10,10,63506d,l14,c14
-        setcursor 0000
-        drawrectanglewithletter  140,101,c15,10,10, 63509d,l15,c15
+       drawrectanglewith  140,7,c11,15,15,63497d,l11,c11
+       setcursor 0000
+       drawrectanglewith  140,30,c12,15,15,63500d,l12,c12
+       setcursor 0000
+       drawrectanglewith  140,53,c13,15,15,63503d,l13,c13
+       setcursor 0000
+       drawrectanglewith  140,77,c14,15,15,63506d,l14,c14
+       setcursor 0000
+       drawrectanglewith  140,101,c15,15,15, 63509d,l15,c15
     
         setcursor 0000  
-        drawrectanglewithletter  135,163,c21,10,10,63518d,l21,c21
+        drawrectanglewith  120,163,c21,15,15,63518d,l21,c21
         setcursor 0000
-        drawrectanglewithletter  135,186,c22,10,10,63521d,l22,c22
+        drawrectanglewith  120,186,c22,15,15,63521d,l22,c22
         setcursor 0000
-        drawrectanglewithletter   135,209,c23,10,10,63524d,l23,c23
+        drawrectanglewith   120,209,c23,15,15,63524d,l23,c23
         setcursor 0000
-        drawrectanglewithletter  135,232,c24,10,10,63527d,l24,c24
+        drawrectanglewith  120,232,c24,15,15,63527d,l24,c24
         setcursor 0000
-        drawrectanglewithletter  135,255,c25,10,10, 63530d,l25,c25
+        drawrectanglewith  120,255,c25,15,15, 63530d,l25,c25
 
 
 
@@ -275,19 +315,19 @@ MAIN PROC FAR
         cmp al, 13h
         jz MainScreen
         jmp Game
-; print1:
-; setcursor 0010d
-; mov ah,09
-;  mov dx,offset printwin1
-;  int 21h
-;  jmp hell
-; print2:
-; setcursor 0010d
-;  mov ah,09
-;  mov dx,offset printwin2
-;  int 21h
-; jmp hell
-;hell:
+print1:
+setcursor 0010d
+mov ah,09
+ mov dx,offset printwin1
+ int 21h
+ jmp hell
+print2:
+setcursor 0010d
+ mov ah,09
+ mov dx,offset printwin2
+ int 21h
+jmp hell
+
 
 EndGame:
 HLT
