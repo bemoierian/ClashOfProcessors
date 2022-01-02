@@ -9,6 +9,7 @@ PUBLIC m0_1,m1_1,m2_1,m3_1,m4_1,m5_1,m6_1 ,m7_1,m8_1,m9_1,mA_1,mB_1 ,mC_1,mD_1,m
 PUBLIC m0_2,m1_2,m2_2,m3_2,m4_2,m5_2,m6_2 ,m7_2,m8_2,m9_2,mA_2,mB_2 ,mC_2,mD_2,mE_2,mF_2 
 PUBLIC AxVar1,BxVar1,CxVar1,DxVar1,SiVar1,DiVar1,SpVar1 ,BpVar1
 PUBLIC AxVar2,BxVar2,CxVar2,DxVar2,SiVar2,DiVar2,SpVar2 ,BpVar2
+PUBLIC Carry_1,Carry_2
 ;-------------------------chat.asm---------------------------
 EXTRN Chat:far 
 ;-------------------------command.asm---------------------------
@@ -71,6 +72,7 @@ mC_1 DB 0
 mD_1 DB 0
 mE_1 DB 0
 mF_1 DB 0
+Carry_1 DB 0
 ;---------------------------------------
 ;---------Registers for player 2
 AxVar2 dw 0
@@ -99,6 +101,8 @@ mC_2 DB 0
 mD_2 DB 0
 mE_2 DB 0
 mF_2 DB 0
+
+Carry_2 DB 0
 ;-------------------------Command String-------------------------------
 commandStr LABEL BYTE
 cmdMaxSize db 15 ;maximum size of command

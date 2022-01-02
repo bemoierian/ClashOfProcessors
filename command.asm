@@ -11,6 +11,7 @@ EXTRN commandS:BYTE
 PUBLIC execute
 EXTRN AxVar1:WORD,BxVar1:WORD,CxVar1:WORD,DxVar1:WORD,SiVar1:WORD,DiVar1:WORD,SpVar1 :WORD,BpVar1 :WORD
 EXTRN m0_1:BYTE,m1_1:BYTE,m2_1:BYTE,m3_1:BYTE,m4_1:BYTE,m5_1:BYTE,m6_1 :BYTE,m7_1:BYTE,m8_1:BYTE,m9_1:BYTE,mA_1:BYTE,mB_1 :BYTE,mC_1:BYTE,mD_1:BYTE,mE_1:BYTE,mF_1 :BYTE
+EXTRN Carry_1:BYTE
 
 public countdigit
 
@@ -22,6 +23,7 @@ public countdigit
 ;codes : Source (registers 40h->4F)
 ;        Source (memory 70h->7F)
 ;        Source (Emmidiate 50)
+
 .286
 .model large
 .stack 64
@@ -40,8 +42,8 @@ shrCode equ 0Ah
 shlCode equ 0Bh  
 clcCode equ 0Ch   
 rorCode equ 0Dh   
-rclCode equ 0Eh   
-rcrCode equ 0Fh  
+rclCode equ 0Eh ;mul  
+rcrCode equ 0Fh ;div 
 rolCode equ 10h   
 pushCode equ 11h
 popCode equ 12h   
@@ -91,7 +93,7 @@ err_MEMO_TO_MEMO db 0
 err_INVALID_REG_NAME db 0
 err_PUSHING_8_BITS db 0
 err_INCORRECT_ADDRESSING db 0
-CLEAR_TO_EXECUTE db 0
+CLEAR_TO_EXECUTE db 1
 ;-------------------Variables to discover command string---------------
 L1 db ?
 L2 db ?
@@ -372,7 +374,7 @@ mov err_MEMO_TO_MEMO,0
 mov err_INVALID_REG_NAME,0
 mov err_PUSHING_8_BITS ,0
 mov err_INCORRECT_ADDRESSING,0
-mov CLEAR_TO_EXECUTE,0
+mov CLEAR_TO_EXECUTE,1
 mov is8bitreg_temp,0
 mov is8bitreg_dest,0
 mov is8bitreg_src,0
@@ -637,9 +639,11 @@ GenerateDestCodeiFNotreg PROC far
         mov al, [si]
         mov MemoLocation, al
         INC SI
-        MOV AL, ']'
-        cmp [si], AL 
+        MOV AL, [si]
+        dec si
+        cmp al, ']'
         JZ ISMEMO
+        inc si
         mov al, [si]
         mov MemoLocation, al
         jmp ISMEMO
@@ -690,6 +694,8 @@ GenerateDestCodeiFNotreg PROC far
             call CheckDirectAddressing
             cmp flag,1
             Jz calclocdst
+            ;here to handle wrong addressing error
+            mov err_INCORRECT_ADDRESSING,1
             jnz ENDMEMO 
     calclocdst:
     mov al, destORsource
@@ -731,8 +737,9 @@ GenerateSrcCodeiFNotreg PROC far
         mov al, [si]
         mov MemoLocation, al
         INC SI
-        MOV AL, ']'
-        cmp [si], AL
+        MOV AL, [si]
+        dec si
+        cmp al, ']'
         JZ ISMEMO2 
         mov al, [si]
         mov MemoLocation, al
@@ -783,6 +790,8 @@ GenerateSrcCodeiFNotreg PROC far
             call CheckDirectAddressing
             cmp flag,1
             Jz calclocsrc
+            ;here to handle wrong addressing error
+            mov err_INCORRECT_ADDRESSING,1
             jnz ENDMEMO2 
     calclocsrc:
     mov al, destORsource
@@ -969,10 +978,15 @@ ExcuteCommand proc far
         call ExecuteHelper
                 cmp countdigit,2
                 jnc normal3
-                adc [bx],cl
+                add [bx],cl
+                mov al,Carry_1
+                add [bx],al
                 ret
         normal3:
-        adc [bx],cx
+        add [bx],cx
+        mov al,Carry_1
+        mov ah,0
+        add [bx],ax
         ret
         
     is_sub_exe:
@@ -982,9 +996,21 @@ ExcuteCommand proc far
                 cmp countdigit,2
                 jnc normal4
                 sub [bx],cl
+                jnc no_carry_sub1
+                    mov Carry_1,1
+                    jmp return1
+                no_carry_sub1:
+                    mov Carry_1,0
+                return1:
                 ret
         normal4:
         sub [bx],cx
+        jnc no_carry_sub2
+            mov Carry_1,1
+            jmp return2
+        no_carry_sub2:
+            mov Carry_1,0
+        return2:
         ret   
         
         
@@ -992,12 +1018,29 @@ ExcuteCommand proc far
     cmp Instruction,sbbCode ;sbb
     jnz is_xor_exe
         call ExecuteHelper
-                cmp countdigit,2
-                jnc normal5
-                sbb [bx],cl
-                ret
+            cmp countdigit,2
+            jnc normal5
+            sub [bx],cl
+            jnc no_carry_sbb1
+                mov Carry_1,1
+                jmp return3
+            no_carry_sbb1:
+                mov Carry_1,0
+            return3:
+            mov al,Carry_1
+            sub [bx],al
+            ret
         normal5:
-        sbb [bx],cx
+        sub [bx],cx
+        jnc no_carry_sbb2
+            mov Carry_1,1
+            jmp return4
+        no_carry_sbb2:
+            mov Carry_1,0
+        return4:
+        mov al,Carry_1
+        mov ah,0
+        sub [bx],ax
         ret   
         
         
@@ -1036,49 +1079,125 @@ ExcuteCommand proc far
                 ret
         normal8:
         or [bx],cx
-        ret 
+        ret
+        
     is_nop_exe:
     cmp Instruction,nopCode ;nop    
     jnz is_shr_exe
         nop 
         ret
+
     is_shr_exe:
     cmp Instruction,shrCode ;shr    
     jnz is_shl_exe
         call ExecuteHelper
-        ;shr [bx],cl
-        ret 
+                cmp countdigit,2
+                jnc normal9
+                mov al,[bx]
+                shr al,cl
+                mov [bx],al
+                ret
+        normal9:
+        mov ax,[bx]
+        shr ax,cl
+        mov [bx],ax
+        ret
         
     is_shl_exe:
-    cmp Instruction,shlCode ;shl    
+    cmp Instruction,shlCode ;shr    
     jnz is_clc_exe
-        ;shl [bx],cl
+        call ExecuteHelper
+                cmp countdigit,2
+                jnc normal10
+                mov al,[bx]
+                shl al,cl
+                mov [bx],al
+                ret
+        normal10:
+        mov ax,[bx]
+        shl ax,cl
+        mov [bx],ax
         ret 
         
     is_clc_exe:
-    ;cmp Instruction,clcCode ;clc    
-    ;jnz is_ror_exe
-    ;     mov cx,SourceValue  ; chech here if source is cx
-    ;     clc DestinationValue,cx
+    cmp Instruction,clcCode ;clc    
+    jnz is_ror_exe
+        mov Carry_1,0 ;clear the carry variable
 
     is_ror_exe:
     cmp Instruction,rorCode ;ror    
+    jnz is_rol_exe
+        call ExecuteHelper
+        cmp countdigit,2
+                jnc normal11
+                mov al,[bx]
+                ror al,cl
+                mov [bx],al
+                ret
+        normal11:
+        mov ax,[bx]
+        ror ax,cl
+        mov [bx],ax
+        ret
+
+    is_rol_exe:
+    cmp Instruction,rolCode ;ror    
     jnz is_rcl_exe
         call ExecuteHelper
-        ;ror [bx],cl
-        ret 
+        cmp countdigit,2
+                jnc normal12
+                mov al,[bx]
+                rol al,cl
+                mov [bx],al
+                ret
+        normal12:
+        mov ax,[bx]
+        rol ax,cl
+        mov [bx],ax
+        ret
+            
     is_rcl_exe:
     cmp Instruction,rclCode ;rcl    
     jnz is_rcr_exe
         call ExecuteHelper
-        ;rcl [bx],cl
-        ret 
+        call ExecuteHelper
+        cmp countdigit,2
+                jnc normal13
+                mov al,[bx]
+                rol al,cl
+                or al,Carry_1
+                mov [bx],al
+                ret
+        normal13:
+        mov ax,[bx]
+        mov dx,ax
+        rol ax,cl
+        or al,Carry_1
+        mov [bx],ax
+        shl dx,cl
+        jc set_carry
+            ret
+        set_carry:
+        mov Carry_1,1
+        ret
     is_rcr_exe:
     cmp Instruction,rcrCode ;rcr   
     jnz is_push_exe
         call ExecuteHelper
-        ;rcr [bx],cl 
-        ret 
+        call ExecuteHelper
+        cmp countdigit,2
+                jnc normal14
+                mov al,[bx]
+                or al,Carry_1
+                ror al,cl
+                mov [bx],al
+                ret
+        normal14:
+        mov ax,[bx]
+        or al,Carry_1
+        ror ax,cl
+        mov [bx],ax
+        ret
     is_push_exe:
     cmp Instruction,pushCode ;push   
     jnz is_pop_exe  
@@ -1108,6 +1227,7 @@ ExcuteCommand endp
 
 
 Check_Errors PROC
+    ;-----------------ERROR-1-
     mov al,is8bitreg_dest
     mov al,is8bitreg_src
     cmp al,ah
@@ -1116,35 +1236,45 @@ Check_Errors PROC
     jnz not_SIZE_mismatch
     ;here to handle type mismatch error
             mov err_SIZE_MISMATCH,1
-            ret
+            mov CLEAR_TO_EXECUTE,0
     not_SIZE_mismatch:
-    ;------------------
+    ;-----------------ERROR-2-
     mov al,source
     mov ah,0
-    mov bl,10
+    mov bl,10h
     div bl
     mov dl,al ;dl contain the tens of the source
     mov al,source
     mov ah,0
-    mov bl,10
+    mov bl,10h
     div bl
     mov dh,al ;dh contain the tens of the destination
     jnz not_MEMO_ERR
     ;here to handle memory to memoty operation error
             mov err_MEMO_TO_MEMO,1
-            ret
+            mov CLEAR_TO_EXECUTE,0
     not_MEMO_ERR:
-    ;------------------
+    ;-----------------ERROR-3-
     cmp Instruction,pushCode
     jnz not_PUSH_ERR
         cmp Destination,dhCode
         jg not_PUSH_ERR
             ;here to handle memory to memoty operation error
             mov err_PUSHING_8_BITS,1
-            ret
+            mov CLEAR_TO_EXECUTE,0
     not_PUSH_ERR:
-    ;[err_INVALID_REG_NAME] & [err_INCORRECT_ADDRESSING] is handled in funtions : 'GenerateSrcCodeiFNotreg' , 'GenerateDstCodeiFNotreg' , 'GetDst_Src_Code'
-    mov CLEAR_TO_EXECUTE,1
+        ;[err_INVALID_REG_NAME] & [err_INCORRECT_ADDRESSING] is handled in funtions : 'GenerateSrcCodeiFNotreg' , 'GenerateDstCodeiFNotreg' , 'GetDst_Src_Code'
+    ;-----------------ERROR-4-
+    cmp err_INVALID_REG_NAME,1
+    JNZ not_INVALID_NAME_ERR
+            mov CLEAR_TO_EXECUTE,0
+    not_INVALID_NAME_ERR:
+    ;-----------------ERROR-5-
+    cmp err_INCORRECT_ADDRESSING,1
+    JNZ not_INVALID_ADDRESSING_ERR
+            mov CLEAR_TO_EXECUTE,0
+    not_INVALID_ADDRESSING_ERR:
+    
     ret
 Check_Errors ENDP
 
@@ -1170,7 +1300,14 @@ ExecuteHelper PROC
             mov bx,SourceValue
             mov countdigit,4
             mov cx,[bx]
-        finish_exe:
+        finish_exe:mov al,Destination
+        mov ah,0
+        mov bl,10h
+        div bl
+        cmp al,4     ;is a 16 bit register
+        jnz checkfor8bits
+            mov countdigit,3 
+        checkfor8bits:
         cmp is8bitreg_dest,1
         jnz allreg
             mov countdigit,1
