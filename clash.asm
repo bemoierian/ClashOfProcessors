@@ -652,7 +652,7 @@ DisplayNamesAndScore PROC
     RET
 DisplayNamesAndScore ENDP  
 DISPLAYLEVEL PROC
-
+    
 DISPLAYLEVEL ENDP
 
 SetMinPoints PROC
