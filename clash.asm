@@ -696,6 +696,10 @@ DisplayNamesAndScore PROC
         mov ah,09 
         mov dx,offset BUFFNAME1
         int 21h 
+
+        mov ah,02 
+        mov dl, ':'
+        int 21h 
         ;print the score of the first player
         MOV AL,P1_score
         CALL DisplayNumInAL
@@ -708,6 +712,9 @@ DisplayNamesAndScore PROC
         mov ah,09
         mov dx,offset BUFFNAME2 
         int 21h
+        mov ah,02 
+        mov dl, ':'
+        int 21h 
         ;print the score of the second player
         MOV AL,P2_score
         CALL DisplayNumInAL
