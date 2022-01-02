@@ -1,4 +1,4 @@
-PUBLIC printwin1,printwin2,winner
+PUBLIC printwin1,printwin2,winner,programend
 EXTRN BUFFNAME1:BYTE, BufferData1:BYTE
 EXTRN BUFFNAME2:BYTE, BufferData2:BYTE
 EXTRN AxVar1:WORD,BxVar1:WORD,CxVar1:WORD,DxVar1:WORD,SiVar1:WORD,DiVar1:WORD,SpVar1 :WORD,BpVar1 :WORD
@@ -18,8 +18,9 @@ endm setcursor
 .DATA
 ;--------------------------win--------------------------
 ;---------print winner---------------
-printwin1 DB 'winner is player 1 ','$'
-printwin2 DB 'winner is player 2 ','$'
+printwin1 DB 'winner is player 1  ','$'
+printwin2 DB 'winner is player 2  ','$'
+programend DB 'program is ended   ','$'
 
 winner db 0 ;flag of winner in the game
 ;------------------------------------

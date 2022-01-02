@@ -12,7 +12,7 @@ PUBLIC execute2
 EXTRN AxVar1:WORD,BxVar1:WORD,CxVar1:WORD,DxVar1:WORD,SiVar1:WORD,DiVar1:WORD,SpVar1 :WORD,BpVar1 :WORD
 EXTRN m0_1:BYTE,m1_1:BYTE,m2_1:BYTE,m3_1:BYTE,m4_1:BYTE,m5_1:BYTE,m6_1 :BYTE,m7_1:BYTE,m8_1:BYTE,m9_1:BYTE,mA_1:BYTE,mB_1 :BYTE,mC_1:BYTE,mD_1:BYTE,mE_1:BYTE,mF_1 :BYTE
 EXTRN Carry_1:BYTE
-
+PUBLIC CLEAR_TO_EXECUTE_2
 PUBLIC DestinationValue1
 ;codes : External 1 
 ;codes : instruction 1h -> 14h
@@ -92,7 +92,7 @@ err_MEMO_TO_MEMO db 0
 err_INVALID_REG_NAME db 0
 err_PUSHING_8_BITS db 0
 err_INCORRECT_ADDRESSING db 0
-CLEAR_TO_EXECUTE db 1
+CLEAR_TO_EXECUTE_2 db 1
 ;-------------------Variables to discover command string---------------
 L1 db ?
 L2 db ?
@@ -359,7 +359,7 @@ execute2 PROC far
 ;------------------------------------------------------EXECUTE----------------------------------------------------------
     FinalCommand:
     call Check_Errors
-    cmp CLEAR_TO_EXECUTE,1
+    cmp CLEAR_TO_EXECUTE_2,1
     jnz close ; force quite if there is an error of any type
     call ExcuteCommand ; command is cleare to be executed !
     close:
@@ -372,7 +372,7 @@ mov err_MEMO_TO_MEMO,0
 mov err_INVALID_REG_NAME,0
 mov err_PUSHING_8_BITS ,0
 mov err_INCORRECT_ADDRESSING,0
-mov CLEAR_TO_EXECUTE,1
+mov CLEAR_TO_EXECUTE_2,1
 mov is8bitreg_temp,0
 mov is8bitreg_dest,0
 mov is8bitreg_src,0
@@ -1271,7 +1271,7 @@ Check_Errors PROC
             cmp countdigit,3
             jl next_err
                 mov err_SIZE_MISMATCH,1
-                mov CLEAR_TO_EXECUTE,0
+                mov CLEAR_TO_EXECUTE_2,0
                 jmp not_SIZE_mismatch
     next_err:                
     mov al,is8bitreg_dest
@@ -1282,7 +1282,7 @@ Check_Errors PROC
     jz not_SIZE_mismatch
     ;here to handle type mismatch error
             mov err_SIZE_MISMATCH,1
-            mov CLEAR_TO_EXECUTE,0
+            mov CLEAR_TO_EXECUTE_2,0
     not_SIZE_mismatch:
     ;-----------------ERROR-2------------MEMORY TO MEMORY OPERATION
     mov al,source
@@ -1301,7 +1301,7 @@ Check_Errors PROC
             jnz not_MEMO_ERR
             ;here to handle memory to memoty operation error
             mov err_MEMO_TO_MEMO,1
-            mov CLEAR_TO_EXECUTE,0
+            mov CLEAR_TO_EXECUTE_2,0
     not_MEMO_ERR:
     ;-----------------ERROR-3------------PUSHING/POPING 8 BITS
     cmp Instruction,pushCode
@@ -1310,7 +1310,7 @@ Check_Errors PROC
         jg not_PUSH_ERR
             ;here to handle PUSH 8 bits
             mov err_PUSHING_8_BITS,1
-            mov CLEAR_TO_EXECUTE,0
+            mov CLEAR_TO_EXECUTE_2,0
     not_PUSH_ERR:
     cmp Instruction,popCode
     jnz not_POP_ERR
@@ -1318,17 +1318,17 @@ Check_Errors PROC
         jg not_POP_ERR
             ;here to handle POP 8 bits
             mov err_PUSHING_8_BITS,1
-            mov CLEAR_TO_EXECUTE,0
+            mov CLEAR_TO_EXECUTE_2,0
     not_POP_ERR:
     ;-----------------ERROR-4------------INVALID REGISTER NAME
     cmp err_INVALID_REG_NAME,1
     JNZ not_INVALID_NAME_ERR
-            mov CLEAR_TO_EXECUTE,0
+            mov CLEAR_TO_EXECUTE_2,0
     not_INVALID_NAME_ERR:
     ;-----------------ERROR-5------------INCORRECT ADDRESSING MODE 
     cmp err_INCORRECT_ADDRESSING,1
     JNZ not_INVALID_ADDRESSING_ERR
-            mov CLEAR_TO_EXECUTE,0
+            mov CLEAR_TO_EXECUTE_2,0
     not_INVALID_ADDRESSING_ERR:
         ;[err_INVALID_REG_NAME] & [err_INCORRECT_ADDRESSING] is handled in funtions : 'GenerateSrcCodeiFNotreg' , 'GenerateDstCodeiFNotreg' , 'GetDst_Src_Code'
     ret

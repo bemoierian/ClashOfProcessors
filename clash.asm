@@ -12,9 +12,12 @@ PUBLIC AxVar2,BxVar2,CxVar2,DxVar2,SiVar2,DiVar2,SpVar2 ,BpVar2
 PUBLIC Carry_1,Carry_2
 ;-------------------------chat.asm---------------------------
 EXTRN Chat:far 
-;-------------------------command.asm---------------------------
+;-------------------------cmd_p1.asm---------------------------
 EXTRN execute1:far 
-EXTRN execute2:far 
+EXTRN CLEAR_TO_EXECUTE_1:BYTE
+;-------------------------cmd_p2.asm---------------------------
+EXTRN execute2:far
+EXTRN CLEAR_TO_EXECUTE_2:BYTE
 PUBLIC commandStr,commandCode,isExternal,Instruction,Destination,Source,External
 PUBLIC commandS
 ;-------------------------Gun.asm---------------------------
@@ -24,7 +27,8 @@ EXTRN FireGun1_Continue:far
 EXTRN DrawGun2:far
 EXTRN FireGun2_initial:far
 EXTRN FireGun2_Continue:far
-EXTRN FlyObj_Continue:far
+EXTRN FlyObj1_Continue:far
+EXTRN FlyObj2_Continue:far
 EXTRN FlyObj_initial:far
 EXTRN gun1NewX:WORD,gun1NewY:WORD,gun2NewX:WORD,gun2NewY:WORD
 EXTRN l11:BYTE,c11:BYTE,l12:BYTE,c12:BYTE,l13:BYTE,c13:BYTE,l14:BYTE,c14:BYTE,l15:BYTE,c15:BYTE,l21:BYTE,c21:BYTE,l22:BYTE,c22:BYTE,l23:BYTE,c23:BYTE,l24:BYTE,c24:BYTE,l25:BYTE,c25:BYTE
@@ -56,7 +60,7 @@ EXTRN initial_reg2:far
 ;-------------------------UI.inc------------------------------
 include UI.inc
 ;------------------win.asm----------
-EXTRN printwin1:BYTE,printwin2:BYTE,winner:BYTE
+EXTRN printwin1:BYTE,printwin2:BYTE,winner:BYTE,programend:BYTE
 EXTRN CheckWinner:far
 
 .286
@@ -190,13 +194,16 @@ MAIN PROC FAR
     CALL select_forbidden_char1
     CALL select_forbidden_char2
     CALL show_forb_chars
+    MainScreen:
+    mov ah,0          ;Change video mode (Text MODE)
+    mov al,03h
+    int 10h 
     ;CLEAR SCREEN
     mov ax,0600h
     mov bh,07
     mov cx,0
     mov dx,184FH
     int 10h
-    MainScreen:
         draw_mainscreen main_str1, main_str2, main_str3 ;UI.inc
         MainInput:
             mov ah,1
@@ -261,7 +268,8 @@ MAIN PROC FAR
 
         cmp cyclesCounter2, 2H
         jnz dontDrawFly
-        CALL FlyObj_Continue
+        CALL FlyObj1_Continue
+        CALL FlyObj2_Continue
         mov cyclesCounter2, 0
         dontDrawFly:
         ;----------------------rm.asm-----------------------------
@@ -329,6 +337,16 @@ MAIN PROC FAR
         jmp Game
 
 EndGame:
+    mov ax,0600h
+  mov bh,07
+  mov cx,0
+  mov dx,184FH
+  int 10h
+
+     mov ah,09
+    mov dx,offset programend
+    int 21h
+
 HLT
 MAIN ENDP
 
@@ -510,29 +528,17 @@ EnterInput PROC
     cmp turn,2
     jnz turn_1
     CALL execute2
+    CMP CLEAR_TO_EXECUTE_2, 0
+    JNZ finish_execute
+    DEC P2_score
     jmp finish_execute
     turn_1:
     CALL execute1
-
+    CMP CLEAR_TO_EXECUTE_1, 0
+    JNZ finish_execute
+    DEC P1_score
+    
     finish_execute:
-    ;------------------------Print, peter-----------------------------
-    ; MOV AL,Source ;PUT THE REAMINDER IN THE AL TO DIVIDE IT AGAIN
-    ; MOV AH,0  ;MAKE AH=0 TO HAVE THE RIGHT NUMBER IN AX
-    ; MOV BL,10h ;THE DIVISION THIS TIME IS OVER 10
-    ; DIV BL
-    
-    ; MOV DL,AL ;TO DISPLAY THE TENS 
-    ; MOV CH,AH ;TO SAVE THE REMAINDER THE UNITS
-    
-    ; ADD DL,30H
-    ; MOV AH,02
-    ; INT 21H  
-    
-    ; MOV DL,CH ;NO DIVISION
-    ; ADD DL,30H
-    ; MOV AH,02H
-    ; INT 21H
-    ;------------------------Print, peter-----------------------------
     CALL ClearCommandString
     CALL SwitchTurn
 
@@ -543,35 +549,6 @@ EnterInput PROC
 EnterInput ENDP
 ;description
 CharInput PROC
-    ;Validation
-    ; ; there is no supported characters under 30h
-    ; ; range of number 30h->39h
-    ; cmp al, 30h
-    ; jl Game
-    ; cmp al, 39h
-    ; jg isChar
-    ; jmp concat
-    ; ;range of small letters 61h->7Ah
-    ; isChar:
-    ;     cmp al, 61h
-    ;     jl isObracket
-    ;     cmp al, 7Ah
-    ;     jg Game
-    ;     jmp concat
-    ; ;next 2 for addressing modes
-    ; isObracket:
-    ;     cmp al, 5Bh
-    ;     jnz isCbracket
-    ;     jmp concat
-    ; isCbracket:
-    ;     cmp al, 5Dh
-    ;     jnz isComma
-    ;     jmp concat
-    ; isComma:
-    ;     cmp al, 2Ch
-    ;     jnz Game
-    ;     jmp concat
-    ; ; concatinate the character after validation
     mov dl, cmdCurrSize
     cmp dl, cmdMaxSize
     jz endInsertChar
@@ -586,6 +563,15 @@ CharInput PROC
     JZ endInsertChar
     continueIns:
     ;------------------------------Insert--------------------------
+    ;-----------------------Convert to lower case------------------
+    ToLower:
+    cmp al, 41h               ;41h is the lower bound ascii for capital letters
+    jl  AddToResult
+    cmp al, 5Ah               ;5Ah is the upper bound ascii for capital letters
+    jg AddToResult
+    add al, 20h               ;add 20h to make the char lower case
+    AddToResult:
+
     mov di, cursor 
     mov [di], al
     inc cmdCurrSize
@@ -791,16 +777,4 @@ SetInitialPoints PROC
     mov P2_score,dl
     RET
 SetInitialPoints ENDP 
-ArePointsZero PROC
-    CMP P1_score, 0
-    JNZ ISP2ZERO
-    MOV winner, 2
-    JMP ENDZEROES
-    ISP2ZERO:
-    CMP P2_score, 0
-    JNZ ENDZEROES
-    MOV winner, 1
-    ENDZEROES:
-    RET
-ArePointsZero ENDP
 END MAIN
