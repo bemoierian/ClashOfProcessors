@@ -13,7 +13,8 @@ PUBLIC Carry_1,Carry_2
 ;-------------------------chat.asm---------------------------
 EXTRN Chat:far 
 ;-------------------------command.asm---------------------------
-EXTRN execute:far 
+EXTRN execute1:far 
+EXTRN execute2:far 
 PUBLIC commandStr,commandCode,isExternal,Instruction,Destination,Source,External
 PUBLIC commandS
 ;-------------------------Gun.asm---------------------------
@@ -487,24 +488,31 @@ EnterInput PROC
     jnz NotEnterInput
     CMP cmdCurrSize, 0
     JZ EnterInputDone
-    CALL execute
+    cmp turn,2
+    jnz turn_1
+    CALL execute2
+    jmp finish_execute
+    turn_1:
+    CALL execute1
+
+    finish_execute:
     ;------------------------Print, peter-----------------------------
-    MOV AL,Source ;PUT THE REAMINDER IN THE AL TO DIVIDE IT AGAIN
-    MOV AH,0  ;MAKE AH=0 TO HAVE THE RIGHT NUMBER IN AX
-    MOV BL,10h ;THE DIVISION THIS TIME IS OVER 10
-    DIV BL
+    ; MOV AL,Source ;PUT THE REAMINDER IN THE AL TO DIVIDE IT AGAIN
+    ; MOV AH,0  ;MAKE AH=0 TO HAVE THE RIGHT NUMBER IN AX
+    ; MOV BL,10h ;THE DIVISION THIS TIME IS OVER 10
+    ; DIV BL
     
-    MOV DL,AL ;TO DISPLAY THE TENS 
-    MOV CH,AH ;TO SAVE THE REMAINDER THE UNITS
+    ; MOV DL,AL ;TO DISPLAY THE TENS 
+    ; MOV CH,AH ;TO SAVE THE REMAINDER THE UNITS
     
-    ADD DL,30H
-    MOV AH,02
-    INT 21H  
+    ; ADD DL,30H
+    ; MOV AH,02
+    ; INT 21H  
     
-    MOV DL,CH ;NO DIVISION
-    ADD DL,30H
-    MOV AH,02H
-    INT 21H
+    ; MOV DL,CH ;NO DIVISION
+    ; ADD DL,30H
+    ; MOV AH,02H
+    ; INT 21H
     ;------------------------Print, peter-----------------------------
     CALL ClearCommandString
     CALL SwitchTurn

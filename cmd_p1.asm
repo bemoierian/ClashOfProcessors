@@ -8,14 +8,13 @@ EXTRN External:WORD
 EXTRN commandS:BYTE
 
 
-PUBLIC execute
-EXTRN AxVar1:WORD,BxVar1:WORD,CxVar1:WORD,DxVar1:WORD,SiVar1:WORD,DiVar1:WORD,SpVar1 :WORD,BpVar1 :WORD
-EXTRN m0_1:BYTE,m1_1:BYTE,m2_1:BYTE,m3_1:BYTE,m4_1:BYTE,m5_1:BYTE,m6_1 :BYTE,m7_1:BYTE,m8_1:BYTE,m9_1:BYTE,mA_1:BYTE,mB_1 :BYTE,mC_1:BYTE,mD_1:BYTE,mE_1:BYTE,mF_1 :BYTE
-EXTRN Carry_1:BYTE
+PUBLIC execute1
+EXTRN m0_2:BYTE,m1_2:BYTE,m2_2:BYTE,m3_2:BYTE,m4_2:BYTE,m5_2:BYTE,m6_2 :BYTE,m7_2:BYTE,m8_2:BYTE,m9_2:BYTE,mA_2:BYTE,mB_2 :BYTE,mC_2:BYTE,mD_2:BYTE,mE_2:BYTE,mF_2:BYTE 
+EXTRN AxVar2:WORD,BxVar2:WORD,CxVar2:WORD,DxVar2:WORD,SiVar2:WORD,DiVar2:WORD,SpVar2 :WORD,BpVar2 :WORD
+EXTRN Carry_2:BYTE
 
-public countdigit
-PUBLIC SourceValue
-;PUBLIC External
+
+PUBLIC SourceValue2
 ;codes : External 1 
 ;codes : instruction 1h -> 14h
 ;codes : destinations (registers 40h->4F)
@@ -114,7 +113,7 @@ MemoLocation db 0
 
 tempSI dw 0
 DestinationValue dw 0
-SourceValue dw 0
+SourceValue2 dw 0
 countdigit db 0
 is8bitreg_temp db 0
 is8bitreg_dest db 0
@@ -129,7 +128,7 @@ flag db 0
 
 var db 0
 .code
-execute PROC far
+execute1 PROC far
     mov ax, @data
     mov ds, ax
     call resetALLvars
@@ -347,27 +346,26 @@ execute PROC far
     jnz IsEmmidiate
     MOV AL,ToCheck
     mov Source,AL
-    mov SourceValue,bx
+    mov SourceValue2,bx
     jmp exe
 
     IsEmmidiate:
     ;if emmidiate value
     call GenerateSrcEmValue
-    ;--    
-;-------------------------------------EXECUTE----------------------------------------------
+    ;--
     Exe:
     mov al,is8bitreg_temp
     mov is8bitreg_src,al
-    mov is8bitreg_temp,0
+    mov is8bitreg_temp,0    
+;------------------------------------------------------EXECUTE----------------------------------------------------------
     FinalCommand:
-    
     call Check_Errors
     cmp CLEAR_TO_EXECUTE,1
     jnz close ; force quite if there is an error of any type
     call ExcuteCommand ; command is cleare to be executed !
     close:
     ret
-execute ENDP
+execute1 ENDP
 
 resetALLvars proc
 mov err_SIZE_MISMATCH,0
@@ -395,7 +393,7 @@ mov InstrusctionValid,0
 mov NoSecondOperand,0
 mov MemoLocation,0
 mov DestinationValue,0
-mov SourceValue,0
+mov SourceValue2,0
 mov flag,0
 mov countdigit,0
 ret
@@ -674,7 +672,7 @@ GenerateDestCodeiFNotreg PROC far
     NOTDIGIT:
             mov v1,'b'
             mov v2,'x' 
-            mov ax,BxVar1
+            mov ax,BxVar2
             mov varName,ax
             call CheckDirectAddressing
             cmp flag,1
@@ -682,7 +680,7 @@ GenerateDestCodeiFNotreg PROC far
     isSi:
             mov v1,'s'
             mov v2,'i' 
-            mov ax,SiVar1
+            mov ax,SiVar2
             mov varName,ax
             call CheckDirectAddressing
             cmp flag,1
@@ -690,7 +688,7 @@ GenerateDestCodeiFNotreg PROC far
     isDi:
             mov v1,'d'
             mov v2,'i' 
-            mov ax,DiVar1
+            mov ax,DiVar2
             mov varName,ax
             call CheckDirectAddressing
             cmp flag,1
@@ -701,7 +699,7 @@ GenerateDestCodeiFNotreg PROC far
     calclocdst:
     mov al, destORsource
     mov Destination,al
-    mov BX,offset m0_1
+    mov BX,offset m0_2
     mov ah,0
     mov al,MemoLocation
     add BX,ax
@@ -769,7 +767,7 @@ GenerateSrcCodeiFNotreg PROC far
     NOTDIGIT2:
             mov v1,'b'
             mov v2,'x' 
-            mov ax,BxVar1
+            mov ax,BxVar2
             mov varName,ax
             call CheckDirectAddressing
             
@@ -778,7 +776,7 @@ GenerateSrcCodeiFNotreg PROC far
     isSisrc:
             mov v1,'s'
             mov v2,'i' 
-            mov ax,SiVar1
+            mov ax,SiVar2
             mov varName,ax
             call CheckDirectAddressing
             cmp flag,1
@@ -786,7 +784,7 @@ GenerateSrcCodeiFNotreg PROC far
     isDisrc:
             mov v1,'d'
             mov v2,'i' 
-            mov ax,DiVar1
+            mov ax,DiVar2
             mov varName,ax
             call CheckDirectAddressing
             cmp flag,1
@@ -797,11 +795,11 @@ GenerateSrcCodeiFNotreg PROC far
     calclocsrc:
     mov al, destORsource
     mov Source,al
-    mov BX,offset m0_1
+    mov BX,offset m0_2
     mov ah,0
     mov al,MemoLocation
     add BX,ax
-    mov SourceValue,BX
+    mov SourceValue2,BX
     mov Memo_Source_Valid,1
     jmp ENDMEMO2
     
@@ -884,7 +882,7 @@ GenerateCode PROC far
     mov dl,ah ;get the unites of the dest/src code
     mov dh,0
     ;---------
-    mov bx,offset AxVar1
+    mov bx,offset AxVar2
     mov ax,2
     ;this for low register only
     cmp L2,'l'
@@ -980,12 +978,12 @@ ExcuteCommand proc far
                 cmp countdigit,2
                 jnc normal3
                 add [bx],cl
-                mov al,Carry_1
+                mov al,Carry_2
                 add [bx],al
                 ret
         normal3:
         add [bx],cx
-        mov al,Carry_1
+        mov al,Carry_2
         mov ah,0
         add [bx],ax
         ret
@@ -998,19 +996,19 @@ ExcuteCommand proc far
                 jnc normal4
                 sub [bx],cl
                 jnc no_carry_sub1
-                    mov Carry_1,1
+                    mov Carry_2,1
                     jmp return1
                 no_carry_sub1:
-                    mov Carry_1,0
+                    mov Carry_2,0
                 return1:
                 ret
         normal4:
         sub [bx],cx
         jnc no_carry_sub2
-            mov Carry_1,1
+            mov Carry_2,1
             jmp return2
         no_carry_sub2:
-            mov Carry_1,0
+            mov Carry_2,0
         return2:
         ret   
         
@@ -1023,23 +1021,23 @@ ExcuteCommand proc far
             jnc normal5
             sub [bx],cl
             jnc no_carry_sbb1
-                mov Carry_1,1
+                mov Carry_2,1
                 jmp return3
             no_carry_sbb1:
-                mov Carry_1,0
+                mov Carry_2,0
             return3:
-            mov al,Carry_1
+            mov al,Carry_2
             sub [bx],al
             ret
         normal5:
         sub [bx],cx
         jnc no_carry_sbb2
-            mov Carry_1,1
+            mov Carry_2,1
             jmp return4
         no_carry_sbb2:
-            mov Carry_1,0
+            mov Carry_2,0
         return4:
-        mov al,Carry_1
+        mov al,Carry_2
         mov ah,0
         sub [bx],ax
         ret   
@@ -1123,7 +1121,7 @@ ExcuteCommand proc far
     is_clc_exe:
     cmp Instruction,clcCode ;clc    
     jnz is_ror_exe
-        mov Carry_1,0 ;clear the carry variable
+        mov Carry_2,0 ;clear the carry variable
 
     is_ror_exe:
     cmp Instruction,rorCode ;ror    
@@ -1161,44 +1159,82 @@ ExcuteCommand proc far
     cmp Instruction,rclCode ;rcl    
     jnz is_rcr_exe
         call ExecuteHelper
-        call ExecuteHelper
         cmp countdigit,2
                 jnc normal13
                 mov al,[bx]
-                rol al,cl
-                or al,Carry_1
+                cmp Carry_2,0
+                jnz set_carry_flag1
+                    clc
+                    jmp rotate1
+                set_carry_flag1: stc
+                rotate1:
+                rcl al,cl
+                jc set_carry_var1
+                    mov Carry_2,0
+                    jmp finish_rotate_low1
+                set_carry_var1:
+                    mov Carry_2,1
+                finish_rotate_low1:
                 mov [bx],al
                 ret
         normal13:
         mov ax,[bx]
-        mov dx,ax
-        rol ax,cl
-        or al,Carry_1
+        cmp Carry_2,0
+        jnz set_carry_flag2
+            clc
+            jmp rotate2
+        set_carry_flag2: stc
+        rotate2:
+        rcl ax,cl
+        jc set_carry_var2
+            mov Carry_2,0
+            jmp finish_rotate_high1
+        set_carry_var2:
+            mov Carry_2,1
+        finish_rotate_high1:
         mov [bx],ax
-        shl dx,cl
-        jc set_carry
-            ret
-        set_carry:
-        mov Carry_1,1
         ret
+    
     is_rcr_exe:
     cmp Instruction,rcrCode ;rcr   
     jnz is_push_exe
         call ExecuteHelper
-        call ExecuteHelper
         cmp countdigit,2
                 jnc normal14
                 mov al,[bx]
-                or al,Carry_1
-                ror al,cl
+                cmp Carry_2,0
+                jnz set_carry_flag3
+                    clc
+                    jmp rotate3
+                set_carry_flag3: stc
+                rotate3:
+                rcr al,cl
+                jc set_carry_var3
+                    mov Carry_2,0
+                    jmp finish_rotate_low2
+                set_carry_var3:
+                    mov Carry_2,1
+                finish_rotate_low2:
                 mov [bx],al
                 ret
         normal14:
         mov ax,[bx]
-        or al,Carry_1
-        ror ax,cl
+        cmp Carry_2,0
+        jnz set_carry_flag4
+            clc
+            jmp rotate4
+        set_carry_flag4: stc
+        rotate4:
+        rcr ax,cl
+        jc set_carry_var4
+            mov Carry_2,0
+            jmp finish_rotate_high2
+        set_carry_var4:
+            mov Carry_2,1
+        finish_rotate_high2:
         mov [bx],ax
         ret
+
     is_push_exe:
     cmp Instruction,pushCode ;push   
     jnz is_pop_exe  
@@ -1221,64 +1257,83 @@ ExcuteCommand proc far
     cmp Instruction,decCode ;dec   
     jnz close 
         mov bx,DestinationValue   
-        sub [bx],1;
+        sub [bx],1
         ret
 ExcuteCommand endp
 
 
 
 Check_Errors PROC
-    ;-----------------ERROR-1-
+    ;-----------------ERROR-1------------SIZE MISMATCH
+    cmp isExternal,1
+    jnz next_err
+        cmp Destination,dhCode
+        jg next_err
+            cmp countdigit,3
+            jl next_err
+                mov err_SIZE_MISMATCH,1
+                mov CLEAR_TO_EXECUTE,0
+                jmp not_SIZE_mismatch
+    next_err:                
     mov al,is8bitreg_dest
-    mov al,is8bitreg_src
+    mov ah,is8bitreg_src
     cmp al,ah
-    jnz not_SIZE_mismatch
-    cmp is8bitreg_src,1
-    jnz not_SIZE_mismatch
+    jz not_SIZE_mismatch
+    cmp isExternal,1
+    jz not_SIZE_mismatch
     ;here to handle type mismatch error
             mov err_SIZE_MISMATCH,1
             mov CLEAR_TO_EXECUTE,0
     not_SIZE_mismatch:
-    ;-----------------ERROR-2-
+    ;-----------------ERROR-2------------MEMORY TO MEMORY OPERATION
     mov al,source
     mov ah,0
     mov bl,10h
     div bl
     mov dl,al ;dl contain the tens of the source
-    mov al,source
+    mov al,Destination
     mov ah,0
     mov bl,10h
     div bl
     mov dh,al ;dh contain the tens of the destination
+    cmp dh,dl
     jnz not_MEMO_ERR
-    ;here to handle memory to memoty operation error
+            cmp dh,7
+            jnz not_MEMO_ERR
+            ;here to handle memory to memoty operation error
             mov err_MEMO_TO_MEMO,1
             mov CLEAR_TO_EXECUTE,0
     not_MEMO_ERR:
-    ;-----------------ERROR-3-
+    ;-----------------ERROR-3------------PUSHING/POPING 8 BITS
     cmp Instruction,pushCode
     jnz not_PUSH_ERR
         cmp Destination,dhCode
         jg not_PUSH_ERR
-            ;here to handle memory to memoty operation error
+            ;here to handle PUSH 8 bits
             mov err_PUSHING_8_BITS,1
             mov CLEAR_TO_EXECUTE,0
     not_PUSH_ERR:
-        ;[err_INVALID_REG_NAME] & [err_INCORRECT_ADDRESSING] is handled in funtions : 'GenerateSrcCodeiFNotreg' , 'GenerateDstCodeiFNotreg' , 'GetDst_Src_Code'
-    ;-----------------ERROR-4-
+    cmp Instruction,popCode
+    jnz not_POP_ERR
+        cmp Destination,dhCode
+        jg not_POP_ERR
+            ;here to handle POP 8 bits
+            mov err_PUSHING_8_BITS,1
+            mov CLEAR_TO_EXECUTE,0
+    not_POP_ERR:
+    ;-----------------ERROR-4------------INVALID REGISTER NAME
     cmp err_INVALID_REG_NAME,1
     JNZ not_INVALID_NAME_ERR
             mov CLEAR_TO_EXECUTE,0
     not_INVALID_NAME_ERR:
-    ;-----------------ERROR-5-
+    ;-----------------ERROR-5------------INCORRECT ADDRESSING MODE 
     cmp err_INCORRECT_ADDRESSING,1
     JNZ not_INVALID_ADDRESSING_ERR
             mov CLEAR_TO_EXECUTE,0
     not_INVALID_ADDRESSING_ERR:
-    
+        ;[err_INVALID_REG_NAME] & [err_INCORRECT_ADDRESSING] is handled in funtions : 'GenerateSrcCodeiFNotreg' , 'GenerateDstCodeiFNotreg' , 'GetDst_Src_Code'
     ret
 Check_Errors ENDP
-
 
 
 ExecuteHelper PROC
@@ -1286,19 +1341,19 @@ ExecuteHelper PROC
         jnz notemmidiatesource
             mov cx,External
             jmp finish_exe
-        notemmidiatesource:  ;else
+        notemmidiatesource: 
             mov al,source
             mov ah,0
             mov bl,10h
             div bl
             cmp al,7h;check if memory
             jnz notmemory1
-                mov bx,SourceValue
+                mov bx,SourceValue2
                 mov countdigit,4 ;to help in al,ah,...
                 mov cx,[bx]
                 jmp finish_exe
             notmemory1: 
-            mov bx,SourceValue
+            mov bx,SourceValue2
             mov countdigit,4
             mov cx,[bx]
         finish_exe:mov al,Destination
@@ -1320,42 +1375,42 @@ ExecuteHelper ENDP
 
 
 Pushexe proc
-    cmp SpVar1,0
+    cmp Spvar2,0
     jle finishpush 
-    cmp SpVar1,10H
+    cmp Spvar2,10H
     jg finishpush
     ; the upper operations checks if the stack pointer  is out of range
-    lea si,mF_1
+    lea si,mF_2
     mov ax,10h
-    sub ax,SpVar1
+    sub ax,Spvar2
     sub si,ax
     
     cmp Destination,DxCode
     jge bit16_check1
         dec si
-        dec Spvar1
+        dec Spvar2
     bit16_check1:
     cmp Destination,SiCode
     jl is8bit
         dec si
-        dec Spvar1
+        dec Spvar2
     is8bit:
     mov bx,DestinationValue
     mov cx,[bx]
     mov [si],cx
     
-    dec Spvar1
+    dec Spvar2
     finishpush:
     ret
 Pushexe endp
 
 Popexe proc
-    cmp SpVar1,0eh
+    cmp Spvar2,0eh
     jg finishpop
 
-    lea si,mF_1
+    lea si,mF_2
     mov ax,0fh
-    sub ax,SpVar1
+    sub ax,Spvar2
     sub si,ax
     
     mov bx,DestinationValue
@@ -1366,14 +1421,14 @@ Popexe proc
     cmp Destination,DxCode
     jge bit16_check1_pop
         inc si
-        inc Spvar1
+        inc Spvar2
     bit16_check1_pop:
     cmp Destination,SiCode
     jl is8bit_pop
         inc si
-        inc Spvar1
+        inc Spvar2
     is8bit_pop:
-    inc Spvar1
+    inc Spvar2
     finishpop:
     ret
 Popexe endp
