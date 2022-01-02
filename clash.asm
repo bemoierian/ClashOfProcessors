@@ -31,6 +31,8 @@ EXTRN forbidden2:BYTE
 ;-------------------------UI.inc------------------------------
 include UI.inc
 
+
+
 .286
 .MODEL SMALL
 .STACK 64
@@ -185,7 +187,7 @@ MAIN PROC FAR
     drawrectangle  120,0,0dh,10,120
     
     verticalline 0,160,170              ;vertical line
-    ; horizontalline 145,162,319          ;horizontal line
+     ;horizontalline 145,162,319          ;horizontal line
     drawrectangle  120,161,0Eh,10,120
     
 
@@ -226,27 +228,58 @@ MAIN PROC FAR
         dontDrawFly:
         ;----------------------rm.asm-----------------------------
         call RegMemo
+         mov l11,01
+       mov c11,0ah
+
+       mov l12,05
+       mov c12,9h
+
+       mov l13,03
+       mov c13,0ch
+
+        mov l14,08
+       mov c14,0eh
+
+       mov l15,02
+       mov c15,0dh
+
+       mov l21,07
+       mov c21,0ah
+
+
+       mov l22,04
+       mov c22,9h
+
+       mov l23,05
+       mov c23,0ch
+
+       mov l24,09
+       mov c24,0eh
+
+       mov l25,09
+       mov c25,0dh
+     
         setcursor 0000
-       drawrectanglewithletter  140,7,c11,10,10,63497d,l11,c11
+       drawrectanglewith  140,7,c11,15,15,63497d,l11,c11
        setcursor 0000
-       drawrectanglewithletter  140,30,c12,10,10,63500d,l12,c12
+       drawrectanglewith  140,30,c12,15,15,63500d,l12,c12
        setcursor 0000
-       drawrectanglewithletter  140,53,c13,10,10,63503d,l13,c13
+       drawrectanglewith  140,53,c13,15,15,63503d,l13,c13
        setcursor 0000
-       drawrectanglewithletter  140,77,c14,10,10,63506d,l14,c14
+       drawrectanglewith  140,77,c14,15,15,63506d,l14,c14
        setcursor 0000
-       drawrectanglewithletter  140,101,c15,10,10, 63509d,l15,c15
+       drawrectanglewith  140,101,c15,15,15, 63509d,l15,c15
     
         setcursor 0000  
-        drawrectanglewithletter  135,163,c21,10,10,63518d,l21,c21
+        drawrectanglewith  120,163,c21,15,15,63518d,l21,c21
         setcursor 0000
-        drawrectanglewithletter  135,186,c22,10,10,63521d,l22,c22
+        drawrectanglewith  120,186,c22,15,15,63521d,l22,c22
         setcursor 0000
-        drawrectanglewithletter   135,209,c23,10,10,63524d,l23,c23
+        drawrectanglewith   120,209,c23,15,15,63524d,l23,c23
         setcursor 0000
-        drawrectanglewithletter  135,232,c24,10,10,63527d,l24,c24
+        drawrectanglewith  120,232,c24,15,15,63527d,l24,c24
         setcursor 0000
-        drawrectanglewithletter  135,255,c25,10,10, 63530d,l25,c25
+        drawrectanglewith  120,255,c25,15,15, 63530d,l25,c25
 
 
 

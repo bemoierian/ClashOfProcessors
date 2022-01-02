@@ -125,15 +125,6 @@ drawrectangle  macro   x,y,color,horizontallen,verticallen
 
 endm drawrectangle
 
-drawrectanglewithletter  macro   x,y,color,horizontallen,verticallen,p,l,c
-  
-drawrectangle x,y,color,horizontallen,verticallen
-
-
-displayletter p,l,c
-
-
-endm drawrectanglewithletter
 
 
 
@@ -145,7 +136,9 @@ setcursor macro p
 endm setcursor
 
 displayletter macro  p,l,c
-    setcursor  p ;setcursor position
+    ; setcursor  p ;setcursor position
+    setcursor p
+
     mov ah,9
     mov bh,0
     mov al,l ;letter
@@ -158,6 +151,43 @@ displayletter macro  p,l,c
     ;int 21h
 endm displayletter
 
+disp macro  p,l,c
+     setcursor  p ;setcursor position
+
+mov bl,10
+mov ah,0  
+mov al,l   
+div bl 
+push ax
+add al,30h
+;print 
+
+    mov ah,9
+    mov bh,0
+    ;mov al,dl ;letter
+    mov cx,1 ;count
+    mov bl,c ;color
+    int 10h
+pop ax 
+mov al,ah
+add al,30H
+    mov dx,p
+    inc dx
+setcursor dx
+    ;print small
+    mov ah,9
+    mov bh,0
+    ;mov al,dl ;letter
+    mov cx,1 ;count
+    mov bl,c ;color
+    int 10h
+
+    ;newcode
+    ;mov ah,2
+    ;mov dl,l
+    ;int 21h
+endm disp
+
 getcursor macro  ;getcursor position
     mov ah,3h 
     mov bh,0h 
@@ -165,4 +195,13 @@ getcursor macro  ;getcursor position
 endm getcursor
 
 
+drawrectanglewith macro   x,y,color,horizontallen,verticallen,p,l,c
+  
+drawrectangle x,y,color,horizontallen,verticallen
+
+
+
+disp p,l,c
+
+endm drawrectanglewith
 

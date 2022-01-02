@@ -32,26 +32,26 @@ FireHit db 0
 ColorCount db 0 ;index for color array
 arr_color db 0ah,09h,0ch,0dh,0eh
 ;-------------------scores values and colors --------------
-l11 db '1'
+l11 db 01
 c11 db 0ah
-l12 db '1'
+l12 db 02
 c12 db 9h
-l13 db '1'
+l13 db 03
 c13 db 0ch
-l14 db '1'
+l14 db 04
 c14 db 0eh
-l15 db '1'
+l15 db 05
 c15 db 0dh
 ;-----------------
-l21 db '1'
+l21 db 01
 c21 db 0ah
-l22 db '1'
+l22 db 02
 c22 db 9h
-l23 db '1'
+l23 db 10
 c23 db 0ch
-l24 db '1'
+l24 db 09
 c24 db 0eh
-l25 db '1'
+l25 db 05
 c25 db 0dh
 ;-------------------------------------------------------
 .CODE
