@@ -160,11 +160,8 @@ isEnter db 0
 isChar db 0
 isPowerUp db 0
 ;----------------------------------------------------------
-;---------print winner---------------
-; printwin1 DB 'winner is player 1','$'
-; printwin2 DB 'winner is player 2','$'
 target dw 105eH ;target values
-;winner db 0 ;flag of winner in the game
+
 ;------------------------------------
 cyclesCounter1 dw 0
 cyclesCounter2 DW 0
@@ -188,6 +185,11 @@ MAIN PROC FAR
     ;CHOOSE LEVEL
     CALL select_level
     CALL show_level
+    cmp chosen_level,2
+    jnz level1
+    call initial_reg1
+    call initial_reg2
+    level1:
     CALL select_forbidden_char1
     CALL select_forbidden_char2
     CALL show_forb_chars

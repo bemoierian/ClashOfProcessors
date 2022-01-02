@@ -42,7 +42,20 @@ mes_forb_char2 DB "Enter a forbidden char of player 2:",'$'
 mes_char1 DB "player 1 choose forbidden char:",'$'
 mes_char2 DB "player 2 choose forbidden char:",'$'  
 mes_enter DB "press enter",'$'
-
+;;;;;;;;;
+mes_initial1 DB "initial values for player 1 registers",'$'
+mes_initial2 DB "initial values for player 2 registers",'$'
+mes_ax DB "AX ",'$'
+mes_bx DB "BX ",'$'
+mes_cx DB "CX ",'$' 
+mes_dx DB "DX ",'$'
+mes_si DB "SI ",'$'
+mes_di DB "DI ",'$'
+mes_sp DB "SP ",'$'
+mes_bp DB "BP ",'$'
+;;;;;;;;;;;
+digit db '$'
+number dw 0
 chosen_level DB ?      ;1 or 2
 forbiddin_char1 DB ?   ;0-9 , a-z
 forbiddin_char2 DB ?
