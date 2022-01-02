@@ -75,8 +75,8 @@ main_str3 DB 'To end the program press ESC','$'
 ;These variables are not in an array just to simplifie to vision
 ;---------Registers for player 1
 AxVar1 dw 0
-BxVar1 dw 3
-CxVar1 dw 4
+BxVar1 dw 0
+CxVar1 dw 0
 DxVar1 dw 0
 
 SiVar1 dw 0
