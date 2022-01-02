@@ -14,7 +14,7 @@ EXTRN AxVar2:WORD,BxVar2:WORD,CxVar2:WORD,DxVar2:WORD,SiVar2:WORD,DiVar2:WORD,Sp
 EXTRN Carry_2:BYTE
 
 PUBLIC CLEAR_TO_EXECUTE_1
-PUBLIC SourceValue2
+PUBLIC DestinationValue2
 ;codes : External 1 
 ;codes : instruction 1h -> 14h
 ;codes : destinations (registers 40h->4F)
@@ -112,7 +112,7 @@ MemoLocation db 0
 
 
 tempSI dw 0
-DestinationValue dw 0
+DestinationValue2 dw 0
 SourceValue2 dw 0
 countdigit db 0
 is8bitreg_temp db 0
@@ -321,7 +321,7 @@ execute1 PROC far
     call GetDst_Src_Code
     MOV AL,ToCheck
     mov Destination,AL
-    mov DestinationValue,bx
+    mov DestinationValue2,bx
 
     Src:  ;is source
     mov al,is8bitreg_temp
@@ -392,7 +392,7 @@ mov REG_VALID,0
 mov InstrusctionValid,0
 mov NoSecondOperand,0
 mov MemoLocation,0
-mov DestinationValue,0
+mov DestinationValue2,0
 mov SourceValue2,0
 mov flag,0
 mov countdigit,0
@@ -703,7 +703,7 @@ GenerateDestCodeiFNotreg PROC far
     mov ah,0
     mov al,MemoLocation
     add BX,ax
-    mov DestinationValue,BX
+    mov DestinationValue2,BX
     mov Memo_Dest_Valid,1
     jmp ENDMEMO
     
@@ -1250,13 +1250,13 @@ ExcuteCommand proc far
     is_inc_exe:
     cmp Instruction,incCode ;inc   
     jnz is_dec_exe
-        mov bx,DestinationValue   
+        mov bx,DestinationValue2 
         add [bx],1
         ret
     is_dec_exe:
     cmp Instruction,decCode ;dec   
     jnz close 
-        mov bx,DestinationValue   
+        mov bx,DestinationValue2   
         sub [bx],1
         ret
 ExcuteCommand endp
@@ -1368,7 +1368,7 @@ ExecuteHelper PROC
         jnz allreg
             mov countdigit,1
         allreg:
-        mov bx,DestinationValue
+        mov bx,DestinationValue2
         ret
 ExecuteHelper ENDP
 
@@ -1395,7 +1395,7 @@ Pushexe proc
         dec si
         dec Spvar2
     is8bit:
-    mov bx,DestinationValue
+    mov bx,DestinationValue2
     mov cx,[bx]
     mov [si],cx
     
@@ -1413,7 +1413,7 @@ Popexe proc
     sub ax,Spvar2
     sub si,ax
     
-    mov bx,DestinationValue
+    mov bx,DestinationValue2
     mov cx,[si]
     mov [bx],cx
     mov [si],0

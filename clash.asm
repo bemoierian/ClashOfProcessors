@@ -693,6 +693,16 @@ DisplayNamesAndScore PROC
         ;print the score of the first player
         MOV AL,P1_score
         CALL DisplayNumInAL
+        ;FORBIDDEN CHAR
+        CMP chosen_level,2
+        JZ NOPRINT1
+        ;PRINT THE FORBIDDEN CHAR 1
+        MOV DL,20h ;PRINT SPACE
+        MOV AH,2
+        INT 21H
+        MOV DL,forbiddin_char1
+        INT 21H
+        NOPRINT1:
         ;set the crsr
         mov dl,70 
         mov dh,20
@@ -708,6 +718,16 @@ DisplayNamesAndScore PROC
         ;print the score of the second player
         MOV AL,P2_score
         CALL DisplayNumInAL
+        ;FORBIDDEN CHAR 2
+        CMP chosen_level,2
+        JZ NOPRINT2
+        ;PRINT THE FORBIDDEN CHAR
+        MOV DL,20h ;PRINT SPACE
+        MOV AH,2
+        INT 21H
+        MOV DL,forbiddin_char2
+        INT 21H
+        NOPRINT2:
     RET
 DisplayNamesAndScore ENDP  
 

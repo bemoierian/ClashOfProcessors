@@ -13,7 +13,7 @@ EXTRN AxVar1:WORD,BxVar1:WORD,CxVar1:WORD,DxVar1:WORD,SiVar1:WORD,DiVar1:WORD,Sp
 EXTRN m0_1:BYTE,m1_1:BYTE,m2_1:BYTE,m3_1:BYTE,m4_1:BYTE,m5_1:BYTE,m6_1 :BYTE,m7_1:BYTE,m8_1:BYTE,m9_1:BYTE,mA_1:BYTE,mB_1 :BYTE,mC_1:BYTE,mD_1:BYTE,mE_1:BYTE,mF_1 :BYTE
 EXTRN Carry_1:BYTE
 PUBLIC CLEAR_TO_EXECUTE_2
-PUBLIC SourceValue1
+PUBLIC DestinationValue1
 ;codes : External 1 
 ;codes : instruction 1h -> 14h
 ;codes : destinations (registers 40h->4F)
@@ -111,7 +111,7 @@ MemoLocation db 0
 
 
 tempSI dw 0
-DestinationValue dw 0
+DestinationValue1 dw 0
 SourceValue1 dw 0
 countdigit db 0
 is8bitreg_temp db 0
@@ -320,7 +320,7 @@ execute2 PROC far
     call GetDst_Src_Code
     MOV AL,ToCheck
     mov Destination,AL
-    mov DestinationValue,bx
+    mov DestinationValue1,bx
 
     Src:  ;is source
     mov al,is8bitreg_temp
@@ -391,7 +391,7 @@ mov REG_VALID,0
 mov InstrusctionValid,0
 mov NoSecondOperand,0
 mov MemoLocation,0
-mov DestinationValue,0
+mov DestinationValue1,0
 mov SourceValue1,0
 mov flag,0
 mov countdigit,0
@@ -702,7 +702,7 @@ GenerateDestCodeiFNotreg PROC far
     mov ah,0
     mov al,MemoLocation
     add BX,ax
-    mov DestinationValue,BX
+    mov DestinationValue1,BX
     mov Memo_Dest_Valid,1
     jmp ENDMEMO
     
@@ -1249,13 +1249,13 @@ ExcuteCommand proc far
     is_inc_exe:
     cmp Instruction,incCode ;inc   
     jnz is_dec_exe
-        mov bx,DestinationValue   
+        mov bx,DestinationValue1   
         add [bx],1
         ret
     is_dec_exe:
     cmp Instruction,decCode ;dec   
     jnz close 
-        mov bx,DestinationValue   
+        mov bx,DestinationValue1   
         sub [bx],1
         ret
 ExcuteCommand endp
@@ -1367,7 +1367,7 @@ ExecuteHelper PROC
         jnz allreg
             mov countdigit,1
         allreg:
-        mov bx,DestinationValue
+        mov bx,DestinationValue1
         ret
 ExecuteHelper ENDP
 
@@ -1394,7 +1394,7 @@ Pushexe proc
         dec si
         dec Spvar1
     is8bit:
-    mov bx,DestinationValue
+    mov bx,DestinationValue1
     mov cx,[bx]
     mov [si],cx
     
@@ -1412,7 +1412,7 @@ Popexe proc
     sub ax,SpVar1
     sub si,ax
     
-    mov bx,DestinationValue
+    mov bx,DestinationValue1
     mov cx,[si]
     mov [bx],cx
     mov [si],0
