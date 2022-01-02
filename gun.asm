@@ -3,6 +3,8 @@ PUBLIC DrawGun, FireGun_initial, FireGun_Continue, FlyObj_Continue, FlyObj_initi
 PUBLIC gun1PrevX,gun1PrevY,gun1NewX,gun1NewY
 PUBLIC l11,c11,l12,c12,l13,c13,l14,c14,l15,c15,l21,c21,l22,c22,l23,c23,l24,c24,l25,c25
 ;------------------------------------------------------
+EXTRN P1_score:BYTE, P2_score:BYTE
+;------------------------------------------------------
 .286
 .MODEL SMALL
 .STACK 64
@@ -30,17 +32,17 @@ FlyColor db 04h
 isFlying db 0
 FireHit db 0
 ColorCount db 0 ;index for color array
-arr_color db 0ah,09h,0ch,0dh,0eh
+arr_color db 0ah,09h,0ch,0eh,0DH
 ;-------------------scores values and colors --------------
-l11 db 01
+l11 db 0
+l12 db 0
+l13 db 0
+l14 db 0
+l15 db 0
 c11 db 0ah
-l12 db 02
 c12 db 9h
-l13 db 03
 c13 db 0ch
-l14 db 04
 c14 db 0eh
-l15 db 05
 c15 db 0dh
 ;-----------------
 l21 db 01
@@ -123,6 +125,7 @@ FireGun_initial PROC FAR
     mov FireX, ax
     mov FireY, bx
     mov isFiring, 1
+    mov FireHit, 0
     alreadyFiring:
     RET
 FireGun_initial ENDP
@@ -181,6 +184,8 @@ FireGun_Continue PROC FAR
         jnz inner4
         jz outer4
     exit4:
+    CMP FireHit, 0
+    JNZ notFiring
     CALL DidFireHit
     notFiring:
     RET
@@ -200,7 +205,14 @@ DidFireHit PROC FAR
     CMP FireY, AX
     JNC didntHit
     MOV isFlying, 0
-    
+    MOV FireHit, 1
+    LEA BX, l11
+    MOV DL, ColorCount
+    MOV DH, 0
+    MOV DI, DX
+    DEC DI
+    ADD [BX][DI], 1
+    ADD P1_score, DL
 
 
     didntHit:
@@ -279,18 +291,18 @@ FlyObj_initial PROC FAR
     mov ds, ax
     cmp isFlying, 0
     jnz alreadyFlying
+    cmp ColorCount, 5
+    jnz CorrectColor
+    mov ColorCount, 0
+    CorrectColor:
     mov FlyPosX_strt, 150
     mov FlyPosY_strt, 3
-   
     mov al, ColorCount
     mov bx, offset arr_color
     xlat
     mov FlyColor, al
     mov isFlying, 1
     inc ColorCount
-    cmp ColorCount, 5
-    jnz alreadyFlying
-    mov ColorCount, 0
     alreadyFlying:
     RET
 FlyObj_initial ENDP
