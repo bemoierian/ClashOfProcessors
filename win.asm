@@ -18,8 +18,8 @@ endm setcursor
 .DATA
 ;--------------------------win--------------------------
 ;---------print winner---------------
-printwin1 DB 'winner is player 1 ','$'
-printwin2 DB 'winner is player 2 ','$'
+printwin1 DB 'winner is player 1  ','$'
+printwin2 DB 'winner is player 2  ','$'
 
 winner db 0 ;flag of winner in the game
 ;------------------------------------
