@@ -235,9 +235,9 @@ MAIN PROC FAR
     mov cursor, di
     Game:
         ;---------------------------
-        push cx
-        call  CheckWinner
-        pop cx
+        pusha
+        call CheckWinner
+        popa
         inc cyclesCounter1
         inc cyclesCounter2
         CALL ResetInputFlags
@@ -713,9 +713,6 @@ DisplayNamesAndScore PROC
         CALL DisplayNumInAL
     RET
 DisplayNamesAndScore ENDP  
-DISPLAYLEVEL PROC
-
-DISPLAYLEVEL ENDP
 
 SetMinPoints PROC
     mov al,P1_score
