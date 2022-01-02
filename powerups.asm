@@ -10,6 +10,8 @@ EXTRN execute1:FAR
 EXTRN execute2:FAR
 EXTRN ClearCommandString:FAR
 EXTRN SwitchTurn:far
+EXTRN CLEAR_TO_EXECUTE_1:BYTE
+EXTRN CLEAR_TO_EXECUTE_2:BYTE
 .model small
 .data
 ;power up 3
@@ -40,6 +42,13 @@ power_up1_player1 PROC FAR
     cmp P1_score,5
     jb notP11
     call execute2
+    CMP CLEAR_TO_EXECUTE_2, 0
+    JNZ finish_execute11
+    cmp P1_score,5
+    jz finish_execute11
+    DEC P1_score
+    finish_execute11:
+
     CALL ClearCommandString
     CALL SwitchTurn
     cmp chosen_level,2
@@ -55,6 +64,13 @@ power_up1_player2 PROC FAR
     jb notP12
     ;CALL EXCUTE FOR PLAYER 2
     CALL execute1
+    CMP CLEAR_TO_EXECUTE_1, 0
+    JNZ finish_execute12
+    cmp P2_score,5
+    jz finish_execute12
+    DEC P2_score
+    finish_execute12:
+
     CALL ClearCommandString
     CALL SwitchTurn
     cmp chosen_level,2
@@ -72,6 +88,12 @@ power_up2_player1 PROC FAR
     call execute1
     ;CALL EXCUTE FOR PLAYER 2
     CALL execute2
+    CMP CLEAR_TO_EXECUTE_2, 0
+    JNZ finish_execute21
+    cmp P1_score,3
+    jz finish_execute21
+    DEC P1_score
+    finish_execute21:
     CALL ClearCommandString
     CALL SwitchTurn
     SUB P1_score,3
@@ -86,6 +108,12 @@ power_up2_player2 PROC FAR
     call execute1
     ;CALL EXCUTE FOR PLAYER 2
     CALL execute2
+    CMP CLEAR_TO_EXECUTE_1, 0
+    JNZ finish_execute22
+    cmp P2_score,3
+    jz finish_execute22
+    DEC P2_score
+    finish_execute22:
     CALL ClearCommandString
     CALL SwitchTurn
     SUB P2_score,3
