@@ -546,35 +546,6 @@ EnterInput PROC
 EnterInput ENDP
 ;description
 CharInput PROC
-    ;Validation
-    ; ; there is no supported characters under 30h
-    ; ; range of number 30h->39h
-    ; cmp al, 30h
-    ; jl Game
-    ; cmp al, 39h
-    ; jg isChar
-    ; jmp concat
-    ; ;range of small letters 61h->7Ah
-    ; isChar:
-    ;     cmp al, 61h
-    ;     jl isObracket
-    ;     cmp al, 7Ah
-    ;     jg Game
-    ;     jmp concat
-    ; ;next 2 for addressing modes
-    ; isObracket:
-    ;     cmp al, 5Bh
-    ;     jnz isCbracket
-    ;     jmp concat
-    ; isCbracket:
-    ;     cmp al, 5Dh
-    ;     jnz isComma
-    ;     jmp concat
-    ; isComma:
-    ;     cmp al, 2Ch
-    ;     jnz Game
-    ;     jmp concat
-    ; ; concatinate the character after validation
     mov dl, cmdCurrSize
     cmp dl, cmdMaxSize
     jz endInsertChar
@@ -589,6 +560,15 @@ CharInput PROC
     JZ endInsertChar
     continueIns:
     ;------------------------------Insert--------------------------
+    ;-----------------------Convert to lower case------------------
+    ToLower:
+    cmp al, 41h               ;41h is the lower bound ascii for capital letters
+    jl  AddToResult
+    cmp al, 5Ah               ;5Ah is the upper bound ascii for capital letters
+    jg AddToResult
+    add al, 20h               ;add 20h to make the char lower case
+    AddToResult:
+
     mov di, cursor 
     mov [di], al
     inc cmdCurrSize
