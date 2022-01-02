@@ -172,12 +172,11 @@ RegMemo proc far
     mov ax,@data
     mov ds,AX
 
-    call DrawRegisterPlayer1 
-    call DrawRegisterPlayer2
-
     call MemoryForPlayer1 
     call MemoryForPlayer2
-    
+
+    call DrawRegisterPlayer1 
+    call DrawRegisterPlayer2
     ret
 RegMemo endp
 

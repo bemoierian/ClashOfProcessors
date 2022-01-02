@@ -13,26 +13,36 @@ PUBLIC Carry_1,Carry_2
 ;-------------------------chat.asm---------------------------
 EXTRN Chat:far 
 ;-------------------------command.asm---------------------------
-EXTRN execute:far 
+EXTRN execute1:far 
+EXTRN execute2:far 
 PUBLIC commandStr,commandCode,isExternal,Instruction,Destination,Source,External
 PUBLIC commandS
 ;-------------------------Gun.asm---------------------------
-EXTRN DrawGun:far
-EXTRN FireGun_initial:far
-EXTRN FireGun_Continue:far
+EXTRN DrawGun1:far
+EXTRN FireGun1_initial:far
+EXTRN FireGun1_Continue:far
+EXTRN DrawGun2:far
+EXTRN FireGun2_initial:far
+EXTRN FireGun2_Continue:far
 EXTRN FlyObj_Continue:far
 EXTRN FlyObj_initial:far
-EXTRN gun1PrevX:WORD,gun1PrevY:WORD,gun1NewX:WORD,gun1NewY:WORD
+EXTRN gun1NewX:WORD,gun1NewY:WORD,gun2NewX:WORD,gun2NewY:WORD
 EXTRN l11:BYTE,c11:BYTE,l12:BYTE,c12:BYTE,l13:BYTE,c13:BYTE,l14:BYTE,c14:BYTE,l15:BYTE,c15:BYTE,l21:BYTE,c21:BYTE,l22:BYTE,c22:BYTE,l23:BYTE,c23:BYTE,l24:BYTE,c24:BYTE,l25:BYTE,c25:BYTE
 ;-------------------powerups.asm----------------------------
 EXTRN forbiddin_char1:BYTE,forbiddin_char2:BYTE
+EXTRN power_up1_player1:FAR
+EXTRN power_up1_player2:FAR
+EXTRN power_up2_player1:FAR
+EXTRN power_up2_player2:FAR
 EXTRN power_up3_player1:FAR
 EXTRN power_up3_player2:FAR
 EXTRN power_up4_player1:FAR
 EXTRN power_up4_player2:FAR
 EXTRN power_up5_player1:FAR
 EXTRN power_up5_player2:FAR
-PUBLIC P1_score,P2_score
+EXTRN power_up6_player1:FAR
+EXTRN power_up6_player2:FAR
+PUBLIC P1_score,P2_score,target
 ;-------------------------LEVEL.ASM--------------------------
 EXTRN forbiddin_char1:BYTE,forbiddin_char2:BYTE,chosen_level:BYTE
 EXTRN select_level:FAR
@@ -40,14 +50,11 @@ EXTRN show_level:FAR
 EXTRN select_forbidden_char1:FAR
 EXTRN select_forbidden_char2:FAR
 EXTRN show_forb_chars:FAR
-
-
-;-----------------------win.asm------------------
-
-EXTRN printwin1:BYTE,printwin2:BYTE,winner:BYTE
-EXTRN CheckWinner:far
 ;-------------------------UI.inc------------------------------
 include UI.inc
+;------------------win.asm----------
+EXTRN printwin1:BYTE,printwin2:BYTE,winner:BYTE
+EXTRN CheckWinner:far
 
 .286
 .MODEL HUGE
@@ -60,7 +67,7 @@ main_str3 DB 'To end the program press ESC','$'
 ;----------------------------MEMORY-------------------------------------
 ;These variables are not in an array just to simplifie to vision
 ;---------Registers for player 1
-AxVar1 dw 105eh
+AxVar1 dw 0
 BxVar1 dw 3
 CxVar1 dw 4
 DxVar1 dw 0
@@ -140,13 +147,19 @@ Turn db 1
 P2_score db 0
 P1_score db 0
 ;---------------------------INPUT FLAGS-------------------------
-isGun db 0
+isGun1 db 0
+isGun2 db 0
 isBackSpace db 0
 isEnter db 0
 isChar db 0
 isPowerUp db 0
 ;----------------------------------------------------------
-
+;---------print winner---------------
+; printwin1 DB 'winner is player 1','$'
+; printwin2 DB 'winner is player 2','$'
+target dw 105eH ;target values
+;winner db 0 ;flag of winner in the game
+;------------------------------------
 cyclesCounter1 dw 0
 cyclesCounter2 DW 0
 .CODE
@@ -156,7 +169,9 @@ MAIN PROC FAR
     MOV ES, AX
     UserNames:
         call startScreen1  ;start.asm 
-        call startScreen2 
+        call startScreen2
+        CALL SetInitialPoints
+        CALL SetMinPoints
     EndUserNames:
     ;Clear Screen
     mov ax,0600h
@@ -213,31 +228,25 @@ MAIN PROC FAR
     drawrectangle  120,161,0Eh,10,120
     
 
-    ;display name
-    CALL DisplayNamesAndScore
+    
     ;START THE GAME
     mov di, offset commandS
     mov cursor, di
     Game:
         ;---------------------------
-         push cx
-         call  CheckWinner
-         pop cx
-        ;  cmp winner,1
-        ;  jz  EndGame
-
-        ;  cmp winner,2
-        ;   jz EndGame 
-
-          
-      
+        push cx
+        call  CheckWinner
+        pop cx
         inc cyclesCounter1
         inc cyclesCounter2
         CALL ResetInputFlags
         CALL PrintCommandString
+        ;display name
+        CALL DisplayNamesAndScore
         ;----------------------gun.asm----------------------------- 
 
-        CALL FireGun_Continue
+        CALL FireGun1_Continue
+        CALL FireGun2_Continue
 
         cmp cyclesCounter1, 100H
         jnz dontInitiateFly
@@ -252,47 +261,17 @@ MAIN PROC FAR
         dontDrawFly:
         ;----------------------rm.asm-----------------------------
         call RegMemo
-         mov l11,01
-       mov c11,0ah
-
-       mov l12,05
-       mov c12,9h
-
-       mov l13,03
-       mov c13,0ch
-
-        mov l14,08
-       mov c14,0eh
-
-       mov l15,02
-       mov c15,0dh
-
-       mov l21,07
-       mov c21,0ah
-
-
-       mov l22,04
-       mov c22,9h
-
-       mov l23,05
-       mov c23,0ch
-
-       mov l24,09
-       mov c24,0eh
-
-       mov l25,09
-       mov c25,0dh
-     
+        ;----------------------UI.inc-----------------------------
         setcursor 0000
-       drawrectanglewith  140,7,c11,15,15,63497d,l11,c11
-       setcursor 0000
-       drawrectanglewith  140,30,c12,15,15,63500d,l12,c12
-       setcursor 0000
-       drawrectanglewith  140,53,c13,15,15,63503d,l13,c13
-       setcursor 0000
-       drawrectanglewith  140,77,c14,15,15,63506d,l14,c14
-       setcursor 0000
-       drawrectanglewith  140,101,c15,15,15, 63509d,l15,c15
+        drawrectanglewith  140,7,c11,15,15,63497d,l11,c11
+        setcursor 0000
+        drawrectanglewith  140,30,c12,15,15,63500d,l12,c12
+        setcursor 0000
+        drawrectanglewith  140,53,c13,15,15,63503d,l13,c13
+        setcursor 0000
+        drawrectanglewith  140,77,c14,15,15,63506d,l14,c14
+        setcursor 0000
+        drawrectanglewith  140,101,c15,15,15, 63509d,l15,c15
     
         setcursor 0000  
         drawrectanglewith  120,163,c21,15,15,63518d,l21,c21
@@ -318,8 +297,12 @@ MAIN PROC FAR
         ;DON'T CALL ANY FUNCTION HERE THAT CHANGES THE VALUE OF AX,
         ;IF YOU WANT TO USE AX, PUSH IT IN REG THEN POP WHEN YOU FINISH TO RESTORE ITS VALUE 
         ;----------------------------GUN--------------------------------
-        CALL GunInput
-        CMP isGun, 1
+        CALL Gun1Input
+        CMP isGun1, 1
+        jz Game
+
+        CALL Gun2Input
+        CMP isGun2, 1
         jz Game
         ;------------------------BACKSPACE------------------------------
         CALL BackspaceInput
@@ -329,15 +312,16 @@ MAIN PROC FAR
         CALL EnterInput
         CMP isEnter, 1
         jz Game
+        ;--------------------------powerups--------------------------------
+        call PowerUpInput
+        cmp isPowerUp, 1
+        jz Game
         ;-------------------------CHARACTER------------------------------
         CALL CharInput
-        ;--------------------Exit game if key is F3----------------------
-    
-        cmp al, 13h
+        ;--------------------Exit game if key is F4----------------------
+        cmp ah, 3Eh
         jz MainScreen
         jmp Game
-
-
 
 EndGame:
 HLT
@@ -389,11 +373,10 @@ SwitchTurn PROC
     SwitchTo2End:
     RET
 SwitchTurn ENDP
-
-
 ;description
 ResetInputFlags PROC
-    MOV isGun, 0
+    MOV isGun1, 0
+    MOV isGun2, 0
     MOV isBackSpace, 0
     MOV isEnter, 0
     MOV isChar, 0
@@ -402,51 +385,96 @@ ResetInputFlags PROC
 ResetInputFlags ENDP
 
 ;description
-GunInput PROC
+Gun1Input PROC
      ;right arrow
-    right:
-        cmp ah, 4Dh ;compare key code with right key code
-        jnz left    ;if the key is not right, jump to next check
+    right1:
+        cmp ax, 4D00h ;compare key code with right key code
+        jnz left1    ;if the key is not right, jump to next check
         CMP gun1NewX, 141
-        JNC GunInputDone
+        JNC Gun1InputDone
         add gun1NewX, 3  ;if the key is right, move the gun 3 pixels to the right
-        jmp GunInputDone
+        jmp Gun1InputDone
     ;left arrow    
-    left:
-        cmp ah, 4Bh
-        jnz up
+    left1:
+        cmp ax, 4B00h
+        jnz up1
         CMP gun1NewX, 4
-        JC GunInputDone
+        JC Gun1InputDone
         sub gun1NewX, 3
-        jmp GunInputDone
+        jmp Gun1InputDone
     ;up arrow
-    up:
-        cmp ah, 48h
-        jnz down
+    up1:
+        cmp ax, 4800h
+        jnz down1
         CMP gun1NewY, 4
-        JC GunInputDone
+        JC Gun1InputDone
         sub gun1NewY, 3
-        jmp GunInputDone
+        jmp Gun1InputDone
     ;down arrow
-    down:
-        cmp ah, 50h
-        jnz space
+    down1:
+        cmp ax, 5000h
+        jnz fire1
         CMP gun1NewY, 160
-        JNC GunInputDone
+        JNC Gun1InputDone
         add gun1NewY, 3
-        jmp GunInputDone
-
-    space:
+        jmp Gun1InputDone
+    ;space
+    fire1: 
         cmp ah, 39h
-        jnz NotGunInput
-        CALL FireGun_initial
+        jnz NotGun1Input
+        CALL FireGun1_initial
 
-    GunInputDone:
-    MOV isGun, 1
-    CALL DrawGun 
-    NotGunInput:
+    Gun1InputDone:
+    MOV isGun1, 1
+    CALL DrawGun1 
+    NotGun1Input:
     RET
-GunInput ENDP
+Gun1Input ENDP
+Gun2Input PROC
+     ;right arrow
+    right2:
+        cmp ax, 4D36h ;compare key code with right key code
+        jnz left2    ;if the key is not right, jump to next check
+        CMP gun2NewX, 311
+        JNC Gun2InputDone
+        add gun2NewX, 3  ;if the key is right, move the gun 3 pixels to the right
+        jmp Gun2InputDone
+    ;left arrow    
+    left2:
+        cmp ax, 4B34h
+        jnz up2
+        CMP gun2NewX, 164
+        JC Gun2InputDone
+        sub gun2NewX, 3
+        jmp Gun2InputDone
+    ;up arrow
+    up2:
+        cmp ax, 4838h
+        jnz down2
+        CMP gun2NewY, 4
+        JC Gun2InputDone
+        sub gun2NewY, 3
+        jmp Gun2InputDone
+    ;down arrow
+    down2:
+        cmp ax, 5032h
+        jnz fire2
+        CMP gun2NewY, 160
+        JNC Gun2InputDone
+        add gun2NewY, 3
+        jmp Gun2InputDone
+
+    fire2:
+        cmp ax, 5230h
+        jnz NotGun2Input
+        CALL FireGun2_initial
+
+    Gun2InputDone:
+    MOV isGun2, 1
+    CALL DrawGun2
+    NotGun2Input:
+    RET
+Gun2Input ENDP
 ;description
 BackspaceInput PROC
     cmp ah, 0Eh
@@ -474,24 +502,31 @@ EnterInput PROC
     jnz NotEnterInput
     CMP cmdCurrSize, 0
     JZ EnterInputDone
-    CALL execute
+    cmp turn,2
+    jnz turn_1
+    CALL execute2
+    jmp finish_execute
+    turn_1:
+    CALL execute1
+
+    finish_execute:
     ;------------------------Print, peter-----------------------------
-    MOV AL,Source ;PUT THE REAMINDER IN THE AL TO DIVIDE IT AGAIN
-    MOV AH,0  ;MAKE AH=0 TO HAVE THE RIGHT NUMBER IN AX
-    MOV BL,10h ;THE DIVISION THIS TIME IS OVER 10
-    DIV BL
+    ; MOV AL,Source ;PUT THE REAMINDER IN THE AL TO DIVIDE IT AGAIN
+    ; MOV AH,0  ;MAKE AH=0 TO HAVE THE RIGHT NUMBER IN AX
+    ; MOV BL,10h ;THE DIVISION THIS TIME IS OVER 10
+    ; DIV BL
     
-    MOV DL,AL ;TO DISPLAY THE TENS 
-    MOV CH,AH ;TO SAVE THE REMAINDER THE UNITS
+    ; MOV DL,AL ;TO DISPLAY THE TENS 
+    ; MOV CH,AH ;TO SAVE THE REMAINDER THE UNITS
     
-    ADD DL,30H
-    MOV AH,02
-    INT 21H  
+    ; ADD DL,30H
+    ; MOV AH,02
+    ; INT 21H  
     
-    MOV DL,CH ;NO DIVISION
-    ADD DL,30H
-    MOV AH,02H
-    INT 21H
+    ; MOV DL,CH ;NO DIVISION
+    ; ADD DL,30H
+    ; MOV AH,02H
+    ; INT 21H
     ;------------------------Print, peter-----------------------------
     CALL ClearCommandString
     CALL SwitchTurn
@@ -535,6 +570,17 @@ CharInput PROC
     mov dl, cmdCurrSize
     cmp dl, cmdMaxSize
     jz endInsertChar
+    ;-------------Check if plahyer entered a forbidden character----------
+    CMP Turn,1
+    JNZ CHCKFORB2
+    CMP AL, forbiddin_char1
+    JZ endInsertChar
+    jmp continueIns
+    CHCKFORB2:
+    CMP AL, forbiddin_char2
+    JZ endInsertChar
+    continueIns:
+    ;------------------------------Insert--------------------------
     mov di, cursor 
     mov [di], al
     inc cmdCurrSize
@@ -549,31 +595,69 @@ PowerUpInput PROC
         cmp ah, 3Fh ;compare key code with f5 code
         jnz keyF6    ;if the key is not F5, jump to next check
         ;call powerup
+        cmp Turn,1
+        jnz P21
+        CALL power_up1_player1
+        jmp PowerUpInputDone
+        P21:
+        CALL power_up1_player2
         jmp PowerUpInputDone
     keyF6:
         cmp ah, 40h ;compare key code with f6 code
         jnz keyF7    ;if the key is not F6, jump to next check
         ;call powerup
+        cmp Turn,1
+        jnz P22
+        CALL power_up2_player1
+        jmp PowerUpInputDone
+        P22:
+        CALL power_up2_player1
         jmp PowerUpInputDone
     keyF7:
         cmp ah, 41h ;compare key code with f7 code
         jnz keyF8    
         ;call powerup
+        cmp Turn,1
+        jnz P23
+        CALL power_up3_player1
+        jmp PowerUpInputDone
+        P23:
+        CALL power_up3_player2
         jmp PowerUpInputDone
     keyF8:
         cmp ah, 42h ;compare key code with f8 code
         jnz keyF9  
         ;call powerup  
+        cmp Turn,1
+        jnz P24
+        CALL power_up4_player1
+        jmp PowerUpInputDone
+        P24:
+        CALL power_up4_player2
         jmp PowerUpInputDone
     keyF9:
         cmp ah, 43h ;compare key code with f9 code
         jnz keyF10  
-        ;call powerup  
+        ;call powerup
+        cmp Turn,1
+        jnz P25  
+        CALL power_up5_player1
+        jmp PowerUpInputDone
+        P25:
+        CALL power_up5_player2
         jmp PowerUpInputDone
     keyF10:
+        CMP chosen_level,2
+        JNZ PowerUpInputDone ;if not level 2 no power up 6
         cmp ah, 44h ;compare key code with f10 code
-        jnz NotPowerUpInput 
-        ;call powerup
+        jnz PowerUpInputDone  
+        cmp Turn,1
+        jnz P26
+        CALL power_up6_player1
+        jmp PowerUpInputDone
+        P26:
+        CALL power_up6_player1
+        ;jmp PowerUpInputDone
     PowerUpInputDone:
     MOV isPowerUp, 1
     NotPowerUpInput:
@@ -599,50 +683,8 @@ DisplayNumInAL PROC
     INT 21H
     ret
 DisplayNumInAL ENDP 
+
 DisplayNamesAndScore PROC
-        mov si,offset BufferData1
-        MOV AL,[si]
-        sub al,30H
-        MOV AH,0  ;MAKE AH=0 TO HAVE THE RIGHT NUMBER IN AX
-        MOV BL,10 ;THE DIVISION THIS TIME IS OVER 10
-        MUL BL
-                        
-        MOV DL,AL ;TO save the frist digit      
-        mov al,[si+1] ;second digit   
-        sub al,30H   
-        add dl,al
-        mov P1_score,dl ;first initial score
-        ;;;;;;;;;;;;;;;;;;;;;;;;;;;
-        mov si,offset BufferData2
-        MOV AL,[si]
-        sub al,30H
-        MOV AH,0  ;MAKE AH=0 TO HAVE THE RIGHT NUMBER IN AX
-        MOV BL,10 ;THE DIVISION THIS TIME IS OVER 10
-        MUL BL           
-        MOV DL,AL ;TO save the frist digit
-
-        mov al,[si+1] ;second digit   
-        sub al,30H   
-        add dl,al
-        mov P2_score,dl
-        ;I need to know the smallest of the 2 numbers the convet it to string and print it next to each name 
-        ;Finding The min of the 2 initials
-        mov al,P1_score
-        mov bl,P2_score
-        
-        cmp al,bl  
-        jl closeM1
-        jg closeM2     
-        jmp closeM    
-
-        closeM1: 
-        mov P2_score,al
-        jmp closeM
-        
-        closeM2: 
-        mov P1_score,bl 
-        closeM:
-        
         ;Dispkay the names and the min initial points
         ;set the crsr
         mov dl,5
@@ -671,6 +713,65 @@ DisplayNamesAndScore PROC
     RET
 DisplayNamesAndScore ENDP  
 DISPLAYLEVEL PROC
-    
+
 DISPLAYLEVEL ENDP
+
+SetMinPoints PROC
+    mov al,P1_score
+    mov bl,P2_score
+    
+    cmp al,bl  
+    jl closeM1
+    jg closeM2     
+    jmp closeM    
+
+    closeM1: 
+    mov P2_score,al
+    jmp closeM
+    
+    closeM2: 
+    mov P1_score,bl 
+    closeM:
+    RET
+SetMinPoints ENDP
+SetInitialPoints PROC
+    mov si,offset BufferData1
+    MOV AL,[si]
+    sub al,30H
+    MOV AH,0  ;MAKE AH=0 TO HAVE THE RIGHT NUMBER IN AX
+    MOV BL,10 ;THE DIVISION THIS TIME IS OVER 10
+    MUL BL
+                    
+    MOV DL,AL ;TO save the frist digit      
+    mov al,[si+1] ;second digit   
+    sub al,30H   
+    add dl,al
+    mov P1_score,dl ;first initial score
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    mov si,offset BufferData2
+    MOV AL,[si]
+    sub al,30H
+    MOV AH,0  ;MAKE AH=0 TO HAVE THE RIGHT NUMBER IN AX
+    MOV BL,10 ;THE DIVISION THIS TIME IS OVER 10
+    MUL BL           
+    MOV DL,AL ;TO save the frist digit
+
+    mov al,[si+1] ;second digit   
+    sub al,30H   
+    add dl,al
+    mov P2_score,dl
+    RET
+SetInitialPoints ENDP 
+ArePointsZero PROC
+    CMP P1_score, 0
+    JNZ ISP2ZERO
+    MOV winner, 2
+    JMP ENDZEROES
+    ISP2ZERO:
+    CMP P2_score, 0
+    JNZ ENDZEROES
+    MOV winner, 1
+    ENDZEROES:
+    RET
+ArePointsZero ENDP
 END MAIN
