@@ -43,6 +43,7 @@ EXTRN power_up5_player2:FAR
 EXTRN power_up6_player1:FAR
 EXTRN power_up6_player2:FAR
 PUBLIC P1_score,P2_score,target
+PUBLIC ClearCommandString,SwitchTurn
 ;-------------------------LEVEL.ASM--------------------------
 EXTRN forbiddin_char1:BYTE,forbiddin_char2:BYTE,chosen_level:BYTE
 EXTRN select_level:FAR
@@ -611,7 +612,7 @@ PowerUpInput PROC
         CALL power_up2_player1
         jmp PowerUpInputDone
         P22:
-        CALL power_up2_player1
+        CALL power_up2_player2
         jmp PowerUpInputDone
     keyF7:
         cmp ah, 41h ;compare key code with f7 code
@@ -648,15 +649,15 @@ PowerUpInput PROC
         jmp PowerUpInputDone
     keyF10:
         CMP chosen_level,2
-        JNZ PowerUpInputDone ;if not level 2 no power up 6
+        JNZ NotPowerUpInput ;if not level 2 no power up 6
         cmp ah, 44h ;compare key code with f10 code
-        jnz PowerUpInputDone  
+        jnz NotPowerUpInput  
         cmp Turn,1
         jnz P26
         CALL power_up6_player1
         jmp PowerUpInputDone
         P26:
-        CALL power_up6_player1
+        CALL power_up6_player2
         ;jmp PowerUpInputDone
     PowerUpInputDone:
     MOV isPowerUp, 1

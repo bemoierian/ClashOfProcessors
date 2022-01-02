@@ -28,7 +28,6 @@ winner db 0 ;flag of winner in the game
 CheckWinner PROC FAR
     mov ax, @data
     mov ds, ax
-    ;;;;;;;;;;;;;;;;;;
     cmp P1_score,0
     jz setwinner2
     cmp P2_score,0
