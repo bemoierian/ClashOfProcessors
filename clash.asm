@@ -161,7 +161,9 @@ MAIN PROC FAR
     MOV ES, AX
     UserNames:
         call startScreen1  ;start.asm 
-        call startScreen2 
+        call startScreen2
+        CALL SetInitialPoints
+        CALL SetMinPoints
     EndUserNames:
     ;Clear Screen
     mov ax,0600h
@@ -218,8 +220,7 @@ MAIN PROC FAR
     drawrectangle  120,161,0Eh,10,120
     
 
-    ;display name
-    CALL DisplayNamesAndScore
+    
     ;START THE GAME
     mov di, offset commandS
     mov cursor, di
@@ -238,6 +239,8 @@ MAIN PROC FAR
         inc cyclesCounter2
         CALL ResetInputFlags
         CALL PrintCommandString
+        ;display name
+        CALL DisplayNamesAndScore
         ;----------------------gun.asm----------------------------- 
 
         CALL FireGun_Continue
@@ -255,47 +258,17 @@ MAIN PROC FAR
         dontDrawFly:
         ;----------------------rm.asm-----------------------------
         call RegMemo
-         mov l11,01
-       mov c11,0ah
-
-       mov l12,05
-       mov c12,9h
-
-       mov l13,03
-       mov c13,0ch
-
-        mov l14,08
-       mov c14,0eh
-
-       mov l15,02
-       mov c15,0dh
-
-       mov l21,07
-       mov c21,0ah
-
-
-       mov l22,04
-       mov c22,9h
-
-       mov l23,05
-       mov c23,0ch
-
-       mov l24,09
-       mov c24,0eh
-
-       mov l25,09
-       mov c25,0dh
-     
+        ;----------------------UI.inc-----------------------------
         setcursor 0000
-       drawrectanglewith  140,7,c11,15,15,63497d,l11,c11
-       setcursor 0000
-       drawrectanglewith  140,30,c12,15,15,63500d,l12,c12
-       setcursor 0000
-       drawrectanglewith  140,53,c13,15,15,63503d,l13,c13
-       setcursor 0000
-       drawrectanglewith  140,77,c14,15,15,63506d,l14,c14
-       setcursor 0000
-       drawrectanglewith  140,101,c15,15,15, 63509d,l15,c15
+        drawrectanglewith  140,7,c11,15,15,63497d,l11,c11
+        setcursor 0000
+        drawrectanglewith  140,30,c12,15,15,63500d,l12,c12
+        setcursor 0000
+        drawrectanglewith  140,53,c13,15,15,63503d,l13,c13
+        setcursor 0000
+        drawrectanglewith  140,77,c14,15,15,63506d,l14,c14
+        setcursor 0000
+        drawrectanglewith  140,101,c15,15,15, 63509d,l15,c15
     
         setcursor 0000  
         drawrectanglewith  120,163,c21,15,15,63518d,l21,c21
@@ -581,6 +554,17 @@ CharInput PROC
     mov dl, cmdCurrSize
     cmp dl, cmdMaxSize
     jz endInsertChar
+    ;-------------Check if plahyer entered a forbidden character----------
+    CMP Turn,1
+    JNZ CHCKFORB2
+    CMP AL, forbiddin_char1
+    JZ endInsertChar
+    jmp continueIns
+    CHCKFORB2:
+    CMP AL, forbiddin_char2
+    JZ endInsertChar
+    continueIns:
+    ;------------------------------Insert--------------------------
     mov di, cursor 
     mov [di], al
     inc cmdCurrSize
@@ -685,49 +669,6 @@ DisplayNumInAL PROC
 DisplayNumInAL ENDP 
 
 DisplayNamesAndScore PROC
-        mov si,offset BufferData1
-        MOV AL,[si]
-        sub al,30H
-        MOV AH,0  ;MAKE AH=0 TO HAVE THE RIGHT NUMBER IN AX
-        MOV BL,10 ;THE DIVISION THIS TIME IS OVER 10
-        MUL BL
-                        
-        MOV DL,AL ;TO save the frist digit      
-        mov al,[si+1] ;second digit   
-        sub al,30H   
-        add dl,al
-        mov P1_score,dl ;first initial score
-        ;;;;;;;;;;;;;;;;;;;;;;;;;;;
-        mov si,offset BufferData2
-        MOV AL,[si]
-        sub al,30H
-        MOV AH,0  ;MAKE AH=0 TO HAVE THE RIGHT NUMBER IN AX
-        MOV BL,10 ;THE DIVISION THIS TIME IS OVER 10
-        MUL BL           
-        MOV DL,AL ;TO save the frist digit
-
-        mov al,[si+1] ;second digit   
-        sub al,30H   
-        add dl,al
-        mov P2_score,dl
-        ;I need to know the smallest of the 2 numbers the convet it to string and print it next to each name 
-        ;Finding The min of the 2 initials
-        mov al,P1_score
-        mov bl,P2_score
-        
-        cmp al,bl  
-        jl closeM1
-        jg closeM2     
-        jmp closeM    
-
-        closeM1: 
-        mov P2_score,al
-        jmp closeM
-        
-        closeM2: 
-        mov P1_score,bl 
-        closeM:
-        
         ;Dispkay the names and the min initial points
         ;set the crsr
         mov dl,5
@@ -758,4 +699,51 @@ DisplayNamesAndScore ENDP
 DISPLAYLEVEL PROC
 
 DISPLAYLEVEL ENDP
+
+SetMinPoints PROC
+    mov al,P1_score
+    mov bl,P2_score
+    
+    cmp al,bl  
+    jl closeM1
+    jg closeM2     
+    jmp closeM    
+
+    closeM1: 
+    mov P2_score,al
+    jmp closeM
+    
+    closeM2: 
+    mov P1_score,bl 
+    closeM:
+    RET
+SetMinPoints ENDP
+SetInitialPoints PROC
+    mov si,offset BufferData1
+    MOV AL,[si]
+    sub al,30H
+    MOV AH,0  ;MAKE AH=0 TO HAVE THE RIGHT NUMBER IN AX
+    MOV BL,10 ;THE DIVISION THIS TIME IS OVER 10
+    MUL BL
+                    
+    MOV DL,AL ;TO save the frist digit      
+    mov al,[si+1] ;second digit   
+    sub al,30H   
+    add dl,al
+    mov P1_score,dl ;first initial score
+    ;;;;;;;;;;;;;;;;;;;;;;;;;;;
+    mov si,offset BufferData2
+    MOV AL,[si]
+    sub al,30H
+    MOV AH,0  ;MAKE AH=0 TO HAVE THE RIGHT NUMBER IN AX
+    MOV BL,10 ;THE DIVISION THIS TIME IS OVER 10
+    MUL BL           
+    MOV DL,AL ;TO save the frist digit
+
+    mov al,[si+1] ;second digit   
+    sub al,30H   
+    add dl,al
+    mov P2_score,dl
+    RET
+SetInitialPoints ENDP 
 END MAIN
