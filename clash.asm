@@ -51,6 +51,8 @@ EXTRN show_level:FAR
 EXTRN select_forbidden_char1:FAR
 EXTRN select_forbidden_char2:FAR
 EXTRN show_forb_chars:FAR
+EXTRN initial_reg1:far
+EXTRN initial_reg2:far
 ;-------------------------UI.inc------------------------------
 include UI.inc
 ;------------------win.asm----------
