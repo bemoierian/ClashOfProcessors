@@ -141,8 +141,8 @@ isChar db 0
 isPowerUp db 0
 ;----------------------------------------------------------
 ;---------print winner---------------
-printwin1 DB 'winner is player 1','$'
-printwin2 DB 'winner is player 2','$'
+; printwin1 DB 'winner is player 1','$'
+; printwin2 DB 'winner is player 2','$'
 
 winner db 0 ;flag of winner in the game
 ;------------------------------------
@@ -219,15 +219,15 @@ MAIN PROC FAR
     mov cursor, di
     Game:
         ;---------------------------
-        push cx
-        call  CheckWinner
-        pop cx
-        cmp winner,1
-         jz print1 
+        ; push cx
+        ; call  CheckWinner
+        ; pop cx
+        ; cmp winner,1
+        ;  jz print1 
 
-        cmp winner,2
-         jz print2 
-           hell:
+        ; cmp winner,2
+        ;  jz print2 
+        ;    hell:
         inc cyclesCounter1
         inc cyclesCounter2
         CALL ResetInputFlags
@@ -333,18 +333,18 @@ MAIN PROC FAR
         cmp al, 13h
         jz MainScreen
         jmp Game
-print1:
-setcursor 0010d
-mov ah,09
- mov dx,offset printwin1
- int 21h
- jmp hell
-print2:
-setcursor 0010d
- mov ah,09
- mov dx,offset printwin2
- int 21h
-jmp hell
+; print1:
+; setcursor 0010d
+; mov ah,09
+;  mov dx,offset printwin1
+;  int 21h
+;  jmp hell
+; print2:
+; setcursor 0010d
+;  mov ah,09
+;  mov dx,offset printwin2
+;  int 21h
+; jmp hell
 
 
 EndGame:
