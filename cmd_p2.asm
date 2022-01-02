@@ -890,6 +890,7 @@ GenerateCode PROC far
     jnz not8bitregister
             ishigh_low:
             mov is8bitreg_temp,1
+            mov countdigit,2
             mov ax,1
     not8bitregister:
     
@@ -953,9 +954,11 @@ ExcuteCommand proc far
                 cmp countdigit,2
                 jnc normal1
                 mov [bx],cl
+                mov Carry_1,0
                 ret
         normal1:
         mov [bx],cx
+        mov Carry_1,0
         ret
     
     is_add_exe:
@@ -965,9 +968,19 @@ ExcuteCommand proc far
                 cmp countdigit,2
                 jnc normal2
                 add [bx],cl
+                jnc noc1
+                    mov Carry_1,1
+                    ret
+                noc1:
+                mov Carry_1,0
                 ret
         normal2:
         add [bx],cx
+        jnc noc2
+            mov Carry_1,1
+            ret
+        noc2:
+        mov Carry_1,0
         ret
         
     is_adc_exe:
@@ -979,12 +992,22 @@ ExcuteCommand proc far
                 add [bx],cl
                 mov al,Carry_1
                 add [bx],al
+                jnc noc3
+                    mov Carry_1,1
+                    ret
+                noc3:
+                mov Carry_1,0
                 ret
         normal3:
         add [bx],cx
         mov al,Carry_1
         mov ah,0
         add [bx],ax
+        jnc noc4
+            mov Carry_1,1
+            ret
+        noc4:
+        mov Carry_1,0
         ret
         
     is_sub_exe:
@@ -1019,26 +1042,26 @@ ExcuteCommand proc far
             cmp countdigit,2
             jnc normal5
             sub [bx],cl
+            mov al,Carry_1
+            sub [bx],al
             jnc no_carry_sbb1
                 mov Carry_1,1
                 jmp return3
             no_carry_sbb1:
                 mov Carry_1,0
             return3:
-            mov al,Carry_1
-            sub [bx],al
             ret
         normal5:
         sub [bx],cx
+        mov al,Carry_1
+        mov ah,0
+        sub [bx],ax
         jnc no_carry_sbb2
             mov Carry_1,1
             jmp return4
         no_carry_sbb2:
             mov Carry_1,0
         return4:
-        mov al,Carry_1
-        mov ah,0
-        sub [bx],ax
         ret   
         
         
@@ -1049,9 +1072,11 @@ ExcuteCommand proc far
                 cmp countdigit,2
                 jnc normal6
                 xor [bx],cl
+                mov Carry_1,0
                 ret
         normal6:
         xor [bx],cx
+        mov Carry_1,0
         ret  
         
     is_and_exe:
@@ -1061,9 +1086,11 @@ ExcuteCommand proc far
                 cmp countdigit,2
                 jnc normal7
                 and [bx],cl
+                mov Carry_1,0
                 ret
         normal7:
         and [bx],cx
+        mov Carry_1,0
         ret 
     
     
@@ -1074,15 +1101,18 @@ ExcuteCommand proc far
                 cmp countdigit,2
                 jnc normal8
                 or [bx],cl
+                mov Carry_1,0
                 ret
         normal8:
         or [bx],cx
+        mov Carry_1,0
         ret
         
     is_nop_exe:
     cmp Instruction,nopCode ;nop    
     jnz is_shr_exe
-        nop 
+        nop
+        mov Carry_1,0 
         ret
 
     is_shr_exe:
@@ -1094,11 +1124,22 @@ ExcuteCommand proc far
                 mov al,[bx]
                 shr al,cl
                 mov [bx],al
+                jnc noc5
+                    mov Carry_1,1
+                    ret
+                noc5:
+                mov Carry_1,0
+                ret
                 ret
         normal9:
         mov ax,[bx]
         shr ax,cl
         mov [bx],ax
+        jnc noc90
+            mov Carry_1,1
+            ret
+        noc90:
+        mov Carry_1,0
         ret
         
     is_shl_exe:
@@ -1110,13 +1151,24 @@ ExcuteCommand proc far
                 mov al,[bx]
                 shl al,cl
                 mov [bx],al
+                jnc noc6
+                    mov Carry_1,1
+                    ret
+                noc6:
+                mov Carry_1,0
+                ret
                 ret
         normal10:
         mov ax,[bx]
         shl ax,cl
         mov [bx],ax
-        ret 
-        
+        jnc noc7
+            mov Carry_1,1
+            ret
+        noc7:
+        mov Carry_1,0
+        ret
+
     is_clc_exe:
     cmp Instruction,clcCode ;clc    
     jnz is_ror_exe
@@ -1131,11 +1183,22 @@ ExcuteCommand proc far
                 mov al,[bx]
                 ror al,cl
                 mov [bx],al
+                jnc noc8
+                    mov Carry_1,1
+                    ret
+                noc8:
+                mov Carry_1,0
+                ret
                 ret
         normal11:
         mov ax,[bx]
         ror ax,cl
         mov [bx],ax
+        jnc noc9
+            mov Carry_1,1
+            ret
+        noc9:
+        mov Carry_1,0
         ret
 
     is_rol_exe:
@@ -1147,13 +1210,24 @@ ExcuteCommand proc far
                 mov al,[bx]
                 rol al,cl
                 mov [bx],al
+                jnc noc0
+                    mov Carry_1,1
+                    ret
+                noc0:
+                mov Carry_1,0
+                ret
                 ret
         normal12:
         mov ax,[bx]
         rol ax,cl
         mov [bx],ax
+        jnc nocv
+            mov Carry_1,1
+            ret
+        nocv:
+        mov Carry_1,0
         ret
-            
+
     is_rcl_exe:
     cmp Instruction,rclCode ;rcl    
     jnz is_rcr_exe
@@ -1175,6 +1249,11 @@ ExcuteCommand proc far
                     mov Carry_1,1
                 finish_rotate_low1:
                 mov [bx],al
+                jnc nocx
+                    mov Carry_1,1
+                    ret
+                nocx:
+                mov Carry_1,0
                 ret
         normal13:
         mov ax,[bx]
@@ -1192,8 +1271,13 @@ ExcuteCommand proc far
             mov Carry_1,1
         finish_rotate_high1:
         mov [bx],ax
+        jnc nocr
+            mov Carry_1,1
+            ret
+        nocr:
+        mov Carry_1,0
         ret
-    
+
     is_rcr_exe:
     cmp Instruction,rcrCode ;rcr   
     jnz is_push_exe
@@ -1215,6 +1299,11 @@ ExcuteCommand proc far
                     mov Carry_1,1
                 finish_rotate_low2:
                 mov [bx],al
+                jnc nocy
+                    mov Carry_1,1
+                    ret
+                nocy:
+                mov Carry_1,0
                 ret
         normal14:
         mov ax,[bx]
@@ -1232,32 +1321,40 @@ ExcuteCommand proc far
             mov Carry_1,1
         finish_rotate_high2:
         mov [bx],ax
+        jnc nocu
+            mov Carry_1,1
+            ret
+        nocu:
+        mov Carry_1,0
         ret
 
     is_push_exe:
     cmp Instruction,pushCode ;push   
     jnz is_pop_exe  
             call Pushexe
+            mov Carry_1,0 
             ret
             
     is_pop_exe:
     cmp Instruction,popCode ;pop   
     jnz is_inc_exe
         call Popexe
+        mov Carry_1,0 
         ret
         
     is_inc_exe:
     cmp Instruction,incCode ;inc   
     jnz is_dec_exe
-        mov bx,DestinationValue1   
+        mov bx,DestinationValue1 
         add [bx],1
+        mov Carry_1,0
         ret
     is_dec_exe:
     cmp Instruction,decCode ;dec   
     jnz close 
-        mov bx,DestinationValue1   
+        mov bx,DestinationValue1  
         sub [bx],1
-        ret
+        mov Carry_1,0
 ExcuteCommand endp
 
 
@@ -1280,9 +1377,24 @@ Check_Errors PROC
     jz not_SIZE_mismatch
     cmp isExternal,1
     jz not_SIZE_mismatch
-    ;here to handle type mismatch error
-            mov err_SIZE_MISMATCH,1
-            mov CLEAR_TO_EXECUTE_2,0
+            mov al,source
+            mov ah,0
+            mov bl,10h
+            div bl
+            mov dl,al ;dl contain the tens of the source
+            cmp dl,7
+            jz  not_SIZE_mismatch
+            
+            mov al,Destination
+            mov ah,0
+            mov bl,10h
+            div bl
+            mov dl,al ;dl contain the tens of the source
+            cmp dl,7
+            jz  not_SIZE_mismatch
+                        ;here to handle type mismatch error
+                        mov err_SIZE_MISMATCH,1
+                        mov CLEAR_TO_EXECUTE_2,0
     not_SIZE_mismatch:
     ;-----------------ERROR-2------------MEMORY TO MEMORY OPERATION
     mov al,source
@@ -1363,7 +1475,12 @@ ExecuteHelper PROC
         jnz checkfor8bits
             mov countdigit,3 
         checkfor8bits:
+        
         cmp is8bitreg_dest,1
+        jnz check_8_bit_src
+            mov countdigit,1
+        check_8_bit_src:
+        cmp is8bitreg_src,1
         jnz allreg
             mov countdigit,1
         allreg:
