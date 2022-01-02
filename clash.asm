@@ -81,7 +81,7 @@ DxVar1 dw 0
 
 SiVar1 dw 0
 DiVar1 dw 0
-SpVar1 dw 0
+SpVar1 dw 10h
 BpVar1 dw 0
 ;---------Memory for player 1
 m0_1 db 0
@@ -110,7 +110,7 @@ DxVar2 dw 0
 
 SiVar2 dw 0
 DiVar2 dw 0
-SpVar2 dw 0 
+SpVar2 dw 10h 
 BpVar2 dw 0
 ;---------Memory for player 2
 m0_2 db 0
@@ -555,11 +555,11 @@ CharInput PROC
     ;-------------Check if plahyer entered a forbidden character----------
     CMP Turn,1
     JNZ CHCKFORB2
-    CMP AL, forbiddin_char1
+    CMP AL, forbiddin_char2
     JZ endInsertChar
     jmp continueIns
     CHCKFORB2:
-    CMP AL, forbiddin_char2
+    CMP AL, forbiddin_char1
     JZ endInsertChar
     continueIns:
     ;------------------------------Insert--------------------------
