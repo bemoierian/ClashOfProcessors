@@ -1,10 +1,11 @@
 PUBLIC power_up3_player1
 PUBLIC power_up3_player2
-;PUBLIC power_up4_player1,power_up4_player2
+PUBLIC power_up4_player1,power_up4_player2
 PUBLIC power_up5_player1,power_up5_player2
-EXTRN P1_score:BYTE,P2_score:BYTE,Source:BYTE,forbiddin_char1:BYTE,forbiddin_char2:BYTE
+EXTRN P1_score:BYTE,P2_score:BYTE,Source:BYTE,forbiddin_char1:BYTE,forbiddin_char2:BYTE,SourceValue:WORD,External:WORD
 EXTRN AxVar1:WORD,BxVar1:WORD,CxVar1:WORD,DxVar1:WORD,SiVar1:WORD,DiVar1:WORD,SpVar1 :WORD,BpVar1 :WORD
 EXTRN AxVar2:WORD,BxVar2:WORD,CxVar2:WORD,DxVar2:WORD,SiVar2:WORD,DiVar2:WORD,SpVar2 :WORD,BpVar2 :WORD
+EXTRN chosen_level:BYTE
 .model small
 .data
 ;power up 3
@@ -13,26 +14,53 @@ powerup3_isused_player2 db 0h
 ;power uo 4
 line_num1 DB 0
 stuck_value1 DB 0
+src_value1  DW  0
+
 line_num2 DB 0
 stuck_value2 DB 0
+src_value2  DW  0
 ;power up5
 powerup5_isused_player1 db 0h
 powerup5_isused_player2 db 0h
 
 .code
+;POWER UP 1
+power_up1_player1 PROC FAR
+    ;CALL EXCUTE FOR PLAYER 1
+    SUB P1_score,5
+power_up1_player1 ENDP
+
+power_up1_player2 PROC FAR
+    ;CALL EXCUTE FOR PLAYER 2
+    SUB P2_score,5
+power_up1_player2 ENDP
+
+;POWER UP 2
+power_up2_player1 PROC FAR
+    ;CALL EXCUTE FOR PLAYER 1
+    ;CALL EXCUTE FOR PLAYER 2
+    SUB P1_score,3
+power_up2_player1 ENDP
+
+power_up2_player2 PROC FAR
+    ;CALL EXCUTE FOR PLAYER 1
+    ;CALL EXCUTE FOR PLAYER 2
+    SUB P2_score,3
+power_up2_player2 ENDP
+
 ;power up 3
 power_up3_player1 PROC FAR 
   cmp powerup3_isused_player1,1h
     jz used_before31  
-    mov dl,1 ;SET THE CRSR
-    mov dh,20
-    mov ah,2
-    int 10h
-;    CHECK1: mov ah,1
-;    int 16h
-;    jz CHECK1
-;    mov ah,0
-;    int 16h
+    ; mov dl,1 ;SET THE CRSR
+    ; mov dh,20
+    ; mov ah,2
+    ; int 10h
+   CHECK1: mov ah,1
+   int 16h
+   jz CHECK1
+   mov ah,0
+   int 16h
     mov ah,1
     int 21h ;READ THE CHAR
     mov forbiddin_char1,al ;CHANGE THE FORBIDDEN CHAR
@@ -49,19 +77,18 @@ used_before31:
     ret
 power_up3_player1 ENDP 
 
-
 power_up3_player2 PROC FAR
  cmp powerup3_isused_player2,1h
     jz used_before32  
-    mov dl,65 
-    mov dh,20
-    mov ah,2
-    int 10h
-    ; CHECK2: mov ah,1
-    ; int 16h
-    ; jz CHECK2
-    ; mov ah,0
-    ; int 16h
+    ; mov dl,65 
+    ; mov dh,20
+    ; mov ah,2
+    ; int 10h
+    CHECK2: mov ah,1
+    int 16h
+    jz CHECK2
+    mov ah,0
+    int 16h
     mov ah,1
     int 21h
     mov forbiddin_char2,al
@@ -79,6 +106,9 @@ used_before32:
 power_up3_player2 ENDP
 ;power up 4     NOT COMPLETE==>SOURCE VALUES
 power_up4_player1 PROC FAR
+    MOV BX,SourceValue ;SOURCE VALUE OF THE FIRST PLAYER
+    MOV DX,[BX]
+    MOV src_value1,DX
     ;take line number
     mov dl,1 ;SET THE CRSR
     mov dh,20
@@ -275,7 +305,10 @@ exit:
 power_up4_player1 ENDP 
 
 power_up4_player2 PROC FAR  
-    take line number
+    MOV BX,SourceValue ;SOURCE VALUE OF THE FIRST PLAYER
+    MOV DX,[BX]
+    MOV src_value2,DX
+    ;take line number
     mov dl,65 
     mov dh,20
     mov ah,2
@@ -472,7 +505,8 @@ exit2:
     sub P2_score,2h 
     ret
 power_up4_player2 ENDP 
-POWER UP 5
+
+;POWER UP 5
 power_up5_player1 PROC  
     cmp powerup5_isused_player1,1h
     jz used_before1

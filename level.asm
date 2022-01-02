@@ -1,4 +1,7 @@
-PUBLIC forbiddin_char1,forbiddin_char2
+PUBLIC forbiddin_char1,forbiddin_char2,chosen_level
+PUBLIC select_level,select_forbidden_char1,select_forbidden_char2,show_forb_chars,show_level
+EXTRN AxVar1:WORD,BxVar1:WORD,CxVar1:WORD,DxVar1:WORD,SiVar1:WORD,DiVar1:WORD,SpVar1 :WORD,BpVar1 :WORD
+EXTRN AxVar2:WORD,BxVar2:WORD,CxVar2:WORD,DxVar2:WORD,SiVar2:WORD,DiVar2:WORD,SpVar2 :WORD,BpVar2 :WORD
 
 display_string_main MACRO mes,x,y
     MOV  DL, x  ;COLUMN

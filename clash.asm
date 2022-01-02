@@ -32,6 +32,14 @@ EXTRN power_up4_player1:FAR
 EXTRN power_up4_player2:FAR
 EXTRN power_up5_player1:FAR
 EXTRN power_up5_player2:FAR
+PUBLIC P1_score,P2_score
+;-------------------------LEVEL.ASM--------------------------
+EXTRN forbiddin_char1:BYTE,forbiddin_char2:BYTE,chosen_level:BYTE
+EXTRN select_level:FAR
+EXTRN show_level:FAR
+EXTRN select_forbidden_char1:FAR
+EXTRN select_forbidden_char2:FAR
+EXTRN show_forb_chars:FAR
 ;-------------------------UI.inc------------------------------
 include UI.inc
 
@@ -154,6 +162,18 @@ MAIN PROC FAR
     mov cx,0
     mov dx,184FH
     int 10h
+    ;CHOOSE LEVEL
+    CALL select_level
+    CALL show_level
+    CALL select_forbidden_char1
+    CALL select_forbidden_char2
+    CALL show_forb_chars
+    ;CLEAR SCREEN
+    mov ax,0600h
+    mov bh,07
+    mov cx,0
+    mov dx,184FH
+    int 10h
     MainScreen:
         draw_mainscreen main_str1, main_str2, main_str3 ;UI.inc
         MainInput:
@@ -180,8 +200,6 @@ MAIN PROC FAR
     mov ah,0   ;enter graphics mode
     mov al,13h
     int 10h
-
-    
 
     ;Main Game Loop
     Background                          ;background color
@@ -654,4 +672,7 @@ DisplayNamesAndScore PROC
         CALL DisplayNumInAL
     RET
 DisplayNamesAndScore ENDP  
+DISPLAYLEVEL PROC
+
+DISPLAYLEVEL ENDP
 END MAIN

@@ -14,7 +14,8 @@ EXTRN m0_1:BYTE,m1_1:BYTE,m2_1:BYTE,m3_1:BYTE,m4_1:BYTE,m5_1:BYTE,m6_1 :BYTE,m7_
 EXTRN Carry_1:BYTE
 
 public countdigit
-
+PUBLIC SourceValue
+;PUBLIC External
 ;codes : External 1 
 ;codes : instruction 1h -> 14h
 ;codes : destinations (registers 40h->4F)
