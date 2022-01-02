@@ -67,6 +67,7 @@ mC_1 DB 0
 mD_1 DB 0
 mE_1 DB 0
 mF_1 DB 0
+Carry_1 DB 0
 ;---------------------------------------
 ;---------Registers for player 2
 AxVar2 dw 0
@@ -95,6 +96,8 @@ mC_2 DB 0
 mD_2 DB 0
 mE_2 DB 0
 mF_2 DB 0
+
+Carry_2 DB 0
 ;-------------------------Command String-------------------------------
 commandStr LABEL BYTE
 cmdMaxSize db 15 ;maximum size of command
