@@ -259,7 +259,16 @@ ConvertStrTo4Digit proc
 
     firstDigit:
     mov ah,1
-    int 21H      
+    int 21H  
+
+    ToLower1:
+    cmp al, 41h               ;41h is the lower bound ascii for capital letters
+    jl  AddToResult1
+    cmp al, 5Ah               ;5Ah is the upper bound ascii for capital letters
+    jg AddToResult1
+    add al, 20h               ;add 20h to make the char lower case
+    AddToResult1:
+
     mov digit,al
     cmp digit,39h ;'9'
     jg alpha
@@ -281,6 +290,15 @@ ConvertStrTo4Digit proc
     secDigit: 
     mov ah,1
     int 21H 
+
+    ToLower2:
+    cmp al, 41h               ;41h is the lower bound ascii for capital letters
+    jl  AddToResult2
+    cmp al, 5Ah               ;5Ah is the upper bound ascii for capital letters
+    jg AddToResult2
+    add al, 20h               ;add 20h to make the char lower case
+    AddToResult2:
+
     mov digit,al
     cmp digit,39h ;'9'
     jg alpha2
@@ -302,6 +320,15 @@ ConvertStrTo4Digit proc
     thirdDigit:
     mov ah,1
     int 21H 
+
+    ToLower3:
+    cmp al, 41h               ;41h is the lower bound ascii for capital letters
+    jl  AddToResult3
+    cmp al, 5Ah               ;5Ah is the upper bound ascii for capital letters
+    jg AddToResult3
+    add al, 20h               ;add 20h to make the char lower case
+    AddToResult3:
+
     mov digit,al
     cmp digit,39h ;'9'
     jg alpha3
@@ -323,6 +350,15 @@ ConvertStrTo4Digit proc
     forthDigit:
     mov ah,1
     int 21H 
+
+    ToLower4:
+    cmp al, 41h               ;41h is the lower bound ascii for capital letters
+    jl  AddToResult4
+    cmp al, 5Ah               ;5Ah is the upper bound ascii for capital letters
+    jg AddToResult4
+    add al, 20h               ;add 20h to make the char lower case
+    AddToResult4:
+
     mov digit,al
     cmp digit,39h ;'9'
     jg alpha4
@@ -434,7 +470,9 @@ show_forb_chars PROC far
     display_char forbiddin_char2,25h,3h
     
     hide_forb_chars:
-    
+
+    display_string_main mes_enter,1h,10h
+
 back6: mov ah,0 ;wait for enter
        int 16h
        cmp al,13

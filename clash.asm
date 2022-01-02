@@ -240,7 +240,7 @@ MAIN PROC FAR
     drawrectangle  125,161,0Eh,13,120
     
 
-    
+    MOV cmdCurrSize, 0
     ;START THE GAME
     mov di, offset commandS
     mov cursor, di
