@@ -60,7 +60,7 @@ EXTRN initial_reg2:far
 ;-------------------------UI.inc------------------------------
 include UI.inc
 ;------------------win.asm----------
-EXTRN printwin1:BYTE,printwin2:BYTE,winner:BYTE
+EXTRN printwin1:BYTE,printwin2:BYTE,winner:BYTE,programend:BYTE
 EXTRN CheckWinner:far
 
 .286
@@ -334,6 +334,16 @@ MAIN PROC FAR
         jmp Game
 
 EndGame:
+    mov ax,0600h
+  mov bh,07
+  mov cx,0
+  mov dx,184FH
+  int 10h
+
+     mov ah,09
+    mov dx,offset programend
+    int 21h
+
 HLT
 MAIN ENDP
 
