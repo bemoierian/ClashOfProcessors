@@ -218,14 +218,14 @@ MAIN PROC FAR
     mov al,13h
     int 10h
 
-    ;Main Game Loop
+
     Background                          ;background color
     horizontalline 170,0,320            ;horizontal line
-    drawrectangle  120,0,0dh,10,120
+    drawrectangle  125,0,0dh,13,120
     
     verticalline 0,160,170              ;vertical line
      ;horizontalline 145,162,319          ;horizontal line
-    drawrectangle  120,161,0Eh,10,120
+    drawrectangle  125,161,0Eh,13,120
     
 
     
@@ -336,7 +336,7 @@ PrintCommandString PROC
     isTurn2:
     MOV  DL, 20        ;column
     isTurn1End:
-    MOV  DH, 15      ;row
+    MOV  DH, 16      ;row
     MOV  BH, 0        ;page
     MOV  AH, 02H      ;set cursor 
     INT  10H
@@ -357,8 +357,8 @@ ClearCommandString PROC
     MOV cmdCurrSize, 0
     ;-----------------DRAW BACKGROUND RECTANGLE AGAIN TO OVERRIDE CURRENT DISPLAYED STRING----
     horizontalline 170,0,320            ;horizontal line
-    drawrectangle  120,0,0dh,10,120     ;draw the background of the command after deleting to override the old command
-    drawrectangle  120,161,0Eh,10,120
+    drawrectangle  125,0,0dh,13,120     ;draw the background of the command after deleting to override the old command
+    drawrectangle  125,161,0Eh,13,120
     RET
 ClearCommandString ENDP
 
@@ -414,7 +414,7 @@ Gun1Input PROC
     down1:
         cmp ax, 5000h
         jnz fire1
-        CMP gun1NewY, 160
+        CMP gun1NewY, 115
         JNC Gun1InputDone
         add gun1NewY, 3
         jmp Gun1InputDone
@@ -459,7 +459,7 @@ Gun2Input PROC
     down2:
         cmp ax, 5032h
         jnz fire2
-        CMP gun2NewY, 160
+        CMP gun2NewY, 115
         JNC Gun2InputDone
         add gun2NewY, 3
         jmp Gun2InputDone
@@ -487,10 +487,10 @@ BackspaceInput PROC
     dec cmdCurrSize ;decrement cursor
     mov cursor, di
     horizontalline 170,0,320            ;horizontal line
-    drawrectangle  120,0,0dh,10,120     ;draw the background of the command after deleting to override the old command
+    drawrectangle  125,0,0dh,13,120     ;draw the background of the command after deleting to override the old command
 
     ; horizontalline 145,162,319          ;horizontal line
-    drawrectangle  120,161,0Eh,10,120
+    drawrectangle  125,161,0Eh,13,120
     BackspaceInputDone:
     MOV isBackSpace, 1
     NotBackspaceInput:
