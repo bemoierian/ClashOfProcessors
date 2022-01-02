@@ -315,11 +315,14 @@ MAIN PROC FAR
         CALL EnterInput
         CMP isEnter, 1
         jz Game
+        ;--------------------------powerups--------------------------------
+        call PowerUpInput
+        cmp isPowerUp, 1
+        jz Game
         ;-------------------------CHARACTER------------------------------
         CALL CharInput
-        ;--------------------Exit game if key is F3----------------------
-        call PowerUpInput
-        cmp al, 13h
+        ;--------------------Exit game if key is F4----------------------
+        cmp ah, 3Eh
         jz MainScreen
         jmp Game
 ; print1:
@@ -334,7 +337,6 @@ MAIN PROC FAR
 ;  mov dx,offset printwin2
 ;  int 21h
 ; jmp hell
-
 
 EndGame:
 HLT
