@@ -138,6 +138,7 @@ isGun db 0
 isBackSpace db 0
 isEnter db 0
 isChar db 0
+isPowerUp db 0
 ;----------------------------------------------------------
 ;---------print winner---------------
 printwin1 DB 'winner is player 1','$'
@@ -436,6 +437,7 @@ ResetInputFlags PROC
     MOV isBackSpace, 0
     MOV isEnter, 0
     MOV isChar, 0
+    MOV isPowerUp, 0
     RET
 ResetInputFlags ENDP
 
@@ -581,6 +583,42 @@ CharInput PROC
     endInsertChar:
     RET
 CharInput ENDP
+;description
+PowerUpInput PROC
+    keyF5:
+        cmp ah, 3Fh ;compare key code with f5 code
+        jnz keyF6    ;if the key is not F5, jump to next check
+        ;call powerup
+        jmp PowerUpInputDone
+    keyF6:
+        cmp ah, 40h ;compare key code with f6 code
+        jnz keyF7    ;if the key is not F6, jump to next check
+        ;call powerup
+        jmp PowerUpInputDone
+    keyF7:
+        cmp ah, 41h ;compare key code with f7 code
+        jnz keyF8    
+        ;call powerup
+        jmp PowerUpInputDone
+    keyF8:
+        cmp ah, 42h ;compare key code with f8 code
+        jnz keyF9  
+        ;call powerup  
+        jmp PowerUpInputDone
+    keyF9:
+        cmp ah, 43h ;compare key code with f9 code
+        jnz keyF10  
+        ;call powerup  
+        jmp PowerUpInputDone
+    keyF10:
+        cmp ah, 44h ;compare key code with f10 code
+        jnz NotPowerUpInput 
+        ;call powerup
+    PowerUpInputDone:
+    MOV isPowerUp, 1
+    NotPowerUpInput:
+    RET
+PowerUpInput ENDP
 
 DisplayNumInAL PROC 
 
