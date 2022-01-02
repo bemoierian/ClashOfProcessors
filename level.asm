@@ -32,7 +32,7 @@ jmp exit
 exit:
 ENDM display_char 
 
-.MODEL SMALL
+.MODEL Large
 .STACK 64
 .DATA   
 mes_level DB "Select Level (press 1 or 2):",'$'
@@ -127,7 +127,7 @@ back3: mov ah,0
     ret
 show_level ENDP 
 ;initial values for registers in level 2
-initial_reg1 PROC  
+initial_reg1 PROC FAR
 
    ;Clear screen
     mov ax,0600h
@@ -253,7 +253,7 @@ mov BpVar2,ax
    ret
 initial_reg2 ENDP 
 
-ConvertStrTo4Digit proc    
+ConvertStrTo4Digit proc 
     mov ax,@data
     mov ds,ax 
 
@@ -330,13 +330,13 @@ ConvertStrTo4Digit proc
     mov dl,digit
     mov dh,0       
     add number,dx
-    jmp exit
+    jmp e
     alpha4:   
     sub digit,57h
     mov dl,digit 
     mov dh,0      
     add number,dx
-    exit:
+    e:
         
     ret
 ConvertStrTo4Digit endp  
@@ -347,13 +347,7 @@ select_forbidden_char1 PROC far
     mov bh,07
     mov cx,0
     mov dx,184FH
-    int 10h
-
-    mov bh,0h 
-    mov ah,2
-    mov dh,0
-    mov dl,0                 
-    int 10h                  
+    int 10h              
     
     display_string_main mes_forb_char1,1h,1h 
 
@@ -380,7 +374,7 @@ select_forbidden_char1 PROC far
       mov  forbiddin_char1,al
       char_end_1:  
       mov forbiddin_char1,al 
-      
+    
       ret    
 select_forbidden_char1 ENDP  
 
@@ -390,13 +384,7 @@ select_forbidden_char2 PROC far
     mov bh,07
     mov cx,0
     mov dx,184FH
-    int 10h
-
-    mov bh,0h 
-    mov ah,2
-    mov dh,0
-    mov dl,0                 
-    int 10h                  
+    int 10h                
     
     display_string_main mes_forb_char2,1h,1h 
 
@@ -435,12 +423,6 @@ show_forb_chars PROC far
     mov dx,184FH
     int 10h
 
-    mov bh,0h 
-    mov ah,2
-    mov dh,0
-    mov dl,0
-    int 10h
-
     cmp chosen_level,2h
     jz hide_forb_chars
 
@@ -452,6 +434,11 @@ show_forb_chars PROC far
     display_char forbiddin_char2,25h,3h
     
     hide_forb_chars:
+    
+back6: mov ah,0 ;wait for enter
+       int 16h
+       cmp al,13
+       jnz back6
     ret
 show_forb_chars ENDP
 END 

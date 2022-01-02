@@ -2,7 +2,7 @@ PUBLIC power_up3_player1,power_up1_player1,power_up2_player1,power_up6_player1
 PUBLIC power_up3_player2,power_up1_player2,power_up2_player2,power_up6_player2
 PUBLIC power_up4_player1,power_up4_player2
 PUBLIC power_up5_player1,power_up5_player2
-EXTRN P1_score:BYTE,P2_score:BYTE,Source:BYTE,forbiddin_char1:BYTE,forbiddin_char2:BYTE,SourceValue1:WORD,SourceValue2:WORD,External:WORD
+EXTRN P1_score:BYTE,P2_score:BYTE,Source:BYTE,forbiddin_char1:BYTE,forbiddin_char2:BYTE,DestinationValue1:WORD,DestinationValue2:WORD,External:WORD
 EXTRN AxVar1:WORD,BxVar1:WORD,CxVar1:WORD,DxVar1:WORD,SiVar1:WORD,DiVar1:WORD,SpVar1 :WORD,BpVar1 :WORD
 EXTRN AxVar2:WORD,BxVar2:WORD,CxVar2:WORD,DxVar2:WORD,SiVar2:WORD,DiVar2:WORD,SpVar2 :WORD,BpVar2 :WORD
 EXTRN chosen_level:BYTE,target:WORD
@@ -111,16 +111,17 @@ power_up3_player1 PROC FAR
     ; mov ah,1
     ; int 21h ;READ THE CHAR
     mov forbiddin_char1,al ;CHANGE THE FORBIDDEN CHAR
+    CALL SwitchTurn
     sub P1_score,8 ;sub from the score
     mov powerup3_isused_player1,1h ;set used
 used_before31:
-    mov dl,1 ;set the crsr 
-    mov dh,20
-    mov ah,2
-    int 10h
-    mov ah,2 ;print space
-    mov dl,20h
-    int 21h
+    ; mov dl,1 ;set the crsr 
+    ; mov dh,20
+    ; mov ah,2
+    ; int 10h
+    ; mov ah,2 ;print space
+    ; mov dl,20h
+    ; int 21h
     P31:
     ret
 power_up3_player1 ENDP 
@@ -143,16 +144,17 @@ power_up3_player2 PROC FAR
     mov ah,1
     int 21h
     mov forbiddin_char2,al
+    CALL SwitchTurn
     sub P2_score,8h 
     mov powerup3_isused_player2,1h
     used_before32:
-    mov dl,65 
-    mov dh,20
-    mov ah,2
-    int 10h
-    mov ah,2
-    mov dl,20h
-    int 21h
+    ; mov dl,65 
+    ; mov dh,20
+    ; mov ah,2
+    ; int 10h
+    ; mov ah,2
+    ; mov dl,20h
+    ; int 21h
     notP32:
     ret
 power_up3_player2 ENDP
@@ -160,9 +162,9 @@ power_up3_player2 ENDP
 power_up4_player1 PROC FAR
     cmp P1_score,2
     jb P41
-    MOV BX,SourceValue1 ;SOURCE VALUE OF THE FIRST PLAYER
+    MOV BX,DestinationValue1 ;SOURCE VALUE OF THE FIRST PLAYER
     MOV DX,[BX]
-    MOV SourceValue1,DX
+    mov src_value1,DX
     ;take line number
     mov dl,1 ;SET THE CRSR
     mov dh,20
@@ -170,26 +172,22 @@ power_up4_player1 PROC FAR
     int 10h
     ; mov ah,1 ;read one char from the user and put it in al
     ; int 21h 
-    mov line_num1,al  
-    mov dl,2 ;SET THE CRSR
-    mov dh,20
-    mov ah,2
-    int 10h
-    mov ah,1 ;read one char from the user and put it in al
-    int 21h 
-    mov stuck_value1,al 
-    ; noline:
-    ; mov ah,1
-    ; int 16h
-    ; jz noline 
-    ; mov ah,0
-    ; int 16h
-    ; mov line_num1,al
-    ; nokey:
-    ; mov ah,1
-    ; int 16h
-    ; jz nokey
+    ; mov line_num1,al  
+    ; mov ah,1 ;read one char from the user and put it in al
+    ; int 21h 
     ; mov stuck_value1,al 
+    noline:
+    mov ah,1
+    int 16h
+    jz noline 
+    mov ah,0
+    int 16h
+    mov line_num1,al
+    nokey:
+    mov ah,1
+    int 16h
+    jz nokey
+    mov stuck_value1,al 
 ;stuck_value one or zero
 cmp stuck_value1,31h
 jz stuck_at_one
@@ -340,20 +338,24 @@ L0F:and src_value1,07FFFH
     jmp exit 
 ;_____________________________________________________________________________    
 exit:
-    mov dl,1 ;SET THE CRSR
-    mov dh,20
-    mov ah,2
-    int 10h
-    mov ah,2 ;print space
-    mov dl,20h
-    int 21h
-    mov dl,2 ;SET THE CRSR
-    mov dh,20
-    mov ah,2
-    int 10h
-    mov ah,2 ;print space
-    mov dl,20h
-    int 21h
+    ; mov dl,1 ;SET THE CRSR
+    ; mov dh,20
+    ; mov ah,2
+    ; int 10h
+    ; mov ah,2 ;print space
+    ; mov dl,20h
+    ; int 21h
+    ; mov dl,2 ;SET THE CRSR
+    ; mov dh,20
+    ; mov ah,2
+    ; int 10h
+    ; mov ah,2 ;print space
+    ; mov dl,20h
+    ; int 21h
+    ;CALL SwitchTurn
+    mov dx,src_value1
+    mov BX,DestinationValue1
+    mov [BX],dx
     sub P1_score,2h 
     P41:
     ret
@@ -362,35 +364,31 @@ power_up4_player1 ENDP
 power_up4_player2 PROC FAR  
     cmp P2_score,2
     jb P42
-    MOV BX,SourceValue2 ;SOURCE VALUE OF THE FIRST PLAYER
+    MOV BX,DestinationValue2 ;SOURCE VALUE OF THE FIRST PLAYER
     MOV DX,[BX]
-    MOV SourceValue2,DX
+    MOV src_value2,DX
     ;take line number
     mov dl,65 
     mov dh,20
     mov ah,2
     int 10h
-    mov ah,1 ;read one char from the user and put it in al
-    int 21h 
-    mov line_num2,al  
-    mov dl,66 
-    mov dh,20
-    mov ah,2
-    int 10h
-    mov ah,1 ;read one char from the user and put it in al
-    int 21h 
-    mov stuck_value2,al  
-    ; noline2:
-    ; mov ah,1
-    ; int 16h
-    ; jz noline2
-    ; mov ah,0
-    ; int 16h
-    ; mov line_num2,al
-    ; nokey2:
-    ; mov ah,1
-    ; int 16h
-    ; jz nokey2
+    ; mov ah,1 ;read one char from the user and put it in al
+    ; int 21h 
+    ; mov line_num2,al  
+    ; mov ah,1 ;read one char from the user and put it in al
+    ; int 21h 
+    ; mov stuck_value2,al  
+    noline2:
+    mov ah,1
+    int 16h
+    jz noline2
+    mov ah,0
+    int 16h
+    mov line_num2,al
+    nokey2:
+    mov ah,1
+    int 16h
+    jz nokey2
     mov stuck_value2,al 
 
 ;stuck_value one or zero
@@ -545,27 +543,17 @@ L0F_2:and src_value2,07FFFH
     jmp exit2 
 ;_____________________________________________________________________________    
 exit2:
-    mov dl,65 
-    mov dh,20
-    mov ah,2
-    int 10h
-    mov ah,2 ;print space
-    mov dl,20h
-    int 21h
-    mov dl,66 
-    mov dh,20
-    mov ah,2
-    int 10h
-    mov ah,2 ;print space
-    mov dl,20h
-    int 21h
+    mov dx,src_value2
+    mov BX,DestinationValue2
+    mov [BX],dx
+    ;CALL SwitchTurn
     sub P2_score,2h 
     P42:
     ret
 power_up4_player2 ENDP 
 
 ;POWER UP 5
-power_up5_player1 PROC 
+power_up5_player1 PROC far
     cmp P1_score,30
     jz  used_before1
     cmp powerup5_isused_player1,1h
@@ -579,7 +567,7 @@ power_up5_player1 PROC
     mov DiVar1, 0h
     mov SpVar1, 0h 
     mov BpVar1, 0h 
-
+    CALL SwitchTurn
     sub P1_score,1Eh ;SUB FROM SCORE 1EH
     mov powerup5_isused_player1,1h ;SET USED
     
@@ -588,7 +576,7 @@ power_up5_player1 PROC
 power_up5_player1 ENDP 
 
 
-power_up5_player2 PROC
+power_up5_player2 PROC far
    cmp P2_score,30
    jz used_before2
    cmp powerup5_isused_player2,1h
@@ -602,7 +590,7 @@ power_up5_player2 PROC
    mov DiVar2, 0h
    mov SpVar2, 0h 
    mov BpVar2, 0h 
-   
+   CALL SwitchTurn
    sub P2_score,1Eh ;SUB FROM SCORE
    mov powerup5_isused_player2,1h
 
@@ -610,7 +598,7 @@ power_up5_player2 PROC
     ret
 power_up5_player2 ENDP
 ;power up 6 for level 2
-power_up6_player1 PROC
+power_up6_player1 PROC far
     mov exist,0
     cmp chosen_level,1
     jz cannot1
@@ -623,11 +611,11 @@ power_up6_player1 PROC
     mov bx,number
     mov target,bx
     cannot1:
-    sub P1_score,8 ;let it consumes 8 points
+    CALL SwitchTurn
     ret
 power_up6_player1 ENDP
 
-power_up6_player2 PROC
+power_up6_player2 PROC far
     mov exist,0
     cmp chosen_level,2
     jz cannot2
@@ -640,13 +628,19 @@ power_up6_player2 PROC
     mov bx,number
     mov target,bx
     cannot2:
-    sub P2_score,8 
+    CALL SwitchTurn
     ret
 power_up6_player2 ENDP
 
 ConvertStrTo4Digit proc far 
     mov number,0
     firstDigit:
+    ;set crsr
+    mov dl,18 
+    mov dh,20
+    mov ah,2
+    int 10h
+    ;convert
     mov ah,1
     int 21H 
     mov digit,al
