@@ -25,6 +25,9 @@ powerup5_isused_player2 db 0h
 ;POWER UP 6
 ASC_TBL DB   '0','1','2','3','4','5','6','7','8','9'
         DB   'A','B','C','D','E','F'
+powerup6_isused_player1 db 0h
+powerup6_isused_player2 db 0h
+
 .code
 ;POWER UP 1
 power_up1_player1 PROC FAR
@@ -551,12 +554,15 @@ power_up5_player2 PROC
 power_up5_player2 ENDP
 ;power up 6 for level 2
 power_up6_player1 PROC
+    cmp chosen_level,1
+    jz cannot1
+
     mov al,9
     mov BX,offset ASC_TBL
     XLAT    ;translate and put the result in AL
             ;AL= ASC_TBL[AL]
             ;used with look-up tables
-    
+    cannot1:
 power_up6_player1 ENDP
 
 power_up6_player2 PROC

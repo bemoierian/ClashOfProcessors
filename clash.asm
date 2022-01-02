@@ -48,6 +48,9 @@ EXTRN select_forbidden_char2:FAR
 EXTRN show_forb_chars:FAR
 ;-------------------------UI.inc------------------------------
 include UI.inc
+;------------------win.asm----------
+EXTRN printwin1:BYTE,printwin2:BYTE,winner:BYTE
+EXTRN CheckWinner:far
 
 .286
 .MODEL HUGE
@@ -60,7 +63,7 @@ main_str3 DB 'To end the program press ESC','$'
 ;----------------------------MEMORY-------------------------------------
 ;These variables are not in an array just to simplifie to vision
 ;---------Registers for player 1
-AxVar1 dw 105eh
+AxVar1 dw 0
 BxVar1 dw 3
 CxVar1 dw 4
 DxVar1 dw 0
@@ -150,7 +153,7 @@ isPowerUp db 0
 ; printwin1 DB 'winner is player 1','$'
 ; printwin2 DB 'winner is player 2','$'
 target dw 105eH ;target values
-winner db 0 ;flag of winner in the game
+;winner db 0 ;flag of winner in the game
 ;------------------------------------
 cyclesCounter1 dw 0
 cyclesCounter2 DW 0
@@ -226,15 +229,9 @@ MAIN PROC FAR
     mov cursor, di
     Game:
         ;---------------------------
-        ; push cx
-        ; call  CheckWinner
-        ; pop cx
-        ; cmp winner,1
-        ;  jz print1 
-
-        ; cmp winner,2
-        ;  jz print2 
-        ;    hell:
+        push cx
+        call  CheckWinner
+        pop cx
         inc cyclesCounter1
         inc cyclesCounter2
         CALL ResetInputFlags
@@ -312,18 +309,6 @@ MAIN PROC FAR
         cmp al, 13h
         jz MainScreen
         jmp Game
-; print1:
-; setcursor 0010d
-; mov ah,09
-;  mov dx,offset printwin1
-;  int 21h
-;  jmp hell
-; print2:
-; setcursor 0010d
-;  mov ah,09
-;  mov dx,offset printwin2
-;  int 21h
-; jmp hell
 
 
 EndGame:
@@ -376,40 +361,6 @@ SwitchTurn PROC
     SwitchTo2End:
     RET
 SwitchTurn ENDP
-
-CheckWinner proc
-  mov si,offset AxVar1
-  mov cx,8 
-  w1:
-  cmp [si],105eh
-  jz setwinner2
-  add si,2
-  dec cx
-  cmp cx,0
-  jnz w1
-
-  mov si,offset AxVar2
-  mov cx,8
-  w2:
-  cmp [si],105eh
-  jz setwinner1
-  add si,2
-  dec cx
-  cmp cx,0
-  jnz w2  
-  jmp byebye
-
-
-  setwinner1:
-  mov winner,1
-  jmp byebye
-  setwinner2:
-  mov winner,2
-  jmp byebye
-
-  byebye:
-  ret
-CheckWinner endp
 ;description
 ResetInputFlags PROC
     MOV isGun, 0
