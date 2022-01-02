@@ -234,9 +234,9 @@ MAIN PROC FAR
     mov cursor, di
     Game:
         ;---------------------------
-        push cx
-        call  CheckWinner
-        pop cx
+        pusha
+        call CheckWinner
+        popa
         inc cyclesCounter1
         inc cyclesCounter2
         CALL ResetInputFlags
@@ -648,15 +648,15 @@ PowerUpInput PROC
         jmp PowerUpInputDone
     keyF10:
         CMP chosen_level,2
-        JNZ PowerUpInputDone ;if not level 2 no power up 6
+        JNZ NotPowerUpInput ;if not level 2 no power up 6
         cmp ah, 44h ;compare key code with f10 code
-        jnz PowerUpInputDone  
+        jnz NotPowerUpInput  
         cmp Turn,1
         jnz P26
         CALL power_up6_player1
         jmp PowerUpInputDone
         P26:
-        CALL power_up6_player1
+        CALL power_up6_player2
         ;jmp PowerUpInputDone
     PowerUpInputDone:
     MOV isPowerUp, 1
@@ -712,9 +712,6 @@ DisplayNamesAndScore PROC
         CALL DisplayNumInAL
     RET
 DisplayNamesAndScore ENDP  
-DISPLAYLEVEL PROC
-
-DISPLAYLEVEL ENDP
 
 SetMinPoints PROC
     mov al,P1_score
