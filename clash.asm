@@ -555,11 +555,11 @@ CharInput PROC
     ;-------------Check if plahyer entered a forbidden character----------
     CMP Turn,1
     JNZ CHCKFORB2
-    CMP AL, forbiddin_char1
+    CMP AL, forbiddin_char2
     JZ endInsertChar
     jmp continueIns
     CHCKFORB2:
-    CMP AL, forbiddin_char2
+    CMP AL, forbiddin_char1
     JZ endInsertChar
     continueIns:
     ;------------------------------Insert--------------------------
