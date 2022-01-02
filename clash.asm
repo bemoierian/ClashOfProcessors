@@ -24,17 +24,14 @@ EXTRN FlyObj_initial:far
 EXTRN gun1PrevX:WORD,gun1PrevY:WORD,gun1NewX:WORD,gun1NewY:WORD
 EXTRN l11:BYTE,c11:BYTE,l12:BYTE,c12:BYTE,l13:BYTE,c13:BYTE,l14:BYTE,c14:BYTE,l15:BYTE,c15:BYTE,l21:BYTE,c21:BYTE,l22:BYTE,c22:BYTE,l23:BYTE,c23:BYTE,l24:BYTE,c24:BYTE,l25:BYTE,c25:BYTE
 ;-------------------powerups.asm----------------------------
-EXTRN changeForbidden1:FAR
-EXTRN forbidden1:BYTE
-EXTRN changeForbidden2:FAR
-EXTRN forbidden2:BYTE
+
 ;-------------------------UI.inc------------------------------
 include UI.inc
 
 
 
 .286
-.MODEL SMALL
+.MODEL HUGE
 .STACK 64
 .DATA
 ;-------------------------Main Screen-----------------------------------
@@ -98,7 +95,6 @@ mC_2 DB 0
 mD_2 DB 0
 mE_2 DB 0
 mF_2 DB 0
-;----------------------------------------------------------------------
 ;-------------------------Command String-------------------------------
 commandStr LABEL BYTE
 cmdMaxSize db 15 ;maximum size of command
@@ -126,14 +122,12 @@ isGun db 0
 isBackSpace db 0
 isEnter db 0
 isChar db 0
-;-------------------scores values and colors --------------
-
 ;----------------------------------------------------------
 ;---------print winner---------------
-printwin1 DB 'winner is player 1','$'
-printwin2 DB 'winner is player 2','$'
+; printwin1 DB 'winner is player 1','$'
+; printwin2 DB 'winner is player 2','$'
 
- winner db 0 ;flag of winner in the game
+winner db 0 ;flag of winner in the game
 ;------------------------------------
 cyclesCounter1 dw 0
 cyclesCounter2 DW 0
@@ -197,16 +191,16 @@ MAIN PROC FAR
     mov di, offset commandS
     mov cursor, di
     Game:
-    ;---------------------------
-    push cx
-    call  CheckWinner
-    pop cx
-    cmp winner,1
-     jz print1 
+        ;---------------------------
+        ; push cx
+        ; call  CheckWinner
+        ; pop cx
+        ; cmp winner,1
+        ;  jz print1 
 
-    cmp winner,2
-     jz print2 
-       hell:
+        ; cmp winner,2
+        ;  jz print2 
+        ;    hell:
         inc cyclesCounter1
         inc cyclesCounter2
         CALL ResetInputFlags
@@ -312,18 +306,18 @@ MAIN PROC FAR
         cmp al, 13h
         jz MainScreen
         jmp Game
-print1:
-setcursor 0010d
-mov ah,09
- mov dx,offset printwin1
- int 21h
- jmp hell
-print2:
-setcursor 0010d
- mov ah,09
- mov dx,offset printwin2
- int 21h
-jmp hell
+; print1:
+; setcursor 0010d
+; mov ah,09
+;  mov dx,offset printwin1
+;  int 21h
+;  jmp hell
+; print2:
+; setcursor 0010d
+;  mov ah,09
+;  mov dx,offset printwin2
+;  int 21h
+; jmp hell
 ;hell:
 
 EndGame:
@@ -361,8 +355,6 @@ ClearCommandString PROC
     ;-----------------DRAW BACKGROUND RECTANGLE AGAIN TO OVERRIDE CURRENT DISPLAYED STRING----
     horizontalline 170,0,320            ;horizontal line
     drawrectangle  120,0,0dh,10,120     ;draw the background of the command after deleting to override the old command
-
-    horizontalline 145,162,319          ;horizontal line
     drawrectangle  120,161,0Eh,10,120
     RET
 ClearCommandString ENDP
@@ -483,7 +475,6 @@ BackspaceInput PROC
 
     ; horizontalline 145,162,319          ;horizontal line
     drawrectangle  120,161,0Eh,10,120
-
     BackspaceInputDone:
     MOV isBackSpace, 1
     NotBackspaceInput:
