@@ -1,5 +1,5 @@
 ;-----------------Called in clash.asm------------------
-PUBLIC FlyObj_Continue, FlyObj_initial
+PUBLIC FlyObj1_Continue, FlyObj2_Continue, FlyObj_initial
 PUBLIC DrawGun1, FireGun1_initial, FireGun1_Continue
 PUBLIC gun1NewX,gun1NewY
 PUBLIC DrawGun2, FireGun2_initial, FireGun2_Continue
@@ -33,10 +33,14 @@ Fire2Y dw 0
 isFiring2 db 0
 Fire2Hit db 0
 ;----------------------Flying objects-------------------
-FlyPosX_strt dw 310
-FlyPosY_strt dw 3
-FlyPosX_end dw 0
-FlyPosY_end dw 0
+Fly1PosX_strt dw 150
+Fly1PosY_strt dw 3
+Fly1PosX_end dw 0
+Fly1PosY_end dw 0
+Fly2PosX_strt dw 310
+Fly2PosY_strt dw 3
+Fly2PosX_end dw 0
+Fly2PosY_end dw 0
 FlyColor db 04h
 isFlying db 0
 
@@ -203,20 +207,22 @@ FireGun1_Continue ENDP
 DidFire1Hit PROC FAR
     CMP isFlying, 1
     JNZ didntHit1
-    mov ax, FlyPosX_strt
+    mov ax, Fly1PosX_strt
     CMP Fire1X, AX
     JC didntHit1
-    mov ax, FlyPosX_end
+    mov ax, Fly1PosX_end
     CMP Fire1X, AX
     JNC didntHit1
-    mov ax, FlyPosY_strt
+    mov ax, Fly1PosY_strt
     CMP Fire1Y, AX
     JC didntHit1
-    mov ax, FlyPosY_end
+    mov ax, Fly1PosY_end
     CMP Fire1Y, AX
     JNC didntHit1
-    MOV isFlying, 0
     MOV Fire1Hit, 1
+    CALL FlyObj1_Continue ;call it again when hit to delete it () draw white box
+    CALL FlyObj2_Continue ;call it again when hit to delete it () draw white box
+    MOV isFlying, 0 
     LEA BX, l11
     MOV DL, ColorCount
     MOV DH, 0
@@ -363,20 +369,22 @@ FireGun2_Continue ENDP
 DidFire2Hit PROC FAR
     CMP isFlying, 1
     JNZ didntHit2
-    mov ax, FlyPosX_strt
+    mov ax, Fly2PosX_strt
     CMP Fire2X, AX
     JC didntHit2
-    mov ax, FlyPosX_end
+    mov ax, Fly2PosX_end
     CMP Fire2X, AX
     JNC didntHit2
-    mov ax, FlyPosY_strt
+    mov ax, Fly2PosY_strt
     CMP Fire2Y, AX
     JC didntHit2
-    mov ax, FlyPosY_end
+    mov ax, Fly2PosY_end
     CMP Fire2Y, AX
     JNC didntHit2
-    MOV isFlying, 0
     MOV Fire2Hit, 1
+    CALL FlyObj1_Continue
+    CALL FlyObj2_Continue
+    MOV isFlying, 0
     LEA BX, l21
     MOV DL, ColorCount
     MOV DH, 0
@@ -388,18 +396,19 @@ DidFire2Hit PROC FAR
     RET
 DidFire2Hit ENDP
 
-FlyObj_Continue PROC FAR
+FlyObj1_Continue PROC FAR
     mov ax, @data
     mov ds, ax
-   
+    cmp isFlying, 1
+    jnz notFlying
     mov bx, 0
     mov ah,0ch       ;Draw Pixel Command
     mov al,0Fh       ;Pixel color
-    mov cx, FlyPosX_strt   ;Column
-    mov dx, FlyPosY_strt   ;Row   
+    mov cx, Fly1PosX_strt   ;Column
+    mov dx, Fly1PosY_strt   ;Row   
     ;loop to draw the new gun
     outer5:
-        mov cx, FlyPosX_strt ;X position of new gun
+        mov cx, Fly1PosX_strt ;X position of new gun
         mov bl, 0 ;inner counter
         inc dx    ;increment row
         cmp bh,15  ;if draw 3 rows then then the gun is completed
@@ -414,20 +423,23 @@ FlyObj_Continue PROC FAR
         jnz inner5
         jz outer5
     exit5:
-    cmp isFlying, 1
+    cmp Fire1Hit, 0
     jnz notFlying
-    cmp FlyPosX_strt, 1
+    cmp Fire2Hit, 0
+    jnz notFlying
+    cmp Fly1PosX_strt, 1
     jnc stillFlying
+    CALL FlyObj2_Continue
     mov isFlying, 0
     jmp notFlying
     stillFlying:
-    sub FlyPosX_strt, 1
+    sub Fly1PosX_strt, 1
     mov bx, 0
     mov al, FlyColor       ;Pixel color
-    mov cx, FlyPosX_strt   ;Column
-    mov dx, FlyPosY_strt   ;Row   
+    mov cx, Fly1PosX_strt   ;Column
+    mov dx, Fly1PosY_strt   ;Row   
     outer6:
-        mov cx, FlyPosX_strt ;X position of new gun
+        mov cx, Fly1PosX_strt ;X position of new gun
         mov bl, 0 ;inner counter
         inc dx    ;increment row
         cmp bh,15  ;if draw 3 rows then then the gun is completed
@@ -442,16 +454,85 @@ FlyObj_Continue PROC FAR
         jnz inner6
         jz outer6
     exit6:
-    mov ax, FlyPosX_strt
+    mov ax, Fly1PosX_strt
     add ax, 10
-    mov FlyPosX_end, ax
+    mov Fly1PosX_end, ax
 
-    mov ax, FlyPosY_strt
+    mov ax, Fly1PosY_strt
     add ax, 15
-    mov FlyPosY_end, ax
+    mov Fly1PosY_end, ax
     notFlying:
     RET
-FlyObj_Continue ENDP
+FlyObj1_Continue ENDP
+
+
+FlyObj2_Continue PROC FAR
+    mov ax, @data
+    mov ds, ax
+    cmp isFlying, 1
+    jnz notFlying1
+    mov bx, 0
+    mov ah,0ch       ;Draw Pixel Command
+    mov al,0Fh       ;Pixel color
+    mov cx, Fly2PosX_strt   ;Column
+    mov dx, Fly2PosY_strt   ;Row   
+    ;loop to draw the new gun
+    outer51:
+        mov cx, Fly2PosX_strt ;X position of new gun
+        mov bl, 0 ;inner counter
+        inc dx    ;increment row
+        cmp bh,15  ;if draw 3 rows then then the gun is completed
+        jz exit51
+        inc bh    ;outer counter
+        ;same as inner1
+        inner51:  
+        int 10h  ;draw pixel
+        inc cx   ;inc column
+        inc bl   ;inc counter
+        cmp bl,10 ;if you draw 3 columns jump to outer
+        jnz inner51
+        jz outer51
+    exit51:
+    cmp Fire1Hit, 0
+    jnz notFlying1
+    cmp Fire2Hit, 0
+    jnz notFlying1
+    cmp Fly2PosX_strt, 161
+    jnc stillFlying1
+    mov isFlying, 0
+    jmp notFlying1
+    stillFlying1:
+    sub Fly2PosX_strt, 1
+    mov bx, 0
+    mov al, FlyColor       ;Pixel color
+    mov cx, Fly2PosX_strt   ;Column
+    mov dx, Fly2PosY_strt   ;Row   
+    outer61:
+        mov cx, Fly2PosX_strt ;X position of new gun
+        mov bl, 0 ;inner counter
+        inc dx    ;increment row
+        cmp bh,15  ;if draw 3 rows then then the gun is completed
+        jz exit61
+        inc bh    ;outer counter
+        ;same as inner1
+        inner61:  
+        int 10h  ;draw pixel
+        inc cx   ;inc column
+        inc bl   ;inc counter
+        cmp bl,10 ;if you draw 3 columns jump to outer
+        jnz inner61
+        jz outer61
+    exit61:
+    mov ax, Fly2PosX_strt
+    add ax, 10
+    mov Fly2PosX_end, ax
+
+    mov ax, Fly2PosY_strt
+    add ax, 15
+    mov Fly2PosY_end, ax
+    notFlying1:
+    RET
+FlyObj2_Continue ENDP
 
 ;description
 FlyObj_initial PROC FAR
@@ -463,13 +544,17 @@ FlyObj_initial PROC FAR
     jnz CorrectColor
     mov ColorCount, 0
     CorrectColor:
-    mov FlyPosX_strt, 310
-    mov FlyPosY_strt, 3
+    mov Fly1PosX_strt, 150
+    mov Fly1PosY_strt, 3
+    mov Fly2PosX_strt, 310
+    mov Fly2PosY_strt, 3
     mov al, ColorCount
     mov bx, offset arr_color
     xlat
     mov FlyColor, al
     mov isFlying, 1
+    mov Fire1Hit, 0
+    mov Fire2Hit, 0
     inc ColorCount
     alreadyFlying:
     RET

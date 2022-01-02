@@ -27,7 +27,8 @@ EXTRN FireGun1_Continue:far
 EXTRN DrawGun2:far
 EXTRN FireGun2_initial:far
 EXTRN FireGun2_Continue:far
-EXTRN FlyObj_Continue:far
+EXTRN FlyObj1_Continue:far
+EXTRN FlyObj2_Continue:far
 EXTRN FlyObj_initial:far
 EXTRN gun1NewX:WORD,gun1NewY:WORD,gun2NewX:WORD,gun2NewY:WORD
 EXTRN l11:BYTE,c11:BYTE,l12:BYTE,c12:BYTE,l13:BYTE,c13:BYTE,l14:BYTE,c14:BYTE,l15:BYTE,c15:BYTE,l21:BYTE,c21:BYTE,l22:BYTE,c22:BYTE,l23:BYTE,c23:BYTE,l24:BYTE,c24:BYTE,l25:BYTE,c25:BYTE
@@ -264,7 +265,8 @@ MAIN PROC FAR
 
         cmp cyclesCounter2, 2H
         jnz dontDrawFly
-        CALL FlyObj_Continue
+        CALL FlyObj1_Continue
+        CALL FlyObj2_Continue
         mov cyclesCounter2, 0
         dontDrawFly:
         ;----------------------rm.asm-----------------------------
