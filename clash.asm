@@ -218,11 +218,11 @@ MAIN PROC FAR
             keyF2:
                 cmp ah, 3Ch ;compare key code with f1 code
                 jnz keyESC    ;if the key is not F2, jump to next check
-                jmp EndMainScreen
+                jmp EndMainScreen ;go to game
             keyESC:
                 cmp ah, 1h ;compare key code with f1 code
                 jnz MainInput    ;if the key is not esc, take input again
-                jmp EndGame
+                jmp EndGame ;program end
             EndMainInput:
 
     EndMainScreen:
@@ -240,28 +240,28 @@ MAIN PROC FAR
     drawrectangle  125,161,0Eh,13,120
     
 
-    CALL ClearCommandString
+    CALL ClearCommandString ;as initialization
     ;START THE GAME
-    mov di, offset commandS
+    mov di, offset commandS 
     mov cursor, di
     Game:
-        ;---------------------------
+        ;---------------Win.asm--------------------
         pusha
-        call CheckWinner
+        call CheckWinner ;if the target value in any reg
         popa
-        inc cyclesCounter1
-        inc cyclesCounter2
-        CALL ResetInputFlags
-        CALL PrintCommandString
+        inc cyclesCounter1 ;count cycles for flying objects (appearance)
+        inc cyclesCounter2 ;count cycles for delaying the movement flying object (speed)
+        CALL ResetInputFlags ;reset falgs for each input 
+        CALL PrintCommandString 
         ;display name
-        CALL DisplayNamesAndScore
+        CALL DisplayNamesAndScore ;display name , score and forbidden char in level 1
         ;----------------------gun.asm----------------------------- 
 
-        CALL FireGun1_Continue
-        CALL FireGun2_Continue
+        CALL FireGun1_Continue ;step for the bulet
+        CALL FireGun2_Continue 
 
-        cmp cyclesCounter1, 100H
-        jnz dontInitiateFly
+        cmp cyclesCounter1, 100H ;compare with 100H
+        jnz dontInitiateFly     
         CALL FlyObj_initial
         mov cyclesCounter1, 0
         dontInitiateFly:
@@ -274,7 +274,7 @@ MAIN PROC FAR
         dontDrawFly:
         ;----------------------rm.asm-----------------------------
         call RegMemo
-        ;----------------------UI.inc-----------------------------
+        ;----------------------UI.inc-----------------------------score for colors
         setcursor 0000
         drawrectanglewith  140,7,c11,15,15,63497d,l11,c11
         setcursor 0000
@@ -731,25 +731,26 @@ DisplayNamesAndScore PROC
     RET
 DisplayNamesAndScore ENDP  
 
-SetMinPoints PROC
+SetMinPoints PROC ;get min of 2 variables
     mov al,P1_score
     mov bl,P2_score
     
     cmp al,bl  
-    jl closeM1
+    jl closeM1 ;al<bl
     jg closeM2     
     jmp closeM    
 
     closeM1: 
-    mov P2_score,al
+    mov P2_score,al ;second score with min
     jmp closeM
     
     closeM2: 
-    mov P1_score,bl 
+    mov P1_score,bl ;
     closeM:
     RET
 SetMinPoints ENDP
-SetInitialPoints PROC
+
+SetInitialPoints PROC ;but the initial points in the score variables
     mov si,offset BufferData1
     MOV AL,[si]
     sub al,30H

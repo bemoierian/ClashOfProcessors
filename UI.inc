@@ -126,9 +126,6 @@ drawrectangle  macro   x,y,color,horizontallen,verticallen
 endm drawrectangle
 
 
-
-
-
 setcursor macro p
     mov ah,2
     mov dx,p ;move cursorposition to dx
