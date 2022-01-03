@@ -42,8 +42,8 @@ shrCode equ 0Ah
 shlCode equ 0Bh  
 clcCode equ 0Ch   
 rorCode equ 0Dh   
-rclCode equ 0Eh ;mul  
-rcrCode equ 0Fh ;div 
+rclCode equ 0Eh   
+rcrCode equ 0Fh  
 rolCode equ 10h   
 pushCode equ 11h
 popCode equ 12h   
@@ -118,7 +118,7 @@ countdigit db 0
 is8bitreg_temp db 0
 is8bitreg_dest db 0
 is8bitreg_src db 0
-
+shiftORrotate db 0
 
 v1 db ?
 v2 db ?
@@ -319,6 +319,11 @@ execute1 PROC far
     jz Src
 
     call GetDst_Src_Code
+    cmp  REG_VALID,1
+    jz dest_valid
+        mov err_INVALID_REG_NAME,1
+        jmp FinalCommand
+    dest_valid:
     MOV AL,ToCheck
     mov Destination,AL
     mov DestinationValue2,bx
@@ -368,6 +373,7 @@ execute1 PROC far
 execute1 ENDP
 
 resetALLvars proc
+mov shiftORrotate,0
 mov err_SIZE_MISMATCH,0
 mov err_MEMO_TO_MEMO,0
 mov err_INVALID_REG_NAME,0
@@ -418,7 +424,18 @@ GenerateInstructionCode PROC
     inc si
 
     MOV InstrusctionValid, 1
-    
+
+    ;if the istruction is shift or rotate -> set the shiftORrotate variable
+    cmp CodeToCheck,rorCode
+    jl not_shift_rotate
+    cmp CodeToCheck,shlCode
+    jg  not_shift_rotate
+    cmp CodeToCheck,clcCode
+    jz not_shift_rotate
+    ;set here
+    mov shiftORrotate,1
+    not_shift_rotate:
+
     MOV AL, CodeToCheck
     mov Instruction, AL
     notValid:
@@ -616,7 +633,6 @@ GetDst_Src_Code proc far
         call GenerateCode
         cmp REG_VALID,1
         ret
-    
 GetDst_Src_Code endp 
 
 GenerateDestCodeiFNotreg PROC far
@@ -864,7 +880,7 @@ CheckDirectAddressing proc far
 CheckDirectAddressing endp
 
 
-GenerateCode PROC far
+GenerateCode PROC 
     mov SI,tempSI
     MOV AL,L1
     cmp [si],AL
@@ -891,7 +907,6 @@ GenerateCode PROC far
     jnz not8bitregister
             ishigh_low:
             mov is8bitreg_temp,1
-            mov countdigit,2
             mov ax,1
     not8bitregister:
     
@@ -908,11 +923,15 @@ GenerateCode ENDP
 
 GenerateSrcEmValue PROC 
     ;assuming em val is :'movax,0A'
-    cmp [si],30h ;cmp with 0
-    JGE loopOnNumber
+    mov al,[si]
+    cmp al,30h ;cmp with 9
+    Jl invalid_reg_na
     
-    cmp [si],39h ;cmp with 9
-    JLE loopOnNumber
+    second_check:
+    mov al,[si]
+    cmp al,39h ;cmp with 9
+    jg invalid_reg_na
+    JG invalid_reg_na
         loopOnNumber:
             mov cl,[si]
             cmp cl,'a' ;cmp with a
@@ -944,6 +963,10 @@ GenerateSrcEmValue PROC
         MOV REG_VALID,1
         mov isExternal,1
         mov Source,EmidiateCode
+        ret
+
+        invalid_reg_na:
+        mov err_INVALID_REG_NAME,1
         RET
 GenerateSrcEmValue ENDP
 
@@ -1364,9 +1387,9 @@ Check_Errors PROC
     cmp isExternal,1
     jnz next_err
         cmp Destination,dhCode
-        jg next_err
+        jg not_SIZE_mismatch
             cmp countdigit,3
-            jl next_err
+            jl not_SIZE_mismatch
                 mov err_SIZE_MISMATCH,1
                 mov CLEAR_TO_EXECUTE_1,0
                 jmp not_SIZE_mismatch
@@ -1374,8 +1397,6 @@ Check_Errors PROC
     mov al,is8bitreg_dest
     mov ah,is8bitreg_src
     cmp al,ah
-    jz not_SIZE_mismatch
-    cmp isExternal,1
     jz not_SIZE_mismatch
             mov al,source
             mov ah,0
@@ -1467,7 +1488,8 @@ ExecuteHelper PROC
             mov bx,SourceValue2
             mov countdigit,4
             mov cx,[bx]
-        finish_exe:mov al,Destination
+        finish_exe:
+        mov al,Destination
         mov ah,0
         mov bl,10h
         div bl

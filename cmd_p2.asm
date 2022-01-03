@@ -117,7 +117,7 @@ countdigit db 0
 is8bitreg_temp db 0
 is8bitreg_dest db 0
 is8bitreg_src db 0
-
+shiftORrotate db 0 
 
 v1 db ?
 v2 db ?
@@ -318,6 +318,11 @@ execute2 PROC far
     jz Src
 
     call GetDst_Src_Code
+    cmp  REG_VALID,1
+    jz dest_valid
+        mov err_INVALID_REG_NAME,1
+        jmp FinalCommand
+    dest_valid:
     MOV AL,ToCheck
     mov Destination,AL
     mov DestinationValue1,bx
@@ -367,6 +372,7 @@ execute2 PROC far
 execute2 ENDP
 
 resetALLvars proc
+mov shiftORrotate,0
 mov err_SIZE_MISMATCH,0
 mov err_MEMO_TO_MEMO,0
 mov err_INVALID_REG_NAME,0
@@ -418,6 +424,17 @@ GenerateInstructionCode PROC
 
     MOV InstrusctionValid, 1
     
+    ;if the istruction is shift or rotate -> set the shiftORrotate variable
+    cmp CodeToCheck,rorCode
+    jl not_shift_rotate
+    cmp CodeToCheck,shlCode
+    jg  not_shift_rotate
+    cmp CodeToCheck,clcCode
+    jz not_shift_rotate
+    ;set here
+    mov shiftORrotate,1
+    not_shift_rotate:
+
     MOV AL, CodeToCheck
     mov Instruction, AL
     notValid:
@@ -863,7 +880,7 @@ CheckDirectAddressing proc far
 CheckDirectAddressing endp
 
 
-GenerateCode PROC far
+GenerateCode PROC 
     mov SI,tempSI
     MOV AL,L1
     cmp [si],AL
@@ -890,7 +907,6 @@ GenerateCode PROC far
     jnz not8bitregister
             ishigh_low:
             mov is8bitreg_temp,1
-            mov countdigit,2
             mov ax,1
     not8bitregister:
     
@@ -908,10 +924,12 @@ GenerateCode ENDP
 GenerateSrcEmValue PROC 
     ;assuming em val is :'movax,0A'
     cmp [si],30h ;cmp with 0
-    JGE loopOnNumber
+    Jl invalid_reg_na
     
-    cmp [si],39h ;cmp with 9
-    JLE loopOnNumber
+    second_check:
+    mov al,[si]
+    cmp al,39h ;cmp with 9
+    jg invalid_reg_na
         loopOnNumber:
             mov cl,[si]
             cmp cl,'a' ;cmp with a
@@ -943,6 +961,10 @@ GenerateSrcEmValue PROC
         MOV REG_VALID,1
         mov isExternal,1
         mov Source,EmidiateCode
+            ret
+        invalid_reg_na:
+        mov err_INVALID_REG_NAME,1
+        RET
     RET
 GenerateSrcEmValue ENDP
 
@@ -1364,9 +1386,9 @@ Check_Errors PROC
     cmp isExternal,1
     jnz next_err
         cmp Destination,dhCode
-        jg next_err
+        jg not_SIZE_mismatch
             cmp countdigit,3
-            jl next_err
+            jl not_SIZE_mismatch
                 mov err_SIZE_MISMATCH,1
                 mov CLEAR_TO_EXECUTE_2,0
                 jmp not_SIZE_mismatch
