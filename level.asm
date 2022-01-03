@@ -61,7 +61,7 @@ forbiddin_char1 DB ?   ;0-9 , a-z
 forbiddin_char2 DB ?
 .CODE
 
-select_level PROC far
+select_level PROC far ;choose the level
 
     mov ax,0600h
     mov bh,07
@@ -75,13 +75,13 @@ select_level PROC far
     mov dl,0
     int 10h
 
-    display_string_main mes_level,1h,1h
+    display_string_main mes_level,1h,1h ;print mesage to user
 
     back: mov ah,7h 
           int 21h 
-          cmp al,31h
+          cmp al,31h ;'1'
           jz level1
-          cmp al,32h
+          cmp al,32h ;'2'
           jz level2
     jmp back
     level1: mov chosen_level,1h 
@@ -100,27 +100,27 @@ select_level PROC far
 select_level ENDP    
 
 show_level PROC far
-
+    ;clear screen
     mov ax,0600h
     mov bh,07
     mov cx,0
     mov dx,184FH
     int 10h
-
+    ;set crsr
     mov bh,0h 
     mov ah,2
     mov dh,0
     mov dl,0
     int 10h
 
-    display_string_main mes_level2,1h,1h       ; player secondry
-    add chosen_level,30h
+    display_string_main mes_level2,1h,1h    ;display the chosen level
+    add chosen_level,30h ;to convet to char
     display_char chosen_level,18h,1h
-    sub chosen_level,30h 
+    sub chosen_level,30h ;convert to digit
     
-    display_string_main mes_enter,1h,3h
+    display_string_main mes_enter,1h,3h ;press enter
 
-back3: mov ah,0
+back3: mov ah,0 ;wait for enter
        int 16h
        cmp al,13
        jnz back3
@@ -136,11 +136,11 @@ initial_reg1 PROC FAR
     mov dx,184FH
     int 10h
     
-display_string_main mes_initial1,1h,1h  
+display_string_main mes_initial1,1h,1h  ;display mes
  
 ;ax
 display_string_main mes_ax,1h,3h     
-call ConvertStrTo4Digit     
+call ConvertStrTo4Digit     ;convert the 4 input char to digits
 mov ax,number 
 mov AxVar1,ax 
 
@@ -190,7 +190,7 @@ mov BpVar1,ax
    ret
 initial_reg1 ENDP 
 
-initial_reg2 PROC  
+initial_reg2 PROC FAR
    
     ;Clear screen
     mov ax,0600h
@@ -378,7 +378,7 @@ ConvertStrTo4Digit proc
 ConvertStrTo4Digit endp  
 
 select_forbidden_char1 PROC far  
-     
+     ;clear
     mov ax,0600h
     mov bh,07
     mov cx,0
@@ -387,22 +387,22 @@ select_forbidden_char1 PROC far
     
     display_string_main mes_forb_char1,1h,1h 
 
-    back_forb_1: mov ah,7h
+    back_forb_1: mov ah,7h ;take a char
       int 21h  
       
-      cmp al,61h
+      cmp al,61h ;check for small 
       jae char2_1
        
-      cmp al,30h 
+      cmp al,30h ;check for digit
       jae num2_1    
       jmp back_forb_1
        
-      char2_1: cmp al,7Ah
+      char2_1: cmp al,7Ah ;check z>=
       jbe char_end_1     
       jmp back_forb_1
        
       
-      num2_1:cmp al,39h
+      num2_1:cmp al,39h ;check for '9'
       jbe num_end_1 
       jmp back_forb_1
         
@@ -452,17 +452,17 @@ select_forbidden_char2 PROC far
 select_forbidden_char2 ENDP  
 
 show_forb_chars PROC far
-    
+    ;clear
     mov ax,0600h
     mov bh,07
     mov cx,0
     mov dx,184FH
     int 10h
-
+    ;check for level 2 if level 2 don't print this screen
     cmp chosen_level,2h
     jz hide_forb_chars
 
-    
+    ;display the forbidden char
     display_string_main mes_char1,1h,1h       
     display_char forbiddin_char1,25h,1h 
     
