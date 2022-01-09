@@ -32,7 +32,7 @@ jmp exit
 exit:
 ENDM display_char 
 
-.MODEL Large
+.MODEL HUGE
 .STACK 64
 .DATA   
 mes_level DB "Select Level (press 1 or 2):",'$'

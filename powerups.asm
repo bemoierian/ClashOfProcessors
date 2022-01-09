@@ -12,7 +12,7 @@ EXTRN ClearCommandString:FAR
 EXTRN SwitchTurn:far
 EXTRN CLEAR_TO_EXECUTE_1:BYTE
 EXTRN CLEAR_TO_EXECUTE_2:BYTE
-.model small
+.model HUGE
 .data
 ;power up 3
 powerup3_isused_player1 db 0h

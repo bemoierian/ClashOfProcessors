@@ -24,7 +24,7 @@ PUBLIC DestinationValue1
 ;        Source (Emmidiate 50)
 
 .286
-.model large
+.model HUGE
 .stack 64
 .data
 ;instruction codes 
