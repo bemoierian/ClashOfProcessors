@@ -460,6 +460,7 @@ MAIN PROC FAR
         ;DON'T CALL ANY FUNCTION HERE THAT CHANGES THE VALUE OF AX,
         ;IF YOU WANT TO USE AX, PUSH IT IN REG THEN POP WHEN YOU FINISH TO RESTORE ITS VALUE 
         ;----------------------------SEND--------------------------------
+        call HashFunction
         mov sendVarL, al
         mov sendVarH, ah
         MOV valueS, AL
@@ -487,13 +488,28 @@ MAIN PROC FAR
         ReceivedSuccess:
         ;----------------------------SEND--------------------------------
         ;----------------------------GUN--------------------------------
-        CALL Gun1Input
-        CMP isGun1, 1
-        jz Game
+        cmp player,1
+        jnz gunforP2
+            mov al,sendVarL
+            CALL Gun1Input
+            CMP isGun1, 1
+            jz Game
 
-        CALL Gun2Input
-        CMP isGun2, 1
-        jz Game
+            mov al,ReceiveVarL
+            CALL Gun2Input
+            CMP isGun2, 1
+            jz Game
+
+        gunforP2:
+            mov al,ReceiveVarL
+            CALL Gun1Input
+            CMP isGun1, 1
+            jz Game
+
+            mov al,sendVarL
+            CALL Gun2Input
+            CMP isGun2, 1
+            jz Game 
 
         ;---------------------Serial port checks------------------------
         cmp turn,1
@@ -1030,5 +1046,34 @@ SendInput PROC
     EndSendInput:
     RET
 SendInput ENDP
+
+
+HashFunction PROC
+	check_Right:
+        cmp ax, 4D00h ; if right arrow
+	jnz check_Left
+	mov al,1
+	jmp EndHash
+    
+	check_Left:
+	cmp ax, 4B00h ; if left arrow
+	jnz check_Up
+	mov al,2
+	jmp EndHash
+	
+	check_Up:
+	cmp ax, 4800h ; if up arrow
+	jnz check_Down
+	mov al,3
+	jmp EndHash
+    
+	check_Down:
+	cmp ax, 5000h ; if down arrow
+	jnz EndHash
+	mov al,4
+	jmp EndHash
+	
+	EndHash:
+HashFunction ENDP
 
 END MAIN
