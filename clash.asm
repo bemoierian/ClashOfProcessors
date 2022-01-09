@@ -1,8 +1,8 @@
 ;-------------------------start.asm---------------------------
 EXTRN startScreen1:far 
 EXTRN BUFFNAME1:BYTE, BufferData1:BYTE
-EXTRN startScreen2:far 
 EXTRN BUFFNAME2:BYTE, BufferData2:BYTE
+PUBLIC Player
 ;-------------------------RM.asm---------------------------
 EXTRN RegMemo:far
 PUBLIC m0_1,m1_1,m2_1,m3_1,m4_1,m5_1,m6_1 ,m7_1,m8_1,m9_1,mA_1,mB_1 ,mC_1,mD_1,mE_1,mF_1 
