@@ -220,7 +220,7 @@ int 10h
            
       ret       
 chatmodule endp
-end 
+
 
 
 
@@ -235,7 +235,7 @@ mov xps,dl
 mov yps,dh
 ret
 getScursor endp
-end
+
 ;get receving position
 getRcursor proc far
 mov ax,@data

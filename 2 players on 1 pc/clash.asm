@@ -195,24 +195,6 @@ target dw 105eH ;target values
 ;------------------------------------
 cyclesCounter1 dw 0
 cyclesCounter2 DW 0
-;-----------------Serial Port vars---------------
-sendVarL db ?
-sendVarH db ?
-ReceiveVarL db ?
-ReceiveVarH db ?
-
-InputVarL db ?
-InputVarH db ?
-
-valueR db ?
-isReceived db 0
-valueS db ?
-isSent db 0
-;Holds the number of the player (1 is the one who sent the invitation 1st)
-Player db 1 
-;Holds the mode of the game: 0. Command, 1. chat
-Mode db 0
-;------------------------------------------------
 .CODE
 MAIN PROC FAR
     MOV AX, @DATA
@@ -271,117 +253,11 @@ MAIN PROC FAR
                 jnz MainInput    ;if the key is not esc, take input again
                 jmp EndGame ;program end
             EndMainInput:
-            chat:
-            ;intialize port
-            ; set divisor latch access bit
-
-            mov dx,3fbh 			; Line Control Register
-            mov al,10000000b		;Set Divisor Latch Access Bit
-            out dx,al
-
-            ;Set LSB byte of the Baud Rate Divisor Latch register.
-
-            mov dx,3f8h			
-            mov al,0ch			
-            out dx,al
-
-            ;Set MSB byte of the Baud Rate Divisor Latch register.
-
-            mov dx,3f9h
-            mov al,00h
-            out dx,al
-
-            ;Set port configuration
-            mov dx,3fbh
-            mov al,00011011b
-            out dx,al     
-
-
-            ;text mode
-            mov ah, 0     
-            mov al, 3
-            int 10h
-
-            ;top half
-            mov ax,0600h        
-            mov bh,07h     ; normal video attribute         
-            mov ch,1       ; top y
-            mov cl,0       ; top x
-            mov dh,12      ; bottom y
-            mov dl,79      ; bottom x
-            int 10h           
-
-                mov ah, 9
-                mov dx, offset BUFFNAME1
-                int 21h
-
-            ;draw the line 
-            setcursor1 0,12
-                mov ah, 9
-                mov dx, offset line
-                int 21h
-            ;bottom half
-            mov ax,0600h    ;  
-            mov bh,07h      ; normal video attribute         
-            mov ch,13       ; top y
-            mov cl,0        ; top x
-            mov dh,24       ; bottom y
-            mov dl,79       ; bottom x
-            int 10h   
-
-                setcursor1 0,13
-                mov ah, 9
-                mov dx, offset BUFFNAME2
-                int 21h
-
-                ;draw the line 
-            setcursor1 0,23
-                mov ah, 9
-                mov dx, offset line
-                int 21h
-
-
-            setcursor1 0,24
-            mov ah, 9
-                mov dx, offset endchat
-                int 21h
-
-                setcursor1 19,24
-            mov ah, 9
-                mov dx, offset BUFFNAME2
-                int 21h
-
-                setcursor1 35,24
-                mov ah, 9
-                mov dx, offset pre
-                int 21h
-
-            ;start sending and recieving
-            call chatmodule
-
 
     EndMainScreen:
-    ;---------------------CONFIURATION OF SERIAL PORT----------------------
-    mov dx,3fbh 			; Line Control Register
-    mov al,10000000b		;Set Divisor Latch Access Bit
-    out dx,al			;Out it
-    ;Set LSB byte of the Baud Rate Divisor Latch register.
-    mov dx,3f8h			
-    mov al,0ch			
-    out dx,al
-    ;Set MSB byte of the Baud Rate Divisor Latch register.
-    mov dx,3f9h
-    mov al,00h
-    out dx,al
-    ;Set port configuration
-    mov dx,3fbh
-    mov al,00011011b
-    out dx,al
-
     mov ah,0   ;enter graphics mode
     mov al,13h
     int 10h
-    ;----------------------------------------------------------------------
 
 
     Background                          ;background color
@@ -449,43 +325,19 @@ MAIN PROC FAR
         drawrectanglewith  120,232,c24,15,15,63527d,l24,c24
         setcursor 0000
         drawrectanglewith  120,255,c25,15,15, 63530d,l25,c25
+
+
+
         ;Read Keyboard input
         mov ah, 1
         int 16h
-        jz NotSending   ;if no key is pressed, go to other functions like flying objects, etc. -----------to be changed--------------
+        jz Game   ;if no key is pressed, go to other functions like flying objects, etc. -----------to be changed--------------
         mov ah, 0
         int 16h
         ;AL contains ascii of key pressed
         ;-------------------------------------------------INPORTANT NOTE-------------------------------------------------------
         ;DON'T CALL ANY FUNCTION HERE THAT CHANGES THE VALUE OF AX,
         ;IF YOU WANT TO USE AX, PUSH IT IN REG THEN POP WHEN YOU FINISH TO RESTORE ITS VALUE 
-        ;----------------------------SEND--------------------------------
-        mov sendVarL, al
-        mov sendVarH, ah
-        MOV valueS, AL
-        CALL SendInput
-        CMP isSent, 1
-        jnz NotSending
-        jmp ContinueReceive
-
-        NotSending:
-        mov sendVarL, 2Fh
-        mov sendVarH, 35h
-        ContinueReceive:
-        ;----------------------------Receive------------------------------
-        CALL ReceiveInput
-        CMP isReceived, 1
-        jnz notReceived
-        mov dl, valueR
-        mov ReceiveVarL, dl
-        jmp ReceivedSuccess
-        notReceived:
-        ;-------------------If we received nothing or an error occured, set received vars with '/' which is our flag for error--
-        ;--------------------Error is handled in backspaceInput proc---------------------------------------------------
-        mov ReceiveVarL, 2Fh
-        mov ReceiveVarH, 35h
-        ReceivedSuccess:
-        ;----------------------------SEND--------------------------------
         ;----------------------------GUN--------------------------------
         CALL Gun1Input
         CMP isGun1, 1
@@ -494,38 +346,6 @@ MAIN PROC FAR
         CALL Gun2Input
         CMP isGun2, 1
         jz Game
-
-        ;---------------------Serial port checks------------------------
-        cmp turn,1
-        jnz turn2
-            cmp player,1
-            jnz OtherPlayer2
-                mov dl, sendVarL
-                mov InputVarL, dl
-                mov dl, sendVarH
-                mov InputVarH, dl
-                jmp continueInput
-            OtherPlayer2:
-                mov dl, ReceiveVarL
-                mov InputVarL, dl
-                mov dl, ReceiveVarH
-                mov InputVarH, dl
-                jmp continueInput
-        turn2:
-            cmp player,2
-            jnz OtherPlayer1
-                mov dl, sendVarL
-                mov InputVarL, dl
-                mov dl, sendVarH
-                mov InputVarH, dl
-                jmp continueInput
-                OtherPlayer1:
-                    mov dl, ReceiveVarL
-                    mov InputVarL, dl
-                    mov dl, ReceiveVarH
-                    mov InputVarH, dl
-                    jmp continueInput
-        continueInput:
         ;------------------------BACKSPACE------------------------------
         CALL BackspaceInput
         CMP isBackSpace, 1
@@ -544,6 +364,96 @@ MAIN PROC FAR
         cmp ah, 3Eh
         jz MainScreen
         jmp Game
+
+
+
+chat:
+    ;intialize port
+; set divisor latch access bit
+
+mov dx,3fbh 			; Line Control Register
+mov al,10000000b		;Set Divisor Latch Access Bit
+out dx,al
+
+;Set LSB byte of the Baud Rate Divisor Latch register.
+
+mov dx,3f8h			
+mov al,0ch			
+out dx,al
+
+;Set MSB byte of the Baud Rate Divisor Latch register.
+
+mov dx,3f9h
+mov al,00h
+out dx,al
+
+;Set port configuration
+mov dx,3fbh
+mov al,00011011b
+out dx,al     
+
+
+;text mode
+   mov ah, 0     
+   mov al, 3
+   int 10h
+
+   ;top half
+   mov ax,0600h        
+   mov bh,07h     ; normal video attribute         
+   mov ch,1       ; top y
+   mov cl,0       ; top x
+   mov dh,12      ; bottom y
+   mov dl,79      ; bottom x
+   int 10h           
+
+    mov ah, 9
+    mov dx, offset BUFFNAME1
+    int 21h
+
+;draw the line 
+   setcursor1 0,12
+    mov ah, 9
+    mov dx, offset line
+    int 21h
+;bottom half
+   mov ax,0600h    ;  
+   mov bh,07h      ; normal video attribute         
+   mov ch,13       ; top y
+   mov cl,0        ; top x
+   mov dh,24       ; bottom y
+   mov dl,79       ; bottom x
+   int 10h   
+
+     setcursor1 0,13
+    mov ah, 9
+    mov dx, offset BUFFNAME2
+    int 21h
+
+    ;draw the line 
+   setcursor1 0,23
+    mov ah, 9
+    mov dx, offset line
+    int 21h
+
+
+setcursor1 0,24
+mov ah, 9
+    mov dx, offset endchat
+    int 21h
+
+    setcursor1 19,24
+mov ah, 9
+    mov dx, offset BUFFNAME2
+    int 21h
+
+       setcursor1 35,24
+     mov ah, 9
+    mov dx, offset pre
+    int 21h
+
+;start sending and recieving
+call chatmodule
 
 
 EndGame:
@@ -614,8 +524,6 @@ ResetInputFlags PROC
     MOV isEnter, 0
     MOV isChar, 0
     MOV isPowerUp, 0
-    MOV isReceived, 0
-    MOV isSent, 0
     RET
 ResetInputFlags ENDP
 
@@ -655,7 +563,7 @@ Gun1Input PROC
         jmp Gun1InputDone
     ;space
     fire1: 
-        cmp al, 20h
+        cmp ah, 39h
         jnz NotGun1Input
         CALL FireGun1_initial
 
@@ -712,10 +620,7 @@ Gun2Input PROC
 Gun2Input ENDP
 ;description
 BackspaceInput PROC
-    mov al, InputVarL
-    cmp al, 2Fh
-    jz BackspaceInputDone
-    cmp al, 08h
+    cmp ah, 0Eh
     jnz NotBackspaceInput
     cmp cmdCurrSize, 0 ;if the string is empty, do nothing and continue the main loop
     jz BackspaceInputDone
@@ -736,7 +641,6 @@ BackspaceInput PROC
 BackspaceInput ENDP
 ;description
 EnterInput PROC
-    mov al, InputVarL
     cmp al, 13d
     jnz NotEnterInput
     CMP cmdCurrSize, 0
@@ -769,11 +673,6 @@ CharInput PROC
     cmp dl, cmdMaxSize
     jz endInsertChar
     ;-------------Check if plahyer entered a forbidden character----------
-    ; cmp Mode, 0
-    ; jnz continueIns
-
-    ;receivedVar
-    mov al, InputVarL
     CMP Turn,1
     JNZ CHCKFORB2
     CMP AL, forbiddin_char2
@@ -998,37 +897,5 @@ SetInitialPoints PROC ;but the initial points in the score variables
     add dl,al
     mov P2_score,dl
     RET
-SetInitialPoints ENDP
-
-ReceiveInput PROC FAR
-    mov dx , 3FDH		; Line Status Register
-    in al , dx 
-    AND al , 1
-    JZ EndReceiveInput ;lo mafi4 7aga tst2blha jump to end
-
-    ;If Ready read the VALUE in Receive data registerd
-        mov dx , 03F8H
-        in al , dx 
-        mov valueR , al ;;to the recieved char in valueR
-        mov isReceived, 1
-    EndReceiveInput:
-    RET
-ReceiveInput ENDP
-
-;description
-SendInput PROC
-     mov dx , 3FDH ;line status
-    ;wait till THR is empty to send
-        In al , dx 			;Read Line Status
-        AND al , 00100000b
-        JZ EndSendInput
-    ;If empty put the VALUE in Transmit data register
-    mov dx , 3F8H		; Transmit data register
-    mov  al,valueS
-    out dx , al
-    mov isSent, 1
-    EndSendInput:
-    RET
-SendInput ENDP
-
+SetInitialPoints ENDP 
 END MAIN
