@@ -428,27 +428,7 @@ MAIN PROC FAR
         ;----------------------rm.asm-----------------------------
         call RegMemo
         ;----------------------UI.inc-----------------------------score for colors
-        setcursor 0000
-        drawrectanglewith  140,7,c11,15,15,63497d,l11,c11
-        setcursor 0000
-        drawrectanglewith  140,30,c12,15,15,63500d,l12,c12
-        setcursor 0000
-        drawrectanglewith  140,53,c13,15,15,63503d,l13,c13
-        setcursor 0000
-        drawrectanglewith  140,77,c14,15,15,63506d,l14,c14
-        setcursor 0000
-        drawrectanglewith  140,101,c15,15,15, 63509d,l15,c15
-    
-        setcursor 0000  
-        drawrectanglewith  120,163,c21,15,15,63518d,l21,c21
-        setcursor 0000
-        drawrectanglewith  120,186,c22,15,15,63521d,l22,c22
-        setcursor 0000
-        drawrectanglewith   120,209,c23,15,15,63524d,l23,c23
-        setcursor 0000
-        drawrectanglewith  120,232,c24,15,15,63527d,l24,c24
-        setcursor 0000
-        drawrectanglewith  120,255,c25,15,15, 63530d,l25,c25
+        CALL DrawUI
         ;Read Keyboard input
         mov ah, 1
         int 16h
@@ -1106,9 +1086,34 @@ HashFunction PROC
     cmp ax, 44H ; if F10
 	jnz EndHash
 	mov al,0ffh
-    
+
 	EndHash:
     ret
 HashFunction ENDP
+
+DrawUI PROC
+    setcursor 0000
+        drawrectanglewith  140,7,c11,15,15,63497d,l11,c11
+        setcursor 0000
+        drawrectanglewith  140,30,c12,15,15,63500d,l12,c12
+        setcursor 0000
+        drawrectanglewith  140,53,c13,15,15,63503d,l13,c13
+        setcursor 0000
+        drawrectanglewith  140,77,c14,15,15,63506d,l14,c14
+        setcursor 0000
+        drawrectanglewith  140,101,c15,15,15, 63509d,l15,c15
+    
+        setcursor 0000  
+        drawrectanglewith  120,163,c21,15,15,63518d,l21,c21
+        setcursor 0000
+        drawrectanglewith  120,186,c22,15,15,63521d,l22,c22
+        setcursor 0000
+        drawrectanglewith   120,209,c23,15,15,63524d,l23,c23
+        setcursor 0000
+        drawrectanglewith  120,232,c24,15,15,63527d,l24,c24
+        setcursor 0000
+        drawrectanglewith  120,255,c25,15,15, 63530d,l25,c25
+        RET
+DrawUI ENDP
 
 END MAIN
