@@ -230,6 +230,9 @@ DidFire1Hit PROC FAR
     DEC DI
     ADD [BX][DI], 1
     ADD P1_score, DL
+    CMP P1_score, 99
+    JC didntHit1
+    MOV P1_score, 99
     didntHit1:
     RET
 DidFire1Hit ENDP
@@ -392,6 +395,9 @@ DidFire2Hit PROC FAR
     DEC DI
     ADD [BX][DI], 1
     ADD P2_score, DL
+    CMP P2_score, 99
+    JC didntHit2
+    MOV P2_score, 99
     didntHit2:
     RET
 DidFire2Hit ENDP
