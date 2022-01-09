@@ -1,8 +1,17 @@
+setcursor1 MACRO x,y
+mov ah,2
+mov bh,0
+mov dl,x
+mov dh,y
+int 10h
+ENDM setcursor1
+
 PUBLIC forbiddin_char1,forbiddin_char2,chosen_level,initial_reg1,initial_reg2
-PUBLIC select_level,select_forbidden_char1,select_forbidden_char2,show_forb_chars,show_level
+PUBLIC select_level,select_forbidden_char1,select_forbidden_char2,show_forb_chars,show_level,MainScreenFunctions
+PUBLIC GostartGame, GoStartMshBgad, GoToChat, isfirst, player2name, player1name
 EXTRN AxVar1:WORD,BxVar1:WORD,CxVar1:WORD,DxVar1:WORD,SiVar1:WORD,DiVar1:WORD,SpVar1 :WORD,BpVar1 :WORD
 EXTRN AxVar2:WORD,BxVar2:WORD,CxVar2:WORD,DxVar2:WORD,SiVar2:WORD,DiVar2:WORD,SpVar2 :WORD,BpVar2 :WORD
-
+EXTRN StaticScreen:FAR
 display_string_main MACRO mes,x,y
     MOV  DL, x  ;COLUMN
     MOV  DH, y   ;ROW
@@ -59,7 +68,159 @@ number dw 0
 chosen_level DB ?      ;1 or 2
 forbiddin_char1 DB ?   ;0-9 , a-z
 forbiddin_char2 DB ?
+;----------------------Main Screen--------------------------
+player1name db 16 DUP('$')
+player2name db 16 DUP('$')
+isfirst db 0
+; firstPlayer db 0 ; take 1 or 2
+; invflag db 0
+; invgame db 0
+ReceivedValue db 0
+NotifChatReceived db 'You Received A Chat invitation from ','$'
+NotifPlayRecieved db 'You Received A Game invitation from ','$'
+NotifChatSent db 'You Sent A Chat Notification To ','$'
+NotifGameSent db 'You Sent A Game Notification To ','$'
+RescieveFirstTime db 0
+ChatInvitationR db ?
+GameInvitationR db ?
+ChatInvitationS db ?
+GameInvitationS db ?
+GoToChat db 0
+GoStartMshBgad db 0
+GostartGame db 0
+;----------------------------------------------------------
 .CODE
+MainScreenFunctions PROC FAR
+    MOV AX, @DATA
+    MOV DS, AX
+    MOV GoToChat, 0
+    MOV GoStartMshBgad, 0
+    MOV GostartGame, 0
+    InvetationLoop:
+        mov ah,1
+        int 16h
+        jz receive
+        send:
+        mov ah, 0 
+        int 16h
+        keyF1:
+            cmp ah, 3bh ;compare key code with f1 code
+            jnz keyF2    ;if the key is not F1, jump to next check
+            setcursor1 0,23
+            mov ah, 9
+            mov dx, offset NotifChatSent
+            int 21h
+            mov ah, 3bh
+            jmp inputtaken
+        keyF2:
+            cmp ah, 3Ch ;compare key code with f1 code
+            jnz keyESC    ;if the key is not F2, jump to next check
+            setcursor1 0,24
+            mov ah, 9
+            mov dx, offset NotifGameSent
+            int 21h
+            mov ah, 3ch             
+            jmp inputtaken
+        keyESC:
+            cmp ah, 1h ;compare key code with f1 code
+            jnz receive    ;if the key is not esc, take input again
+            jmp inputtaken
+        ;send input
+        inputtaken:
+            mov dx , 3FDH ;line status
+            ;wait till THR is empty to send
+            In al , dx 			;Read Line Status
+            AND al , 00100000b
+            JZ receive
+            ;If empty put the VALUE in Transmit data register
+            mov dx , 3F8H		; Transmit data register
+            mov  al,ah
+            out dx , al
+
+        ;second and send
+        _keyF1:
+            cmp ah, 3bh ;compare key code with f1 code
+            jnz _keyF2    ;if the key is not F1, jump to next check
+            cmp ChatInvitationR, 1
+            mov ChatInvitationR, 0
+            jz SetChatFlag
+            mov ChatInvitationS, 1
+            jmp receive
+        _keyF2:
+            cmp ah, 3Ch ;compare key code with f1 code
+            jnz _keyESC    ;if the key is not F2, jump to next check
+            cmp GameInvitationR, 0
+            JNZ StatScrn
+            mov GameInvitationS, 1
+            mov isfirst, 1
+            jmp receive
+            StatScrn:
+            mov GameInvitationR, 0
+            CALL StaticScreen ;----------------------extrn
+            jmp SetStartMshBgadFlag
+        _keyESC:
+            cmp ah, 1h ;compare key code with f1 code
+            jnz receive    ;if the key is not esc, take input again
+            MOV AH, 04CH    ;TO RETURN TO THE OPERATING SYSTEM
+            INT 21H
+        receive:
+            mov dx , 3FDH		; Line Status Register
+            in al , dx 
+            AND al , 1                
+            JZ InvetationLoop ;lo mafi4 7aga tst2blha jump to myloop
+
+            ;Receive
+            ;If Ready read the VALUE in Receive data registerd
+            mov dx , 03F8H
+            in al , dx 
+            mov ReceivedValue , al 
+        keyF1_R:
+            cmp al, 3bh ;compare key code with f1 code
+            jnz keyF2_R    ;if the key is not F1, jump to next check
+            cmp ChatInvitationS, 1
+            jz SetChatFlag
+            mov ChatInvitationR, 1
+            
+            setcursor1 0,23
+            mov ah, 9
+            mov dx, offset NotifChatReceived
+            int 21h
+
+            jmp InvetationLoop
+        keyF2_R:
+            cmp al, 3Ch ;compare key code with f1 code
+            jnz keyESC_R    ;if the key is not F2, jump to next check
+            cmp GameInvitationS, 0
+            jnz SetstartGameFlag
+            mov GameInvitationR, 1 
+            
+            setcursor1 0,24
+            mov ah, 9
+            mov dx, offset NotifPlayRecieved
+            int 21h
+                    
+            jmp InvetationLoop
+        keyESC_R:
+            cmp al, 1h ;compare key code with f1 code
+            jnz InvetationLoop    ;if the key is not esc, take input again
+            MOV AH, 04CH    ;TO RETURN TO THE OPERATING SYSTEM
+            INT 21H
+
+
+        SetStartMshBgadFlag:
+        mov GoStartMshBgad, 1
+        jmp EndMainScreen
+        SetChatFlag:
+        mov GoToChat, 1
+        jmp EndMainScreen
+        SetstartGameFlag:
+        mov GostartGame, 1
+        jmp EndMainScreen
+        EndMainScreen:
+    ret
+MainScreenFunctions ENDP
+
+
 
 select_level PROC far ;choose the level
 

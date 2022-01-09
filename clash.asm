@@ -1,8 +1,8 @@
 ;-------------------------start.asm---------------------------
 EXTRN startScreen1:far 
 EXTRN BUFFNAME1:BYTE, BufferData1:BYTE
-EXTRN startScreen2:far 
 EXTRN BUFFNAME2:BYTE, BufferData2:BYTE
+PUBLIC Player
 ;-------------------------RM.asm---------------------------
 EXTRN RegMemo:far
 PUBLIC m0_1,m1_1,m2_1,m3_1,m4_1,m5_1,m6_1 ,m7_1,m8_1,m9_1,mA_1,mB_1 ,mC_1,mD_1,mE_1,mF_1 
@@ -63,6 +63,10 @@ EXTRN select_forbidden_char2:FAR
 EXTRN show_forb_chars:FAR
 EXTRN initial_reg1:far
 EXTRN initial_reg2:far
+EXTRN MainScreenFunctions:far
+EXTRN GostartGame:BYTE, GoStartMshBgad:BYTE, GoToChat:BYTE, isfirst:BYTE, player2name:BYTE, player1name:BYTE
+
+PUBLIC StaticScreen
 ;-------------------------UI.inc------------------------------
 include UI.inc
 
@@ -247,28 +251,11 @@ MAIN PROC FAR
 
     UserNames:
         call startScreen1  ;start.asm 
-        call startScreen2
+        ; call startScreen2
         CALL SetInitialPoints
         CALL SetMinPoints
     EndUserNames:
-    ;Clear Screen
-    mov ax,0600h
-    mov bh,07
-    mov cx,0
-    mov dx,184FH
-    int 10h
-    ;CHOOSE LEVEL
-    CALL select_level
-    CALL show_level
-    cmp chosen_level,2
-    jnz level1
-    call initial_reg1
-    call initial_reg2
-    level1:
-    CALL select_forbidden_char1
-    CALL select_forbidden_char2
-    CALL show_forb_chars
-    MainScreen:
+
     mov ah,0          ;Change video mode (Text MODE)
     mov al,03h
     int 10h 
@@ -278,53 +265,60 @@ MAIN PROC FAR
     mov cx,0
     mov dx,184FH
     int 10h
+      MainScreen:
         draw_mainscreen main_str1, main_str2, main_str3 ;UI.inc
         MainInput:
-            mov ah,1
-            int 16h
-            jz MainInput
-            mov ah, 0
-            int 16h
-            keyF1:
-                cmp ah, 3bh ;compare key code with f1 code
-                jnz keyF2    ;if the key is not F1, jump to next check
-                jmp chat
-            keyF2:
-                cmp ah, 3Ch ;compare key code with f1 code
-                jnz keyESC    ;if the key is not F2, jump to next check
-                jmp EndMainScreen ;go to game
-            keyESC:
-                cmp ah, 1h ;compare key code with f1 code
-                jnz MainInput    ;if the key is not esc, take input again
-                jmp EndGame ;program end
-            EndMainInput:
-            chat:
-            CALL StartChat
-            jmp MainScreen
+        CALL MainScreenFunctions
+        CMP isfirst, 1
+        JNZ CHCKFLAGS
+        MOV Player, 1
+        CHCKFLAGS:
+        CMP GoToChat, 1
+        jz chat
+        CMP GostartGame, 1
+        jz startGame
+        CMP GoStartMshBgad, 1
+        jz startMshBgad
 
+    chat:
+     CALL StartChat
+     JMP MainScreen
+   startGame:
+    ;Clear Screen
+    mov ax,0600h
+    mov bh,07
+    mov cx,0
+    mov dx,184FH
+    int 10h
+    ;CHOOSE LEVEL
+    CALL select_level
+    
+    mov dx , 3FDH		; Line Status Register
+    AGAIN:
+        In al , dx 			;Read Line Status
+  		AND al , 00100000b
+  		JZ AGAIN
 
-    EndMainScreen:
-    ;---------------------CONFIURATION OF SERIAL PORT----------------------
-    mov dx,3fbh 			; Line Control Register
-    mov al,10000000b		;Set Divisor Latch Access Bit
-    out dx,al			;Out it
-    ;Set LSB byte of the Baud Rate Divisor Latch register.
-    mov dx,3f8h			
-    mov al,0ch			
-    out dx,al
-    ;Set MSB byte of the Baud Rate Divisor Latch register.
-    mov dx,3f9h
-    mov al,00h
-    out dx,al
-    ;Set port configuration
-    mov dx,3fbh
-    mov al,00011011b
-    out dx,al
+    ;If empty put the VALUE in Transmit data register
+  		mov dx , 3F8H		; Transmit data register
+  		mov  al,chosen_level
+  		out dx , al 
+
+    startMshBgad:
+    CALL show_level
+    cmp chosen_level,2
+    jnz level1
+    call initial_reg1
+    call initial_reg2
+    level1:
+    CALL select_forbidden_char1
+    ;CALL select_forbidden_char2
+    CALL show_forb_chars
 
     mov ah,0   ;enter graphics mode
     mov al,13h
     int 10h
-    ;----------------------------------------------------------------------
+   
     Background                          ;background color
     horizontalline 170,0,320            ;horizontal line
     drawrectangle  125,0,0dh,13,120
@@ -1123,4 +1117,57 @@ SetParametersOfCommand PROC FAR
     continueInput:    
     RET
 SetParametersOfCommand ENDP
+;description
+StaticScreen PROC FAR
+    mov ah,0   ;enter graphics mode
+    mov al,13h
+    int 10h
+    Background                          ;background color
+    horizontalline 170,0,320            ;horizontal line
+    drawrectangle  125,0,0dh,13,120
+    
+    verticalline 0,160,170              ;vertical line
+    ;horizontalline 145,162,319          ;horizontal line
+    drawrectangle  125,161,0Eh,13,120
+    ;----------------------rm.asm-----------------------------
+    call RegMemo
+    ;----------------------UI.inc-----------------------------score for colors
+    setcursor 0000
+    drawrectanglewith  140,7,c11,15,15,63497d,l11,c11
+    setcursor 0000
+    drawrectanglewith  140,30,c12,15,15,63500d,l12,c12
+    setcursor 0000
+    drawrectanglewith  140,53,c13,15,15,63503d,l13,c13
+    setcursor 0000
+    drawrectanglewith  140,77,c14,15,15,63506d,l14,c14
+    setcursor 0000
+    drawrectanglewith  140,101,c15,15,15, 63509d,l15,c15
+
+    setcursor 0000  
+    drawrectanglewith  120,163,c21,15,15,63518d,l21,c21
+    setcursor 0000
+    drawrectanglewith  120,186,c22,15,15,63521d,l22,c22
+    setcursor 0000
+    drawrectanglewith   120,209,c23,15,15,63524d,l23,c23
+    setcursor 0000
+    drawrectanglewith  120,232,c24,15,15,63527d,l24,c24
+    setcursor 0000
+    drawrectanglewith  120,255,c25,15,15, 63530d,l25,c25
+    
+    ;----------------Wait for input---------
+    mov dx , 3FDH		; Line Status Register
+	CHK:	
+        in al , dx 
+  		AND al , 1
+  		JZ CHK
+
+ ;If Ready read the VALUE in Receive data register
+  		mov dx , 03F8H
+  		in al , dx
+        mov chosen_level, al
+    mov ah,0          ;Change video mode (Text MODE)
+    mov al,03h
+    int 10h
+    RET
+StaticScreen ENDP
 END MAIN
