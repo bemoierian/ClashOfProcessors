@@ -639,7 +639,7 @@ ResetInputFlags ENDP
 Gun1Input PROC
      ;right arrow
     right1:
-        cmp ax, 4D00h ;compare key code with right key code
+        cmp al,1 ;compare key code with right key code
         jnz left1    ;if the key is not right, jump to next check
         CMP gun1NewX, 141
         JNC Gun1InputDone
@@ -647,7 +647,7 @@ Gun1Input PROC
         jmp Gun1InputDone
     ;left arrow    
     left1:
-        cmp ax, 4B00h
+        cmp al,2
         jnz up1
         CMP gun1NewX, 4
         JC Gun1InputDone
@@ -655,7 +655,7 @@ Gun1Input PROC
         jmp Gun1InputDone
     ;up arrow
     up1:
-        cmp ax, 4800h
+        cmp al,3
         jnz down1
         CMP gun1NewY, 4
         JC Gun1InputDone
@@ -663,7 +663,7 @@ Gun1Input PROC
         jmp Gun1InputDone
     ;down arrow
     down1:
-        cmp ax, 5000h
+        cmp al,4
         jnz fire1
         CMP gun1NewY, 115
         JNC Gun1InputDone
@@ -684,7 +684,7 @@ Gun1Input ENDP
 Gun2Input PROC
      ;right arrow
     right2:
-        cmp ax, 4D36h ;compare key code with right key code
+        cmp al,1 ;compare key code with right key code
         jnz left2    ;if the key is not right, jump to next check
         CMP gun2NewX, 311
         JNC Gun2InputDone
@@ -692,7 +692,7 @@ Gun2Input PROC
         jmp Gun2InputDone
     ;left arrow    
     left2:
-        cmp ax, 4B34h
+        cmp al,2
         jnz up2
         CMP gun2NewX, 164
         JC Gun2InputDone
@@ -700,7 +700,7 @@ Gun2Input PROC
         jmp Gun2InputDone
     ;up arrow
     up2:
-        cmp ax, 4838h
+        cmp al,3
         jnz down2
         CMP gun2NewY, 4
         JC Gun2InputDone
@@ -708,7 +708,7 @@ Gun2Input PROC
         jmp Gun2InputDone
     ;down arrow
     down2:
-        cmp ax, 5032h
+        cmp al,4
         jnz fire2
         CMP gun2NewY, 115
         JNC Gun2InputDone
@@ -716,7 +716,7 @@ Gun2Input PROC
         jmp Gun2InputDone
 
     fire2:
-        cmp ax, 5230h
+        cmp al,20h
         jnz NotGun2Input
         CALL FireGun2_initial
 
@@ -820,7 +820,7 @@ CharInput ENDP
 ;description
 PowerUpInput PROC
     keyF5:
-        cmp ah, 3Fh ;compare key code with f5 code
+        cmp al, 0fah ;compare key code with f5 code
         jnz keyF6    ;if the key is not F5, jump to next check
         ;call powerup
         cmp Turn,1
@@ -831,7 +831,7 @@ PowerUpInput PROC
         CALL power_up1_player2
         jmp PowerUpInputDone
     keyF6:
-        cmp ah, 40h ;compare key code with f6 code
+        cmp al, 0fbh ;compare key code with f6 code
         jnz keyF7    ;if the key is not F6, jump to next check
         ;call powerup
         cmp Turn,1
@@ -842,7 +842,7 @@ PowerUpInput PROC
         CALL power_up2_player2
         jmp PowerUpInputDone
     keyF7:
-        cmp ah, 41h ;compare key code with f7 code
+        cmp al, 0fch ;compare key code with f7 code
         jnz keyF8    
         ;call powerup
         cmp Turn,1
@@ -853,7 +853,7 @@ PowerUpInput PROC
         CALL power_up3_player2
         jmp PowerUpInputDone
     keyF8:
-        cmp ah, 42h ;compare key code with f8 code
+        cmp al, 0fdh ;compare key code with f8 code
         jnz keyF9  
         ;call powerup  
         cmp Turn,1
@@ -864,7 +864,7 @@ PowerUpInput PROC
         CALL power_up4_player2
         jmp PowerUpInputDone
     keyF9:
-        cmp ah, 43h ;compare key code with f9 code
+        cmp al, 0feh ;compare key code with f9 code
         jnz keyF10  
         ;call powerup
         cmp Turn,1
@@ -877,7 +877,7 @@ PowerUpInput PROC
     keyF10:
         CMP chosen_level,2
         JNZ NotPowerUpInput ;if not level 2 no power up 6
-        cmp ah, 44h ;compare key code with f10 code
+        cmp al, 0ffh ;compare key code with f10 code
         jnz NotPowerUpInput  
         cmp Turn,1
         jnz P26
@@ -1047,7 +1047,6 @@ SendInput PROC
     RET
 SendInput ENDP
 
-
 HashFunction PROC
 	check_Right:
         cmp ax, 4D00h ; if right arrow
@@ -1069,11 +1068,47 @@ HashFunction PROC
     
 	check_Down:
 	cmp ax, 5000h ; if down arrow
-	jnz EndHash
+	jnz F5
 	mov al,4
 	jmp EndHash
 	
+    F5:
+	cmp ah, 3FH ; if F5
+	jnz F6
+	mov al,0fah
+	jmp EndHash
+
+    F6:
+	cmp ah, 40H ; if F6
+	jnz F7
+	mov al,0fbh
+	jmp EndHash
+
+    F7:
+	cmp ah, 41H ; if F7
+	jnz F8
+	mov al,0fch
+	jmp EndHash
+
+    F8:
+	cmp ah, 42H ; if F8
+	jnz F9
+	mov al,0fdh
+	jmp EndHash
+
+    F9:
+	cmp ah, 43H ; if F9
+	jnz F10
+	mov al,0feh
+	jmp EndHash
+
+    F10:
+    cmp ax, 44H ; if F10
+	jnz EndHash
+	mov al,0ffh
+    
 	EndHash:
+    ret
 HashFunction ENDP
 
 END MAIN
