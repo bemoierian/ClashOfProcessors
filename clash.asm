@@ -11,7 +11,10 @@ PUBLIC AxVar1,BxVar1,CxVar1,DxVar1,SiVar1,DiVar1,SpVar1 ,BpVar1
 PUBLIC AxVar2,BxVar2,CxVar2,DxVar2,SiVar2,DiVar2,SpVar2 ,BpVar2
 PUBLIC Carry_1,Carry_2
 ;-------------------------chat.asm---------------------------
-EXTRN Chat:far 
+;EXTRN Chat:far 
+EXTRN chatmodule:far 
+EXTRN line:BYTE,endchat:BYTE,pre:BYTE,thechatended:BYTE
+EXTRN yps:BYTE,xps:BYTE,ypr:BYTE,xpr:BYTE
 ;-------------------------cmd_p1.asm---------------------------
 EXTRN execute1:far 
 EXTRN CLEAR_TO_EXECUTE_1:BYTE
@@ -59,6 +62,32 @@ EXTRN initial_reg1:far
 EXTRN initial_reg2:far
 ;-------------------------UI.inc------------------------------
 include UI.inc
+
+;cleartop
+cleartop MACRO
+   
+mov ax,0600h
+mov bh,07h
+mov ch,1   
+mov cl,0     
+mov dh,11   
+mov dl,79
+int 10h 
+  
+ENDM cleartop 
+
+;clearbottom
+clearbottom MACRO
+   
+mov ax,0600h
+mov bh,07h
+mov ch,14  
+mov cl,0      
+mov dh,22
+mov dl,79
+int 10h 
+  
+ENDM clearbottom
 ;------------------win.asm----------
 EXTRN printwin1:BYTE,printwin2:BYTE,winner:BYTE,programend:BYTE
 EXTRN CheckWinner:far
@@ -212,9 +241,9 @@ MAIN PROC FAR
             mov ah, 0
             int 16h
             keyF1:
-                cmp ah, 3Bh ;compare key code with f1 code
+                cmp ah, 3bh ;compare key code with f1 code
                 jnz keyF2    ;if the key is not F1, jump to next check
-                ; jmp chat
+                jmp chat
             keyF2:
                 cmp ah, 3Ch ;compare key code with f1 code
                 jnz keyESC    ;if the key is not F2, jump to next check
@@ -335,6 +364,97 @@ MAIN PROC FAR
         cmp ah, 3Eh
         jz MainScreen
         jmp Game
+
+
+
+chat:
+    ;intialize port
+; set divisor latch access bit
+
+mov dx,3fbh 			; Line Control Register
+mov al,10000000b		;Set Divisor Latch Access Bit
+out dx,al
+
+;Set LSB byte of the Baud Rate Divisor Latch register.
+
+mov dx,3f8h			
+mov al,0ch			
+out dx,al
+
+;Set MSB byte of the Baud Rate Divisor Latch register.
+
+mov dx,3f9h
+mov al,00h
+out dx,al
+
+;Set port configuration
+mov dx,3fbh
+mov al,00011011b
+out dx,al     
+
+
+;text mode
+   mov ah, 0     
+   mov al, 3
+   int 10h
+
+   ;top half
+   mov ax,0600h        
+   mov bh,07h     ; normal video attribute         
+   mov ch,1       ; top y
+   mov cl,0       ; top x
+   mov dh,12      ; bottom y
+   mov dl,79      ; bottom x
+   int 10h           
+
+    mov ah, 9
+    mov dx, offset BUFFNAME1
+    int 21h
+
+;draw the line 
+   setcursor1 0,12
+    mov ah, 9
+    mov dx, offset line
+    int 21h
+;bottom half
+   mov ax,0600h    ;  
+   mov bh,07h      ; normal video attribute         
+   mov ch,13       ; top y
+   mov cl,0        ; top x
+   mov dh,24       ; bottom y
+   mov dl,79       ; bottom x
+   int 10h   
+
+     setcursor1 0,13
+    mov ah, 9
+    mov dx, offset BUFFNAME2
+    int 21h
+
+    ;draw the line 
+   setcursor1 0,23
+    mov ah, 9
+    mov dx, offset line
+    int 21h
+
+
+setcursor1 0,24
+mov ah, 9
+    mov dx, offset endchat
+    int 21h
+
+    setcursor1 19,24
+mov ah, 9
+    mov dx, offset BUFFNAME2
+    int 21h
+
+       setcursor1 35,24
+     mov ah, 9
+    mov dx, offset pre
+    int 21h
+
+;start sending and recieving
+call chatmodule
+
 
 EndGame:
     mov ax,0600h

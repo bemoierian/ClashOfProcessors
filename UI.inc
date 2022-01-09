@@ -202,3 +202,40 @@ disp p,l,c
 
 endm drawrectanglewith
 
+
+;set cursor 
+setcursor1 MACRO x,y
+mov ah,2
+mov bh,0
+mov dl,x
+mov dh,y
+int 10h
+ENDM setcursor1
+
+
+
+;cleartop
+cleartop MACRO
+   
+mov ax,0600h
+mov bh,07h
+mov ch,1   
+mov cl,0     
+mov dh,11   
+mov dl,79
+int 10h 
+  
+ENDM cleartop 
+
+;clearbottom
+clearbottom MACRO
+   
+mov ax,0600h
+mov bh,07h
+mov ch,14  
+mov cl,0      
+mov dh,22
+mov dl,79
+int 10h 
+  
+ENDM clearbottom

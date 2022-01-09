@@ -1,31 +1,11 @@
-;get sending position
-getScursor MACRO
-mov ah,3h
-mov bh,0h
-int 10h
-mov xps,dl
-mov yps,dh
-ENDM getScursor
 
-;get receving position
-getRcursor MACRO
-mov ah,3h
-mov bh,0h
-int 10h
-mov xpr,dl
-mov ypr,dh
-ENDM getRcursor 
-
-;set cursor 
-setcursor MACRO x,y
+setcursor1 MACRO x,y
 mov ah,2
 mov bh,0
 mov dl,x
 mov dh,y
 int 10h
-ENDM setcursor
-
-
+ENDM setcursor1
 
 ;cleartop
 cleartop MACRO
@@ -52,9 +32,9 @@ mov dl,79
 int 10h 
   
 ENDM clearbottom
-
-
-
+PUBLIC line,endchat,pre,thechatended 
+PUBLIC chatmodule
+PUBLIC yps,xps,ypr,xpr
 .MODEL SMALL
 .STACK 64
 .DATA
@@ -76,97 +56,13 @@ thechatended db'the chat is ended ! ','$'
 
 .CODE
 
-    main proc far
-     mov ax,@data
+    
+     
+ 
+
+chatmodule proc far
+mov ax,@data
      mov ds,ax
-     ;intialize port
-; set divisor latch access bit
-
-mov dx,3fbh 			; Line Control Register
-mov al,10000000b		;Set Divisor Latch Access Bit
-out dx,al
-
-;Set LSB byte of the Baud Rate Divisor Latch register.
-
-mov dx,3f8h			
-mov al,0ch			
-out dx,al
-
-;Set MSB byte of the Baud Rate Divisor Latch register.
-
-mov dx,3f9h
-mov al,00h
-out dx,al
-
-;Set port configuration
-mov dx,3fbh
-mov al,00011011b
-out dx,al     
-
-
-;text mode
-   mov ah, 0     
-   mov al, 3
-   int 10h
-
-   ;top half
-   mov ax,0600h        
-   mov bh,07h     ; normal video attribute         
-   mov ch,1       ; top y
-   mov cl,0       ; top x
-   mov dh,12      ; bottom y
-   mov dl,79      ; bottom x
-   int 10h           
-
-    mov ah, 9
-    mov dx, offset name1
-    int 21h
-
-;draw the line 
-   setcursor 0,12
-    mov ah, 9
-    mov dx, offset line
-    int 21h
-;bottom half
-   mov ax,0600h    ;  
-   mov bh,07h      ; normal video attribute         
-   mov ch,13       ; top y
-   mov cl,0        ; top x
-   mov dh,24       ; bottom y
-   mov dl,79       ; bottom x
-   int 10h   
-
-     setcursor 0,13
-    mov ah, 9
-    mov dx, offset name2
-    int 21h
-
-    ;draw the line 
-   setcursor 0,23
-    mov ah, 9
-    mov dx, offset line
-    int 21h
-
-
-setcursor 0,24
-mov ah, 9
-    mov dx, offset endchat
-    int 21h
-
-    setcursor 19,24
-mov ah, 9
-    mov dx, offset name2
-    int 21h
-
-       setcursor 35,24
-     mov ah, 9
-    mov dx, offset pre
-    int 21h
-
-;start sending and recieving
-call chatmodule
-
-chatmodule proc
 
 chatcon:
 
@@ -179,8 +75,7 @@ jnz  send    ;jmp to send mode
 ex5:jmp shutchat
 
 send:
-;cmp fchat,1
-;jz ex2
+
 mov ah,0   ;clear  buffer
 int 16h 
 
@@ -204,14 +99,14 @@ jnz n2
 n1:cleartop
 mov xps,0             ;set the cursor  to 0,1
 mov yps,1
-setcursor xps,yps
+setcursor1 xps,yps
 jmp dispS
  
 n2:inc yps   ;if enter 
 mov xps,0
 
 contS:
-setcursor xps,yps  ; setting the cursor
+setcursor1 xps,yps  ; setting the cursor
 CMP xps,79           ; if x is out of range check y
 JZ checkY
 jnz dispS
@@ -221,7 +116,7 @@ JNZ dispS
 cleartop
 mov xps,0             ;set the cursor  to 0,1
 mov yps,1
-setcursor xps,yps
+setcursor1 xps,yps
 
 jmp dispS              ; if well print
  
@@ -240,7 +135,7 @@ mov dx , 3F8H		; Transmit data register
 mov al,value        ; put the data into al
 
 out dx , al         ; sending the data
-getScursor        ; get the cursor 
+call getScursor        ; get the cursor 
 cmp value,3dh    ;scan code of f3
 jz ex
 jmp chatcon       ;continue chating
@@ -256,8 +151,7 @@ recieve:
 mov ah,1            ;check if there is key pressed then go to the sending mode
 int 16h
 jnz S
-;cmp fchat,3dh
-;jz ex
+
 mov dx , 3FDH		; Line Status Register
 in al , dx 
 test al , 1
@@ -268,10 +162,8 @@ mov dx , 03F8H
 in al , dx 
 mov value,al              
 CMP value,3dh
-;cmp al,61h    ;scan code of f3
 jz ex
-;cmp fchat,3dh
-;jz ex
+
 CMP value,0Dh             ;check if the key is enter
 JNZ contR
 JZ endlR
@@ -285,7 +177,7 @@ n3:
 clearbottom
 mov xpr,0
 mov ypr,14
-setcursor xpr,ypr
+setcursor1 xpr,ypr
 jmp dispR
 
 n4:
@@ -293,7 +185,7 @@ inc ypr
 mov xpr,0
 
 contR:
-setcursor xpr,ypr
+setcursor1 xpr,ypr
 CMP xpr,79
 JZ checkYR
 jnz  dispR
@@ -303,14 +195,14 @@ jnz dispR
 clearbottom
 mov xpr,0
 mov ypr,14
-setcursor xpr,ypr
+setcursor1 xpr,ypr
 
 dispR:
 mov ah,2
 mov dl,value
 int 21h
 
-getRcursor 
+call getRcursor 
 jmp chatcon
 
 shutchat:
@@ -321,19 +213,46 @@ mov cx,0
 mov dh,25
 mov dl,80
 int 10h
- setcursor 35,12
+ setcursor1 35,12
     mov ah, 9
     mov dx, offset thechatended
     int 21h
            
       ret       
 chatmodule endp
+end 
+
+
+
+;get sending position
+getScursor proc far
+mov ax,@data
+mov ds,ax 
+mov ah,3h
+mov bh,0h
+int 10h
+mov xps,dl
+mov yps,dh
+ret
+getScursor endp
+end
+;get receving position
+getRcursor proc far
+mov ax,@data
+mov ds,ax 
+
+mov ah,3h
+mov bh,0h
+int 10h
+mov xpr,dl
+mov ypr,dh
+ret 
+ getRcursor endp
+end
+;set cursor 
 
 
 
 
 
-hlt 
-main endp
 
-end main
