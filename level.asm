@@ -8,7 +8,7 @@ ENDM setcursor1
 
 PUBLIC forbiddin_char1,forbiddin_char2,chosen_level,initial_reg1,initial_reg2
 PUBLIC select_level,select_forbidden_char1,select_forbidden_char2,show_forb_chars,show_level,MainScreenFunctions
-PUBLIC GostartGame, GoStartMshBgad, GoToChat, isfirst, player2name, player1name
+PUBLIC GostartGame, GoStartMshBgad, GoToChat, isfirst;, player2name, player1name
 EXTRN AxVar1:WORD,BxVar1:WORD,CxVar1:WORD,DxVar1:WORD,SiVar1:WORD,DiVar1:WORD,SpVar1 :WORD,BpVar1 :WORD
 EXTRN AxVar2:WORD,BxVar2:WORD,CxVar2:WORD,DxVar2:WORD,SiVar2:WORD,DiVar2:WORD,SpVar2 :WORD,BpVar2 :WORD
 EXTRN StaticScreen:FAR
@@ -69,8 +69,8 @@ chosen_level DB ?      ;1 or 2
 forbiddin_char1 DB ?   ;0-9 , a-z
 forbiddin_char2 DB ?
 ;----------------------Main Screen--------------------------
-player1name db 16 DUP('$')
-player2name db 16 DUP('$')
+; player1name db 16 DUP('$')
+; player2name db 16 DUP('$')
 isfirst db 0
 ; firstPlayer db 0 ; take 1 or 2
 ; invflag db 0

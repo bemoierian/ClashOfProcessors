@@ -48,11 +48,32 @@ startScreen1 PROC FAR
     
     
     loopname1:  
-    mov ah,1 ;read one char from the user and put it in al
-    int 21h
- 
+    ;mov ah,1 ;read one char from the user and put it in al
+    ;int 21h
+    mov ah, 1 ;check if any key pressed
+    int 16h
+    jz receiveName ;if no key pressed jump to recieve
+    ;sending if a key pressed
+    ;read the pressed char it won't wait because the key is al ready in the buffer
+    mov ah, 0 
+    int 16h
+
+    mov ah,2
+    mov dl,al
+    int 21h ;for printing
+
     MOV BL, AL ;bl = ascii code
-    
+    ;SENDING
+    mov dx , 3FDH ;line status
+    ;wait till THR is empty to send
+    In al , dx 			;Read Line Status
+    AND al , 00100000b
+    JZ receiveName
+    ;If empty put the VALUE in Transmit data register
+    mov dx , 3F8H		; Transmit data register
+    mov  al,bl
+    out dx , al
+
     cmp bl,13 ;compare with enter if enter pressed jump to points
     jz points1
          
@@ -68,10 +89,23 @@ startScreen1 PROC FAR
     CMP BL, 30H ;if it's less than zero jump to special char
     JL DSPECIAL1
     
+    receiveName:
+    push DI
+    lea di,BUFFNAME2
+    mov dx , 3FDH		;Line Status Register
+    in al , dx 
+    AND al , 1
+    JZ LOOPNAME1;lo mafi4 7aga tst2blha jump to myloop
+
+    ;If Ready read the VALUE in Receive data registerd
+  	mov dx , 03F8H
+  	in al , dx 
+    STOSB ;store in BUFFNAME1
+
     here1:dec cx  
     jnz loopname1
    
-    jmp POINTS ;JUMP TO points AFTER THIS LOOP 
+    jmp POINTS1 ;JUMP TO points AFTER THIS LOOP 
     
     BKspace1:
     mov dx,offset halfbackSpace
@@ -111,6 +145,7 @@ startScreen1 PROC FAR
     DALPHABET_SMALL1: ;small letters
     CMP BL, 7AH 
     JG DSPECIAL1 
+    pop di
     STOSB ;TO PUT THE RIGHT CHAR WHICH IS IN AL IN THE STRIG POINTED BY DI
     JMP here1                                        
     
@@ -130,11 +165,32 @@ startScreen1 PROC FAR
     
     loopPoints1:
         
-    mov ah,1 ;read one char from the user and put it in al
-    int 21h
-    
+    ; mov ah,1 ;read one char from the user and put it in al
+    ; int 21h
+    mov ah, 1 ;check if any key pressed
+    int 16h
+    jz receivePoints ;if no key pressed jump to recieve
+    ;sending if a key pressed
+    ;read the pressed char it won't wait because the key is al ready in the buffer
+    mov ah, 0 
+    int 16h
+    mov ah,2
+    mov dl,al
+    int 21h ;for printing
+
     MOV BL, AL    
     
+    ;SENDING
+    mov dx , 3FDH ;line status
+    ;wait till THR is empty to send
+    In al , dx 			;Read Line Status
+    AND al , 00100000b
+    JZ receivePoints
+    ;If empty put the VALUE in Transmit data register
+    mov dx , 3F8H		; Transmit data register
+    mov  al,bl
+    out dx , al
+
     cmp bl,13 ;compare with enter if enter pressed jump to looppoints
     jz loopPoints1 ;to force the user to enter 2 digits
     
@@ -150,11 +206,23 @@ startScreen1 PROC FAR
     CMP BL, 30H 
     JL DSPECIAL21     
     
+    receivePoints:
+    push DI
+    lea di,BufferData2
+    mov dx , 3FDH		;Line Status Register
+    in al , dx 
+    AND al , 1
+    JZ LOOPNAME1;lo mafi4 7aga tst2blha jump to myloop
+
+    ;If Ready read the VALUE in Receive data registerd
+  	mov dx , 03F8H
+  	in al , dx 
+    STOSB ;store in BUFFNAME2
+
     HERE21:   
     loop loopPoints1 
     
     JMP PROCEED1
-    
     
     BKspace21:
     mov dx,offset halfbackSpace
@@ -203,6 +271,7 @@ startScreen1 PROC FAR
     int 21h
     JMP loopPoints1 
     
+
     PROCEED1:;wait for enter
     lea dx,PRESSENTER
     mov ah,9
