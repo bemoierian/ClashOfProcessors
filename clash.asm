@@ -15,6 +15,9 @@ PUBLIC Carry_1,Carry_2
 EXTRN StartChat:far 
 EXTRN line:BYTE,endchat:BYTE,pre:BYTE,thechatended:BYTE
 EXTRN yps:BYTE,xps:BYTE,ypr:BYTE,xpr:BYTE
+PUBLIC Player
+PUBLIC sendVarL
+PUBLIC ReceiveVarL
 ;-------------------------cmd_p1.asm---------------------------
 EXTRN execute1:far 
 EXTRN CLEAR_TO_EXECUTE_1:BYTE
@@ -211,7 +214,13 @@ isSent db 0
 ;Holds the number of the player (1 is the one who sent the invitation 1st)
 Player db 2
 ;Holds the mode of the game: 0. Command, 1. chat
-Mode db 0
+ModePlayer1 db 0
+ModePlayer2 db 0
+;Is in game chat
+IsChating_p1 db 0
+IsChating_p2 db 0
+chatxposP1 db 0
+chatxposP2 db 0
 ;------------------------------------------------
 .CODE
 MAIN PROC FAR
@@ -398,7 +407,53 @@ MAIN PROC FAR
         mov ReceiveVarL, 2Fh
         mov ReceiveVarH, 35h
         ReceivedSuccess:
+        ;--------------------------IN-GAME-CHAT-------------------------
+        cmp player,1
+        jnz is_ChatFor_P2
+            cmp sendVarL, 0f9h ;compare send value with F2 to enter chat
+            jnz notF2_p1
+                cmp IsChating_p1,0 ;if pressed F2 and player 1 not in chat set chat mode P1 to 1 and check the received
+                jnz set_Chat_p1
+                    mov IsChating_p1,1
+                    jmp Chech_Received_Chat
+                set_Chat_p1:       ;if pressed F2 and player 1 is in chat set chat mode P1 to 0 and check the received
+                    mov IsChating_p1,0
+                    jmp Chech_Received_Chat
+            ;--------------------------
+            notF2_p1:
+                    cmp IsChating_p1,0 ;if NOT pressed F2 and player 1 not in chat continue to check received
+                    jnz print_send_p1
+                        jmp Chech_Received_Chat
+                    print_send_p1:       ;if NOT pressed F2 and player 1 not in chat print the send and check the received
+                        mov ah,2
+                        mov dl,sendVarL
+                        int 21H
+                        jmp Chech_Received_Chat
+
+            Chech_Received_Chat:
+            cmp ReceiveVarL, 0f9h ;compare received value with F2 to enter chat
+            jnz notF2_p2
+                cmp IsChating_p2,0 ;if pressed F2 and player 1 not in chat set chat mode P1 to 1 and check the received
+                jnz set_Chat_p1
+                    mov IsChating_p2,1
+                    jmp Game
+                set_Chat_p1:       ;if pressed F2 and player 1 is in chat set chat mode P1 to 0 and check the received
+                    mov IsChating_p2,0
+                    jmp Game
+            ;--------------------------
+            notF2_p2:
+                    cmp IsChating_p2,0 ;if NOT pressed F2 and player 1 not in chat continue to check received
+                    jnz print_send_p2
+                        jmp check_Gun
+                    print_send_p2:       ;if NOT pressed F2 and player 1 not in chat print the send and check the received
+                        mov ah,2
+                        mov dl,ReceiveVarL
+                        int 21H
+                        jmp Game
         ;----------------------------GUN--------------------------------
+        check_Gun:
+        ;mov IsInGameChat,0
+
         CALL TotalGunInput
         CMP isGun1, 1
         JZ Game
@@ -546,7 +601,7 @@ Gun1Input PROC FAR
     RET
 Gun1Input ENDP
 Gun2Input PROC FAR
-     ;right arrow
+    ;right arrow
     right2:
         cmp al,1 ;compare key code with right key code
         jnz left2    ;if the key is not right, jump to next check
@@ -932,10 +987,16 @@ HashFunction PROC FAR
     
 	check_Down:
 	cmp ax, 5000h ; if down arrow
-	jnz F5
+	jnz F2
 	mov al,4
 	jmp EndHash
 	
+    F2:
+	cmp ah, 3BH ; if F2 ->for chat
+	jnz F5
+	mov al, 0f9h
+	jmp EndHash
+
     F5:
 	cmp ah, 3FH ; if F5
 	jnz F6

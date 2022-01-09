@@ -37,6 +37,11 @@ PUBLIC StartChat
 PUBLIC yps,xps,ypr,xpr
 EXTRN BUFFNAME1:BYTE
 EXTRN BUFFNAME2:BYTE
+
+EXTRN Player:BYTE
+EXTRN sendVarL:BYTE
+EXTRN ReceiveVarL:BYTE
+
 .MODEL HUGE
 .STACK 64
 .DATA
@@ -165,7 +170,7 @@ mov xps,0             ;set the cursor  to 0,1
 mov yps,1
 setcursor1 xps,yps
 jmp dispS
- 
+
 n2:inc yps   ;if enter 
 mov xps,0
 
@@ -299,7 +304,15 @@ int 10h
 mov xpr,dl
 mov ypr,dh
 ret 
- getRcursor endp
+getRcursor endp
+
+InGameChat PROC FAR
+  mov ax,@data
+  mov ds,ax
+
+
+  ret
+InGameChat ENDP 
 end
 ;set cursor 
 
