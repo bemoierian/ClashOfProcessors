@@ -33,9 +33,11 @@ int 10h
   
 ENDM clearbottom
 PUBLIC line,endchat,pre,thechatended 
-PUBLIC chatmodule
+PUBLIC StartChat
 PUBLIC yps,xps,ypr,xpr
-.MODEL SMALL
+EXTRN BUFFNAME1:BYTE
+EXTRN BUFFNAME2:BYTE
+.MODEL HUGE
 .STACK 64
 .DATA
  
@@ -55,9 +57,71 @@ pre db 'press f3','$'
 thechatended db'the chat is ended ! ','$'
 
 .CODE
+;description
+StartChat PROC FAR
+  mov ax, @data
+  mov ds, ax
+  ;text mode
+  mov ah, 0     
+  mov al, 3
+  int 10h
 
-    
-     
+  ;top half
+  mov ax,0600h        
+  mov bh,07h     ; normal video attribute         
+  mov ch,1       ; top y
+  mov cl,0       ; top x
+  mov dh,12      ; bottom y
+  mov dl,79      ; bottom x
+  int 10h           
+
+  mov ah, 9
+  mov dx, offset BUFFNAME1
+  int 21h
+
+  ;draw the line 
+  setcursor1 0,12
+  mov ah, 9
+  mov dx, offset line
+  int 21h
+  ;bottom half
+  mov ax,0600h    ;  
+  mov bh,07h      ; normal video attribute         
+  mov ch,13       ; top y
+  mov cl,0        ; top x
+  mov dh,24       ; bottom y
+  mov dl,79       ; bottom x
+  int 10h   
+
+  setcursor1 0,13
+  mov ah, 9
+  mov dx, offset BUFFNAME2
+  int 21h
+
+      ;draw the line 
+  setcursor1 0,23
+  mov ah, 9
+  mov dx, offset line
+  int 21h
+
+
+  setcursor1 0,24
+  mov ah, 9
+  mov dx, offset endchat
+  int 21h
+
+  setcursor1 19,24
+  mov ah, 9
+  mov dx, offset BUFFNAME2
+  int 21h
+
+  setcursor1 35,24
+  mov ah, 9
+  mov dx, offset pre
+  int 21h
+  call chatmodule
+  RET  
+StartChat ENDP
  
 
 chatmodule proc far
@@ -206,18 +270,6 @@ call getRcursor
 jmp chatcon
 
 shutchat:
-
-mov ax,0600h
-mov bh,07
-mov cx,0
-mov dh,25
-mov dl,80
-int 10h
- setcursor1 35,12
-    mov ah, 9
-    mov dx, offset thechatended
-    int 21h
-           
       ret       
 chatmodule endp
 

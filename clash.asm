@@ -12,7 +12,7 @@ PUBLIC AxVar2,BxVar2,CxVar2,DxVar2,SiVar2,DiVar2,SpVar2 ,BpVar2
 PUBLIC Carry_1,Carry_2
 ;-------------------------chat.asm---------------------------
 ;EXTRN Chat:far 
-EXTRN chatmodule:far 
+EXTRN StartChat:far 
 EXTRN line:BYTE,endchat:BYTE,pre:BYTE,thechatended:BYTE
 EXTRN yps:BYTE,xps:BYTE,ypr:BYTE,xpr:BYTE
 ;-------------------------cmd_p1.asm---------------------------
@@ -209,7 +209,7 @@ isReceived db 0
 valueS db ?
 isSent db 0
 ;Holds the number of the player (1 is the one who sent the invitation 1st)
-Player db 1 
+Player db 2
 ;Holds the mode of the game: 0. Command, 1. chat
 Mode db 0
 ;------------------------------------------------
@@ -218,6 +218,24 @@ MAIN PROC FAR
     MOV AX, @DATA
     MOV DS, AX
     MOV ES, AX
+
+    ;---------------Config-----------------
+    mov dx,3fbh 			; Line Control Register
+    mov al,10000000b		;Set Divisor Latch Access Bit
+    out dx,al			;Out it
+    ;Set LSB byte of the Baud Rate Divisor Latch register.
+    mov dx,3f8h			
+    mov al,0ch			
+    out dx,al
+    ;Set MSB byte of the Baud Rate Divisor Latch register.
+    mov dx,3f9h
+    mov al,00h
+    out dx,al
+    ;Set port configuration
+    mov dx,3fbh
+    mov al,00011011b
+    out dx,al
+
     UserNames:
         call startScreen1  ;start.asm 
         call startScreen2
@@ -272,92 +290,8 @@ MAIN PROC FAR
                 jmp EndGame ;program end
             EndMainInput:
             chat:
-            ;intialize port
-            ; set divisor latch access bit
-
-            mov dx,3fbh 			; Line Control Register
-            mov al,10000000b		;Set Divisor Latch Access Bit
-            out dx,al
-
-            ;Set LSB byte of the Baud Rate Divisor Latch register.
-
-            mov dx,3f8h			
-            mov al,0ch			
-            out dx,al
-
-            ;Set MSB byte of the Baud Rate Divisor Latch register.
-
-            mov dx,3f9h
-            mov al,00h
-            out dx,al
-
-            ;Set port configuration
-            mov dx,3fbh
-            mov al,00011011b
-            out dx,al     
-
-
-            ;text mode
-            mov ah, 0     
-            mov al, 3
-            int 10h
-
-            ;top half
-            mov ax,0600h        
-            mov bh,07h     ; normal video attribute         
-            mov ch,1       ; top y
-            mov cl,0       ; top x
-            mov dh,12      ; bottom y
-            mov dl,79      ; bottom x
-            int 10h           
-
-                mov ah, 9
-                mov dx, offset BUFFNAME1
-                int 21h
-
-            ;draw the line 
-            setcursor1 0,12
-                mov ah, 9
-                mov dx, offset line
-                int 21h
-            ;bottom half
-            mov ax,0600h    ;  
-            mov bh,07h      ; normal video attribute         
-            mov ch,13       ; top y
-            mov cl,0        ; top x
-            mov dh,24       ; bottom y
-            mov dl,79       ; bottom x
-            int 10h   
-
-                setcursor1 0,13
-                mov ah, 9
-                mov dx, offset BUFFNAME2
-                int 21h
-
-                ;draw the line 
-            setcursor1 0,23
-                mov ah, 9
-                mov dx, offset line
-                int 21h
-
-
-            setcursor1 0,24
-            mov ah, 9
-                mov dx, offset endchat
-                int 21h
-
-                setcursor1 19,24
-            mov ah, 9
-                mov dx, offset BUFFNAME2
-                int 21h
-
-                setcursor1 35,24
-                mov ah, 9
-                mov dx, offset pre
-                int 21h
-
-            ;start sending and recieving
-            call chatmodule
+            CALL StartChat
+            jmp MainScreen
 
 
     EndMainScreen:
@@ -382,8 +316,6 @@ MAIN PROC FAR
     mov al,13h
     int 10h
     ;----------------------------------------------------------------------
-
-
     Background                          ;background color
     horizontalline 170,0,320            ;horizontal line
     drawrectangle  125,0,0dh,13,120
@@ -466,62 +398,14 @@ MAIN PROC FAR
         mov ReceiveVarL, 2Fh
         mov ReceiveVarH, 35h
         ReceivedSuccess:
-        ;----------------------------SEND--------------------------------
         ;----------------------------GUN--------------------------------
-        cmp player,1
-        jnz gunforP2
-            mov al,sendVarL
-            CALL Gun1Input
-            CMP isGun1, 1
-            jz Game
-
-            mov al,ReceiveVarL
-            CALL Gun2Input
-            CMP isGun2, 1
-            jz Game
-
-        gunforP2:
-            mov al,ReceiveVarL
-            CALL Gun1Input
-            CMP isGun1, 1
-            jz Game
-
-            mov al,sendVarL
-            CALL Gun2Input
-            CMP isGun2, 1
-            jz Game 
-
+        CALL TotalGunInput
+        CMP isGun1, 1
+        JZ Game
+        CMP isGun2, 1
+        JZ Game
         ;---------------------Serial port checks------------------------
-        cmp turn,1
-        jnz turn2
-            cmp player,1
-            jnz OtherPlayer2
-                mov dl, sendVarL
-                mov InputVarL, dl
-                mov dl, sendVarH
-                mov InputVarH, dl
-                jmp continueInput
-            OtherPlayer2:
-                mov dl, ReceiveVarL
-                mov InputVarL, dl
-                mov dl, ReceiveVarH
-                mov InputVarH, dl
-                jmp continueInput
-        turn2:
-            cmp player,2
-            jnz OtherPlayer1
-                mov dl, sendVarL
-                mov InputVarL, dl
-                mov dl, sendVarH
-                mov InputVarH, dl
-                jmp continueInput
-                OtherPlayer1:
-                    mov dl, ReceiveVarL
-                    mov InputVarL, dl
-                    mov dl, ReceiveVarH
-                    mov InputVarH, dl
-                    jmp continueInput
-        continueInput:
+        CALL SetParametersOfCommand
         ;------------------------BACKSPACE------------------------------
         CALL BackspaceInput
         CMP isBackSpace, 1
@@ -556,7 +440,7 @@ EndGame:
 HLT
 MAIN ENDP
 
-PrintCommandString PROC
+PrintCommandString PROC FAR
     ;-----set cursor---
     cmp Turn, 1
     jnz isTurn2
@@ -576,7 +460,7 @@ PrintCommandString PROC
     RET
 PrintCommandString ENDP
 
-ClearCommandString PROC
+ClearCommandString PROC FAR
     MOV SI, OFFSET EmptyString
     MOV DI, OFFSET commandS
     MOV CX, 22
@@ -592,7 +476,7 @@ ClearCommandString PROC
 ClearCommandString ENDP
 
 ;description
-SwitchTurn PROC
+SwitchTurn PROC FAR
     cmp Turn, 1
     jnz SwitchTo1
     MOV  Turn, 2
@@ -603,7 +487,7 @@ SwitchTurn PROC
     RET
 SwitchTurn ENDP
 ;description
-ResetInputFlags PROC
+ResetInputFlags PROC FAR
     MOV isGun1, 0
     MOV isGun2, 0
     MOV isBackSpace, 0
@@ -616,7 +500,7 @@ ResetInputFlags PROC
 ResetInputFlags ENDP
 
 ;description
-Gun1Input PROC
+Gun1Input PROC FAR
      ;right arrow
     right1:
         cmp al,1 ;compare key code with right key code
@@ -661,7 +545,7 @@ Gun1Input PROC
     NotGun1Input:
     RET
 Gun1Input ENDP
-Gun2Input PROC
+Gun2Input PROC FAR
      ;right arrow
     right2:
         cmp al,1 ;compare key code with right key code
@@ -707,7 +591,7 @@ Gun2Input PROC
     RET
 Gun2Input ENDP
 ;description
-BackspaceInput PROC
+BackspaceInput PROC FAR
     mov al, InputVarL
     cmp al, 2Fh
     jz BackspaceInputDone
@@ -731,7 +615,7 @@ BackspaceInput PROC
     RET
 BackspaceInput ENDP
 ;description
-EnterInput PROC
+EnterInput PROC FAR
     mov al, InputVarL
     cmp al, 13d
     jnz NotEnterInput
@@ -760,7 +644,7 @@ EnterInput PROC
     RET
 EnterInput ENDP
 ;description
-CharInput PROC
+CharInput PROC FAR
     mov dl, cmdCurrSize
     cmp dl, cmdMaxSize
     jz endInsertChar
@@ -798,7 +682,7 @@ CharInput PROC
     RET
 CharInput ENDP
 ;description
-PowerUpInput PROC
+PowerUpInput PROC FAR
     keyF5:
         cmp al, 0fah ;compare key code with f5 code
         jnz keyF6    ;if the key is not F5, jump to next check
@@ -872,7 +756,7 @@ PowerUpInput PROC
     RET
 PowerUpInput ENDP
 
-DisplayNumInAL PROC 
+DisplayNumInAL PROC FAR
 
     MOV AH,0  ;MAKE AH=0 TO HAVE THE RIGHT NUMBER IN AX
     MOV BL,10 ;THE DIVISION THIS TIME IS OVER 10
@@ -892,7 +776,7 @@ DisplayNumInAL PROC
     ret
 DisplayNumInAL ENDP 
 
-DisplayNamesAndScore PROC
+DisplayNamesAndScore PROC FAR
         ;Dispkay the names and the min initial points
         ;set the crsr
         mov dl,5
@@ -948,7 +832,7 @@ DisplayNamesAndScore PROC
     RET
 DisplayNamesAndScore ENDP  
 
-SetMinPoints PROC ;get min of 2 variables
+SetMinPoints PROC FAR;get min of 2 variables
     mov al,P1_score
     mov bl,P2_score
     
@@ -967,7 +851,7 @@ SetMinPoints PROC ;get min of 2 variables
     RET
 SetMinPoints ENDP
 
-SetInitialPoints PROC ;but the initial points in the score variables
+SetInitialPoints PROC FAR;but the initial points in the score variables
     mov si,offset BufferData1
     MOV AL,[si]
     sub al,30H
@@ -1012,7 +896,7 @@ ReceiveInput PROC FAR
 ReceiveInput ENDP
 
 ;description
-SendInput PROC
+SendInput PROC FAR
      mov dx , 3FDH ;line status
     ;wait till THR is empty to send
         In al , dx 			;Read Line Status
@@ -1027,7 +911,7 @@ SendInput PROC
     RET
 SendInput ENDP
 
-HashFunction PROC
+HashFunction PROC FAR
 	check_Right:
         cmp ax, 4D00h ; if right arrow
 	jnz check_Left
@@ -1091,7 +975,7 @@ HashFunction PROC
     ret
 HashFunction ENDP
 
-DrawUI PROC
+DrawUI PROC FAR
     setcursor 0000
         drawrectanglewith  140,7,c11,15,15,63497d,l11,c11
         setcursor 0000
@@ -1116,4 +1000,66 @@ DrawUI PROC
         RET
 DrawUI ENDP
 
+;description
+TotalGunInput PROC FAR
+    cmp player,1
+    jnz gunforP2
+        mov al,sendVarL
+        CALL Gun1Input
+        CMP isGun1, 1
+        jz EndTotalGun
+
+        mov al,ReceiveVarL
+        CALL Gun2Input
+        CMP isGun2, 1
+        jz EndTotalGun
+
+    gunforP2:
+        mov al,ReceiveVarL
+        CALL Gun1Input
+        CMP isGun1, 1
+        jz EndTotalGun
+
+        mov al,sendVarL
+        CALL Gun2Input
+        CMP isGun2, 1
+        jz EndTotalGun 
+    EndTotalGun:
+    RET
+TotalGunInput ENDP
+
+;description
+SetParametersOfCommand PROC FAR
+    cmp turn,1
+    jnz turn2
+        cmp player,1
+        jnz OtherPlayer2
+            mov dl, sendVarL
+            mov InputVarL, dl
+            mov dl, sendVarH
+            mov InputVarH, dl
+            jmp continueInput
+        OtherPlayer2:
+            mov dl, ReceiveVarL
+            mov InputVarL, dl
+            mov dl, ReceiveVarH
+            mov InputVarH, dl
+            jmp continueInput
+    turn2:
+        cmp player,2
+        jnz OtherPlayer1
+            mov dl, sendVarL
+            mov InputVarL, dl
+            mov dl, sendVarH
+            mov InputVarH, dl
+            jmp continueInput
+            OtherPlayer1:
+                mov dl, ReceiveVarL
+                mov InputVarL, dl
+                mov dl, ReceiveVarH
+                mov InputVarH, dl
+                jmp continueInput
+    continueInput:    
+    RET
+SetParametersOfCommand ENDP
 END MAIN
