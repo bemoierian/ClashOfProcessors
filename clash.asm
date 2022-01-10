@@ -403,47 +403,119 @@ MAIN PROC FAR
         ReceivedSuccess:
         ;--------------------------IN-GAME-CHAT-------------------------
         cmp player,1
-        jnz is_ChatFor_P2
-            cmp sendVarL, 0f9h ;compare send value with F2 to enter chat
-            jnz notF2_p1
-                cmp IsChating_p1,0 ;if pressed F2 and player 1 not in chat set chat mode P1 to 1 and check the received
-                jnz set_Chat_p1
+        jnz chat_player2
+            ;sending player 1
+            cmp sendVarL,0f9h
+            jnz print_if_player1_sending
+                cmp IsChating_p1 , 0
+                jnz reset_chating_player1_S
                     mov IsChating_p1,1
-                    jmp Chech_Received_Chat
-                set_Chat_p1:       ;if pressed F2 and player 1 is in chat set chat mode P1 to 0 and check the received
+                    jmp receiving_for_P1
+                reset_chating_player1_S:
                     mov IsChating_p1,0
-                    jmp Chech_Received_Chat
-            ;--------------------------
-            notF2_p1:
-                    cmp IsChating_p1,0 ;if NOT pressed F2 and player 1 not in chat continue to check received
-                    jnz print_send_p1
-                        jmp Chech_Received_Chat
-                    print_send_p1:       ;if NOT pressed F2 and player 1 not in chat print the send and check the received
-                        mov ah,2
-                        mov dl,sendVarL
-                        int 21H
-                        jmp Chech_Received_Chat
+                    jmp receiving_for_P1
 
-            Chech_Received_Chat:
-            cmp ReceiveVarL, 0f9h ;compare received value with F2 to enter chat
-            jnz notF2_p2
-                cmp IsChating_p2,0 ;if pressed F2 and player 1 not in chat set chat mode P1 to 1 and check the received
-                jnz set_Chat_p1
+                print_if_player1_sending:
+                cmp IsChating_p1,1
+                jnz receiving_for_P1
+                    ;here to print sent chat at player 1
+                    cmp sendVarL,'/'
+                    jz receiving_for_P1
+                    mov ah,2
+                    mov bh,0
+                    mov dl,chatxposP1
+                    mov dh,22
+                    int 10h
+                    mov ah,2
+                    mov dl,sendVarL
+                    int 21h
+                    add chatxposP1,1
+                    jmp game
+            ;receiving player 1
+            receiving_for_P1:
+            cmp ReceiveVarL,0f9h
+            jnz print_if_player1_receiving
+                cmp IsChating_p2 , 0
+                jnz reset_chating_player1_R
                     mov IsChating_p2,1
-                    jmp Game
-                set_Chat_p1:       ;if pressed F2 and player 1 is in chat set chat mode P1 to 0 and check the received
+                    jmp game
+                reset_chating_player1_R:
                     mov IsChating_p2,0
-                    jmp Game
-            ;--------------------------
-            notF2_p2:
-                    cmp IsChating_p2,0 ;if NOT pressed F2 and player 1 not in chat continue to check received
-                    jnz print_send_p2
-                        jmp check_Gun
-                    print_send_p2:       ;if NOT pressed F2 and player 1 not in chat print the send and check the received
-                        mov ah,2
-                        mov dl,ReceiveVarL
-                        int 21H
-                        jmp Game
+                    jmp game
+
+                print_if_player1_receiving:
+                cmp IsChating_p2,1
+                jnz check_Gun
+                    ;here to print rec chat at player 1
+                    cmp ReceiveVarL,'/'
+                    jz game
+                    mov ah,2
+                    mov bh,0
+                    mov dl,chatxposP2
+                    mov dh,23
+                    int 10h
+                    mov ah,2
+                    mov dl,ReceiveVarL
+                    int 21h
+                    inc chatxposP2
+                    jmp game
+        ;PLAYER2----------------------------------------
+        chat_player2:
+            ;sending player 2
+            cmp sendVarL,0f9h
+            jnz print_if_player2_sending
+                cmp IsChating_p2 , 0
+                jnz reset_chating_player2_S
+                    mov IsChating_p2,1
+                    jmp receiving_for_P2
+                reset_chating_player2_S:
+                    mov IsChating_p2,0
+                    jmp receiving_for_P2
+
+                print_if_player2_sending:
+                cmp IsChating_p2,1
+                jnz receiving_for_P2
+                ;here to print sent chat at player 2
+                    cmp sendVarL,'/'
+                    jz receiving_for_P2
+                    mov ah,2
+                    mov bh,0
+                    mov dl,chatxposP2
+                    mov dh,23
+                    int 10h
+                    mov ah,2
+                    mov dl,sendVarL
+                    int 21h
+                    inc chatxposP2
+                    jmp game
+            ;receiving player 2
+            receiving_for_P2:
+            cmp ReceiveVarL,0f9h
+            jnz print_if_player2_receiving
+                cmp IsChating_p1 , 0
+                jnz reset_chating_player2_R
+                    mov IsChating_p1,1
+                    jmp game
+                reset_chating_player2_R:
+                    mov IsChating_p1,0
+                    jmp game
+
+                print_if_player2_receiving:
+                cmp IsChating_p1,1
+                jnz check_Gun
+                    ;here to print rec chat at player 2
+                    cmp ReceiveVarL,'/'
+                    jz game
+                    mov ah,2
+                    mov bh,0
+                    mov dl,chatxposP1
+                    mov dh,22
+                    int 10h
+                    mov ah,2
+                    mov dl,ReceiveVarL
+                    int 21h
+                    add chatxposP1,1
+                    jmp game
         ;----------------------------GUN--------------------------------
         check_Gun:
         ;mov IsInGameChat,0
@@ -986,7 +1058,7 @@ HashFunction PROC FAR
 	jmp EndHash
 	
     F2:
-	cmp ah, 3BH ; if F2 ->for chat
+	cmp ah, 3CH ; if F2 ->for chat
 	jnz F5
 	mov al, 0f9h
 	jmp EndHash
