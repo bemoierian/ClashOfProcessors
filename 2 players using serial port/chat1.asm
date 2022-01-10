@@ -35,6 +35,8 @@ ENDM clearbottom
 PUBLIC line,endchat,pre,thechatended 
 PUBLIC StartChat
 PUBLIC yps,xps,ypr,xpr
+PUBLIC IsInGameChat
+PUBLIC InGameChat
 EXTRN BUFFNAME1:BYTE
 EXTRN BUFFNAME2:BYTE
 
@@ -51,8 +53,11 @@ yps db 1    ;y position of sending initial will be 0
 xps db 0     ;x position of sending initail wiil be 0
 xpr db 0     ;x position of recieving initial will be 0
 ypr db 0fh   ;y position of recieving initial wil be D because of lower part of screen                                          
-
-
+IsInGameChat db 0
+IsChating_p1 db 0
+IsChating_p2 db 0
+chatxposP1 db 0
+chatxposP2 db 0
 
 line db 80 dup('-'),'$'
 endchat db 'to end chat with ','$'
@@ -306,13 +311,133 @@ mov ypr,dh
 ret 
 getRcursor endp
 
+
+
+
+;description
 InGameChat PROC FAR
   mov ax,@data
   mov ds,ax
+  cmp player,1
+        jnz chat_player2
+            ;sending player 1
+            cmp sendVarL,0f9h
+            jnz print_if_player1_sending
+                cmp IsChating_p1 , 0
+                jnz reset_chating_player1_S
+                    mov IsChating_p1,1
+                    jmp receiving_for_P1
+                reset_chating_player1_S:
+                    mov IsChating_p1,0
+                    jmp receiving_for_P1
 
+                print_if_player1_sending:
+                cmp IsChating_p1,1
+                jnz receiving_for_P1
+                    ;here to print sent chat at player 1
+                    cmp sendVarL,'/'
+                    jz receiving_for_P1
+                    mov ah,2
+                    mov bh,0
+                    mov dl,chatxposP1
+                    mov dh,22
+                    int 10h
+                    mov ah,2
+                    mov dl,sendVarL
+                    int 21h
+                    add chatxposP1,1
+                    jmp SetGFlag
+            ;receiving player 1
+            receiving_for_P1:
+            cmp ReceiveVarL,0f9h
+            jnz print_if_player1_receiving
+                cmp IsChating_p2 , 0
+                jnz reset_chating_player1_R
+                    mov IsChating_p2,1
+                    jmp SetGFlag
+                reset_chating_player1_R:
+                    mov IsChating_p2,0
+                    jmp SetGFlag
 
-  ret
-InGameChat ENDP 
+                print_if_player1_receiving:
+                cmp IsChating_p2,1
+                jnz endGameChat
+                    ;here to print rec chat at player 1
+                    cmp ReceiveVarL,'/'
+                    jz SetGFlag
+                    mov ah,2
+                    mov bh,0
+                    mov dl,chatxposP2
+                    mov dh,23
+                    int 10h
+                    mov ah,2
+                    mov dl,ReceiveVarL
+                    int 21h
+                    inc chatxposP2
+                    jmp SetGFlag
+        ;PLAYER2----------------------------------------
+        chat_player2:
+            ;sending player 2
+            cmp sendVarL,0f9h
+            jnz print_if_player2_sending
+                cmp IsChating_p2 , 0
+                jnz reset_chating_player2_S
+                    mov IsChating_p2,1
+                    jmp receiving_for_P2
+                reset_chating_player2_S:
+                    mov IsChating_p2,0
+                    jmp receiving_for_P2
+
+                print_if_player2_sending:
+                cmp IsChating_p2,1
+                jnz receiving_for_P2
+                ;here to print sent chat at player 2
+                    cmp sendVarL,'/'
+                    jz receiving_for_P2
+                    mov ah,2
+                    mov bh,0
+                    mov dl,chatxposP2
+                    mov dh,23
+                    int 10h
+                    mov ah,2
+                    mov dl,sendVarL
+                    int 21h
+                    inc chatxposP2
+                    jmp SetGFlag
+            ;receiving player 2
+            receiving_for_P2:
+            cmp ReceiveVarL,0f9h
+            jnz print_if_player2_receiving
+                cmp IsChating_p1 , 0
+                jnz reset_chating_player2_R
+                    mov IsChating_p1,1
+                    jmp SetGFlag
+                reset_chating_player2_R:
+                    mov IsChating_p1,0
+                    jmp SetGFlag
+
+                print_if_player2_receiving:
+                cmp IsChating_p1,1
+                jnz endGameChat
+                    ;here to print rec chat at player 2
+                    cmp ReceiveVarL,'/'
+                    jz SetGFlag
+                    mov ah,2
+                    mov bh,0
+                    mov dl,chatxposP1
+                    mov dh,22
+                    int 10h
+                    mov ah,2
+                    mov dl,ReceiveVarL
+                    int 21h
+                    add chatxposP1,1
+                    jmp SetGFlag
+
+                    SetGFlag:
+                    mov IsInGameChat, 1
+                    endGameChat:
+  RET
+InGameChat ENDP
 end
 ;set cursor 
 
