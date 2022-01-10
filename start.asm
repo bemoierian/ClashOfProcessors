@@ -71,7 +71,7 @@ startScreen1 PROC FAR
     here1:dec cx  
     jnz loopname1
    
-    jmp POINTS ;JUMP TO points AFTER THIS LOOP 
+    jmp points1 ;JUMP TO points AFTER THIS LOOP 
     
     BKspace1:
     mov dx,offset halfbackSpace
