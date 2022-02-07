@@ -4,7 +4,7 @@
 <h4 align="center">
     An x86 Assembly project
 </h4>
-<img  src="gameplay.png" title="Gameplay" >
+<img src="/gameplay.png" title="Gameplay">
 <h2>
     Description
 </h2>
