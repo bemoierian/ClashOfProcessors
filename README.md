@@ -5,7 +5,7 @@
     An x86 Assembly project
 </h4>
 <div>
-<img src="/gameplay.png" title="Gameplay">
+<img src="/Gameplay.png" title="Gameplay">
 </div>
 <h2>
     Description
