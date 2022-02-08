@@ -13,7 +13,27 @@
 In this project, we made an assembler in the form of a 2 player game.
 Each player has his own 8086 processor and 16-bit memory (RAM), your target is store the value "105e" in one of your opponent's registers.
 In each round you are able to write a complete x86 assembly instruction that will be executed on your opponent's processor but be careful, your opponent has set a forbidden character that you can't use in your instruction, in addition to some power ups that may be used against you, which makes it harder to reach your target.
-Additional features: Full chatting mode, in-game chat (in 2 Players using serial port version), 2 levels, flying objects and a gun to shoot them and earn additional points.
+<h2>
+    Features
+</h2>
+<ul>
+    <li>Serial port communication.</li>
+    <li>20 x86 assembly instructions.</li>
+    <li>6 addressing modes.</li>
+    <li>Separate chat module.</li>
+    <li>In-game chat (in 2 Players using serial port version).</li>
+    <li>Randomly flying objects, each player has a gun to shoot them and earn additional points.</li>
+    <li>2 levels.</li>
+</ul>
+<h2>
+    Versions
+</h2>
+<ul>
+    <li><h5>2 Players on 1 PC</h5></li>
+    The 2 players play on the same pc using the same keyboard.
+    <li><h5>2 Players using serial port</h5></li>
+    2 PCs are connected using the serial port cable, each player plays on his PC with complete synchronisation in instructions, in-game chat, gun fire and more!
+</ul>
 <h2>
     How To Run
 </h2>
@@ -56,20 +76,11 @@ To run 2 players using serial port version:
             <li>clash</li>
         </ul>
 </ul>
-<h2>
-    Versions
-</h2>
-<ul>
-    <li><h5>2 Players on 1 PC</h5></li>
-    The 2 players play on the same pc using the same keyboard.
-    <li><h5>2 Players using serial port</h5></li>
-    2 PCs are connected using the serial port cable, each player plays on his PC with complete synchronisation in instructions, in-game chat, gun fire and more!
-</ul>
+
 <h2>
     Limitations
 </h2>
 <ul>
     <li>This version is only optimized for MASM 6.11, any other version or assembler may not run correctly.</li>
     <li>In 2 Players using serial port version: name, initial points and level 2 are not synchronysed between the 2 PCs (yet).
-
 </ul>
